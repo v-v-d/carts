@@ -1,8 +1,15 @@
+import asyncio
 from typing import Any, Mapping, Generator
 
-from aiohttp import ClientSession, ClientResponseError, ClientResponse
+from aiohttp import (
+    ClientSession,
+    ClientResponseError,
+    ClientResponse,
+    ClientConnectionError,
+    ClientPayloadError,
+)
 
-from infra.http.transports.base import IHttpTransport, BaseHttpTransportError
+from infra.http.transports.base import IHttpTransport, HttpTransportError
 
 
 class AioHttpTransport(IHttpTransport):
@@ -10,6 +17,24 @@ class AioHttpTransport(IHttpTransport):
         self._session = session
 
     async def request(
+        self,
+        method: str,
+        url: str,
+        headers: dict[str, Any] | None = None,
+        params: Mapping[str, str] | None = None,
+        data: dict[Any, Any] | None = None,
+    ) -> dict[str, Any] | str:
+        try:
+            return await self._try_to_make_request(method, url, headers, params, data)
+        except (
+            ClientConnectionError,
+            ClientPayloadError,
+            asyncio.TimeoutError,
+            BrokenPipeError,
+        ) as err:
+            raise HttpTransportError(str(err))
+
+    async def _try_to_make_request(
         self,
         method: str,
         url: str,
@@ -30,7 +55,7 @@ class AioHttpTransport(IHttpTransport):
             try:
                 response.raise_for_status()
             except ClientResponseError as err:
-                raise BaseHttpTransportError(err.status, data)
+                raise HttpTransportError(data, err.status)
 
             return data
 
