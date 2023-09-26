@@ -1,5 +1,6 @@
 # Web frameworks
 aiohttp==3.8.5
+httpx==0.25.0
 fastapi==0.103.1
 pydantic==2.3.0
 uvicorn==0.23.2

@@ -43,6 +43,5 @@ class AioHttpTransport(IHttpTransport):
 
 async def init_aiohttp_transport() -> Generator[None, None, AioHttpTransport]:
     session = ClientSession()
-    transport = AioHttpTransport(session=session)
-    yield transport
+    yield AioHttpTransport(session=session)
     await session.close()
