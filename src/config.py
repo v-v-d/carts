@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, AnyHttpUrl
 from pydantic_settings import BaseSettings
 
 
@@ -12,8 +12,8 @@ from pydantic_settings import BaseSettings
 #         return orjson.loads(v)
 #
 #
-# class ProductsClientConfig(BaseModel):
-#     base_url: AnyHttpUrl
+class ProductsClientConfig(BaseModel):
+    base_url: AnyHttpUrl
 
 
 class ArqRedisConfig(BaseModel):
@@ -29,6 +29,6 @@ class Config(BaseSettings):
         env_file = ".env"
         env_nested_delimiter = "__"
 
-    # PRODUCTS_CLIENT: ProductsClientConfig
+    PRODUCTS_CLIENT: ProductsClientConfig
     ARQ_REDIS: ArqRedisConfig
     # DB: DBConfig

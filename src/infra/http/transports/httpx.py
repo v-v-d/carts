@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Mapping, Generator
 
-from httpx import AsyncClient, HTTPError
+from httpx import AsyncClient, HTTPError, Response
 
 from infra.http.transports.base import IHttpTransport, HttpTransportError
 
@@ -31,20 +31,29 @@ class HttpxTransport(IHttpTransport):
         params: Mapping[str, str] | None = None,
         data: dict[Any, Any] | None = None,
     ) -> dict[str, Any] | str:
-        async with self._client.request(
+        response = await self._client.request(
             method,
             url,
             headers=headers,
             params=params,
             data=data if isinstance(data, str) else None,
             json=data if isinstance(data, (dict, list)) else None,
-        ) as response:
-            try:
-                response.raise_for_status()
-            except HTTPError as err:
-                raise HttpTransportError(str(err), response.status_code)
+        )
 
-            return response
+        data = await self._get_response_data(response)
+
+        try:
+            response.raise_for_status()
+        except HTTPError as err:
+            raise HttpTransportError(f"{str(err)} - {data}", response.status_code)
+
+        return data
+
+    async def _get_response_data(self, response: Response) -> dict[str, Any] | str:
+        if "application/json" in response.headers.get("Content-Type") and len(response.content) > 0:
+            return response.json()
+
+        return response.text
 
 
 async def init_httpx_transport() -> Generator[None, None, HttpxTransport]:
