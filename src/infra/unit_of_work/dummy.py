@@ -1,7 +1,7 @@
 from typing import Any
 
 from app.interfaces.unit_of_work.sql import IUnitOfWork
-from infra.repositories.items.dummy import ItemsRepository
+from infra.repositories.dummy.items import ItemsRepository
 
 
 class Uow(IUnitOfWork):

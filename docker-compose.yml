@@ -14,8 +14,7 @@ services:
     depends_on:
       - db
       - redis
-    command: sh -c "uvicorn api.rest.main:app --host 0.0.0.0 --port 8000 --log-level info --reload"
-#    command: sh -c "alembic upgrade head && uvicorn src.api.rest.main:app --host 0.0.0.0 --port 8000 --log-level info"
+    command: sh -c "alembic upgrade head && uvicorn api.rest.main:app --host 0.0.0.0 --port 8000 --log-level info --reload"
 
   worker:
     build:

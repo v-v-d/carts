@@ -5,7 +5,8 @@ from config import Config
 from infra.events.arq import init_arq_redis, ArqTaskProducer
 from infra.http.clients.products import ProductsHttpClient
 from infra.http.transports.aiohttp import init_aiohttp_transport
-from infra.unit_of_work.dummy import Uow
+from infra.repositories.alchemy.db import Database
+from infra.unit_of_work.alchemy import Uow
 
 
 class EventsContainer(containers.DeclarativeContainer):
@@ -21,8 +22,9 @@ class EventsContainer(containers.DeclarativeContainer):
 
 
 class DBContainer(containers.DeclarativeContainer):
-    db = providers.Singleton(dict)
-    uow = providers.Factory(Uow, storage=db)
+    config = providers.Dependency(instance_of=Config)
+    db = providers.Singleton(Database, config=config.provided.DB)
+    uow = providers.Factory(Uow, session_factory=db.provided.session_factory)
 
 
 class ProductsClientContainer(containers.DeclarativeContainer):
@@ -39,7 +41,7 @@ class Container(containers.DeclarativeContainer):
     config = Config()
 
     events = providers.Container(EventsContainer, config=config)
-    db = providers.Container(DBContainer)
+    db = providers.Container(DBContainer, config=config)
     products_client = providers.Container(ProductsClientContainer, config=config)
 
     items_service = providers.Factory(

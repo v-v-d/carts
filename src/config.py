@@ -1,17 +1,23 @@
-from pydantic import BaseModel, AnyHttpUrl
+from typing import Any
+
+from pydantic import BaseModel, AnyHttpUrl, PostgresDsn
 from pydantic_settings import BaseSettings
 
 
-# class DBConfig(BaseModel):
-#     url: PostgresDsn
-#     connect_args: dict[str, Any] = {}
-#     schema_name: str
-#
-#     @validator("connect_args", pre=True)
-#     def _json_to_dict(cls, v: str) -> dict[str, Any]:
-#         return orjson.loads(v)
-#
-#
+class DBConfig(BaseModel):
+    app_name: str
+    dsn: PostgresDsn
+    schema_name: str
+    pool_size: int
+    timezone: str
+    max_overflow: int
+    pool_pre_ping: bool
+    connection_timeout: int
+    command_timeout: int
+    server_settings: dict[str, Any] = {}
+    connect_args: dict[str, Any] = {}
+
+
 class ProductsClientConfig(BaseModel):
     base_url: AnyHttpUrl
 
@@ -31,4 +37,4 @@ class Config(BaseSettings):
 
     PRODUCTS_CLIENT: ProductsClientConfig
     ARQ_REDIS: ArqRedisConfig
-    # DB: DBConfig
+    DB: DBConfig

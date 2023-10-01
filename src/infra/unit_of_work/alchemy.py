@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.interfaces.unit_of_work.sql import IUnitOfWork
+from infra.repositories.alchemy.items import ItemsRepository
 
 
 class Uow(IUnitOfWork):
@@ -10,7 +11,7 @@ class Uow(IUnitOfWork):
     async def __aenter__(self) -> IUnitOfWork:
         self._session = self._session_factory()
 
-        # self.items = ItemsRepository(self._session)
+        self.items = ItemsRepository(self._session)
 
         return await super().__aenter__()
 
