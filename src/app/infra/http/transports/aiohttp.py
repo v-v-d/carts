@@ -22,7 +22,7 @@ class AioHttpTransport(IHttpTransport):
         url: str,
         headers: dict[str, Any] | None = None,
         params: Mapping[str, str] | None = None,
-        data: dict[Any, Any] | None = None,
+        data: str | dict | list | None = None,
     ) -> dict[str, Any] | str:
         try:
             return await self._try_to_make_request(method, url, headers, params, data)
@@ -40,11 +40,11 @@ class AioHttpTransport(IHttpTransport):
         url: str,
         headers: dict[str, Any] | None = None,
         params: Mapping[str, str] | None = None,
-        data: dict[Any, Any] | None = None,
+        data: str | dict | list | None = None,
     ) -> dict[str, Any] | str:
         async with self._session.request(
-            method,
-            url,
+            method=method,
+            url=url,
             headers=headers,
             params=params,
             data=data if isinstance(data, str) else None,

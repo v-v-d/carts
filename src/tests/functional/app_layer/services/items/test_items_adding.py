@@ -1,6 +1,7 @@
 from decimal import Decimal
 from http import HTTPMethod, HTTPStatus
-from unittest.mock import AsyncMock, MagicMock, call
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiohttp import ClientResponseError
@@ -44,15 +45,15 @@ def dto(request: SubRequest, item_id: int) -> ItemAddingInputDTO:
 
 
 @pytest.fixture()
-def expected_products_client_call(products_base_url: str, item_id: int) -> call:
-    return call(
-        HTTPMethod.GET,
-        f"{products_base_url}products/{item_id}",
-        headers=None,
-        params=None,
-        data=None,
-        json=None,
-    )
+def expected_products_client_call(products_base_url: str, item_id: int) -> dict[str, Any]:
+    return {
+        "method": HTTPMethod.GET,
+        "url": f"{products_base_url}products/{item_id}",
+        "headers": None,
+        "params": None,
+        "data": None,
+        "json": None,
+    }
 
 
 @pytest.mark.parametrize(
@@ -66,7 +67,7 @@ async def test_ok(
     uow: TestUow,
     service: IItemsAddingService,
     dto: ItemAddingInputDTO,
-    expected_products_client_call: call,
+    expected_products_client_call: dict[str, Any],
 ) -> None:
     await service.execute(dto)
 
@@ -81,7 +82,7 @@ async def test_ok(
         Decimal(http_response.json.return_value["price"]).quantize(Decimal(".01"))
     )
 
-    assert http_session.request.call_args == expected_products_client_call
+    http_session.request.assert_called_once_with(**expected_products_client_call)
 
 
 @pytest.mark.parametrize(
@@ -104,7 +105,7 @@ async def test_products_client_error(
     uow: TestUow,
     service: IItemsAddingService,
     dto: ItemAddingInputDTO,
-    expected_products_client_call: call,
+    expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(
         ProductsClientError,
@@ -117,7 +118,7 @@ async def test_products_client_error(
 
     assert not items_in_db
 
-    assert http_session.request.call_args == expected_products_client_call
+    http_session.request.assert_called_once_with(**expected_products_client_call)
 
 
 @pytest.mark.parametrize("http_response", [{"returns": {}}], indirect=True)
@@ -127,7 +128,7 @@ async def test_products_client_invalid_response(
     uow: TestUow,
     service: IItemsAddingService,
     dto: ItemAddingInputDTO,
-    expected_products_client_call: call,
+    expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(
         ProductsClientError,
@@ -140,7 +141,7 @@ async def test_products_client_invalid_response(
 
     assert not items_in_db
 
-    assert http_session.request.call_args == expected_products_client_call
+    http_session.request.assert_called_once_with(**expected_products_client_call)
 
 
 @pytest.mark.parametrize(
@@ -154,7 +155,7 @@ async def test_invalid_qty(
     uow: TestUow,
     service: IItemsAddingService,
     dto: ItemAddingInputDTO,
-    expected_products_client_call: call,
+    expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(QtyValidationError):
         await service.execute(dto)
@@ -164,7 +165,7 @@ async def test_invalid_qty(
 
     assert not items_in_db
 
-    assert http_session.request.call_args == expected_products_client_call
+    http_session.request.assert_called_once_with(**expected_products_client_call)
 
 
 @pytest.mark.usefixtures("existing_item")
@@ -179,7 +180,7 @@ async def test_already_exists(
     uow: TestUow,
     service: IItemsAddingService,
     dto: ItemAddingInputDTO,
-    expected_products_client_call: call,
+    expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(ItemAlreadyExists):
         await service.execute(dto)
@@ -189,4 +190,4 @@ async def test_already_exists(
 
     assert len(items_in_db) == 1
 
-    assert http_session.request.call_args == expected_products_client_call
+    http_session.request.assert_called_once_with(**expected_products_client_call)

@@ -18,7 +18,7 @@ class HttpxTransport(IHttpTransport):
         url: str,
         headers: dict[str, Any] | None = None,
         params: Mapping[str, str] | None = None,
-        data: dict[Any, Any] | None = None,
+        data: str | dict | list | None = None,
     ) -> dict[str, Any] | str:
         try:
             return await self._try_to_make_request(method, url, headers, params, data)
@@ -31,18 +31,18 @@ class HttpxTransport(IHttpTransport):
         url: str,
         headers: dict[str, Any] | None = None,
         params: Mapping[str, str] | None = None,
-        data: dict[Any, Any] | None = None,
+        data: str | dict | list | None = None,
     ) -> dict[str, Any] | str:
         response = await self._client.request(
-            method,
-            url,
+            method=method,
+            url=url,
             headers=headers,
             params=params,
             data=data if isinstance(data, str) else None,
             json=data if isinstance(data, (dict, list)) else None,
         )
 
-        data = await self._get_response_data(response)
+        data = self._get_response_data(response)
 
         try:
             response.raise_for_status()
@@ -51,7 +51,7 @@ class HttpxTransport(IHttpTransport):
 
         return data
 
-    async def _get_response_data(self, response: Response) -> dict[str, Any] | str:
+    def _get_response_data(self, response: Response) -> dict[str, Any] | str:
         if (
             "application/json" in response.headers.get("Content-Type")
             and len(response.content) > self.min_response_content_len

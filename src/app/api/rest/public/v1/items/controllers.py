@@ -9,6 +9,7 @@ from app.app_layer.interfaces.repositories.items.exceptions import ItemAlreadyEx
 from app.app_layer.interfaces.services.items.dto import ItemAddingInputDTO
 from app.app_layer.interfaces.services.items.items_adding import IItemsAddingService
 from app.app_layer.interfaces.services.items.items_list import IItemsListService
+from app.app_layer.interfaces.task_producer import ITaskProducer
 from app.containers import Container
 from app.domain.items.exceptions import QtyValidationError
 
@@ -37,3 +38,11 @@ async def add_item(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ITEM_ADDING_ERROR)
 
     return ItemAddingViewModel.model_validate(result)
+
+
+@router.post("/produce", status_code=status.HTTP_202_ACCEPTED)
+@inject
+async def produce(
+    task_producer: ITaskProducer = Depends(Provide[Container.events.task_producer]),
+) -> None:
+    await task_producer.enqueue_test_task()

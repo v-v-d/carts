@@ -3,7 +3,7 @@ from typing import Any
 from arq.connections import RedisSettings
 
 from app.api import events
-from app.api.events.tasks.test import test_task
+from app.api.events.tasks.example import example_task
 from app.config import Config
 from app.containers import Container
 from app.infra.events.workers.queues import QueueNameEnum
@@ -26,5 +26,5 @@ async def shutdown(ctx: dict[str, Any]) -> None:
 
 class WorkerSettings:
     redis_settings: RedisSettings = RedisSettings(**config.ARQ_REDIS.model_dump())
-    functions = [test_task]
+    functions = [example_task]
     queue_name = QueueNameEnum.TEST_QUEUE.value
