@@ -2,10 +2,9 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
-
-from config import Config
-from containers import Container
-from infra.repositories.alchemy.db import Database
+from app.config import Config
+from app.containers import Container
+from app.infra.repositories.sqla.db import Database
 
 container = Container()
 app_config = Config()
@@ -22,8 +21,8 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 
-from infra.repositories.alchemy.models import *  # noqa
-from infra.repositories.alchemy.base import metadata
+from app.infra.repositories.sqla.base import metadata
+from app.infra.repositories.sqla.models import *  # noqa
 
 target_metadata = metadata
 

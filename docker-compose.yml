@@ -2,10 +2,11 @@ version: '3.9'
 
 services:
   app:
+    container_name: template_app
     build:
       context: .
     volumes:
-      - ./src:/code
+      - ./src:/app/code
     ports:
       - "8000:8000"
     env_file:
@@ -14,7 +15,7 @@ services:
     depends_on:
       - db
       - redis
-    command: sh -c "alembic upgrade head && uvicorn api.rest.main:app --host 0.0.0.0 --port 8000 --log-level info --reload"
+    command: sh -c "alembic upgrade head && uvicorn app.api.rest.main:app --host 0.0.0.0 --port 8000 --log-level info --reload"
 
   worker:
     build:
@@ -25,7 +26,7 @@ services:
     depends_on:
       - db
       - redis
-    command: arq infra.events.workers.test.WorkerSettings --watch .
+    command: arq app.infra.events.workers.test.WorkerSettings --watch .
 
   db:
     image: postgres:14-alpine
@@ -37,7 +38,7 @@ services:
       - TZ=Europe/Moscow
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=db
+      - POSTGRES_DB=template
 
   redis:
     image: redis:7.2.1-alpine

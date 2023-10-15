@@ -1,0 +1,13 @@
+[tool.black]
+line-length = 100
+target-version = ['py311']
+skip-string-normalization = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["ALL"]
+ignore = ["RUF001", "RUF002", "RUF100", "D100", "D107", "D203", "D213", "ANN401"]
+
+[tool.ruff.flake8-annotations]
+allow-star-arg-any = true

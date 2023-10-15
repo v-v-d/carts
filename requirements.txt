@@ -2,7 +2,7 @@
 aiohttp==3.8.5
 httpx==0.25.0
 fastapi==0.103.1
-pydantic==2.3.0
+pydantic==2.4.0
 uvicorn==0.23.2
 uvloop==0.17.0
 
@@ -30,3 +30,5 @@ asyncpg==0.28.0
 # CLI
 ipython==8.15.0
 typer==0.9.0
+
+-r requirements-dev.txt
