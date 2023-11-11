@@ -1,3 +1,7 @@
+from contextlib import asynccontextmanager
+from types import ModuleType
+from typing import AsyncContextManager
+
 from dependency_injector import containers, providers
 
 from app.app_layer.services.items.items_adding import ItemsAddingService
@@ -51,3 +55,18 @@ class Container(containers.DeclarativeContainer):
         products_client=products_client.container.client,
     )
     items_list_service = providers.Factory(ItemsListService, uow=db.container.uow)
+
+    @classmethod
+    @asynccontextmanager
+    async def lifespan(
+        cls, wireable_packages: list[ModuleType]
+    ) -> AsyncContextManager["Container"]:
+        container = cls()
+        container.wire(packages=wireable_packages)
+
+        await container.init_resources()
+
+        try:
+            yield container
+        finally:
+            await container.shutdown_resources()

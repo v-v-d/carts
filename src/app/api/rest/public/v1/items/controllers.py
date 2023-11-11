@@ -45,4 +45,4 @@ async def add_item(
 async def produce(
     task_producer: ITaskProducer = Depends(Provide[Container.events.task_producer]),
 ) -> None:
-    await task_producer.enqueue_test_task()
+    await task_producer.enqueue_example_task()

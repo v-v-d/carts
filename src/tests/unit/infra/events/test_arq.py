@@ -23,9 +23,9 @@ async def test_enqueue_test_task_ok(
     task_producer: ArqTaskProducer,
     broker: AsyncMock,
 ) -> None:
-    await task_producer.enqueue_test_task()
+    await task_producer.enqueue_example_task()
 
     broker.enqueue_job.assert_awaited_once_with(
         example_task.__name__,
-        _queue_name=QueueNameEnum.TEST_QUEUE.value,
+        _queue_name=QueueNameEnum.EXAMPLE_QUEUE.value,
     )

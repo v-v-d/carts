@@ -10,13 +10,9 @@ from app.containers import Container
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI) -> AsyncContextManager[None]:
-    app_.container = Container()
-    app_.container.wire(packages=[rest])
-    await app_.container.init_resources()
-
-    yield
-
-    await app_.container.shutdown_resources()
+    async with Container.lifespan(wireable_packages=[rest]) as container:
+        app_.container = container
+        yield
 
 
 app = FastAPI(lifespan=lifespan)

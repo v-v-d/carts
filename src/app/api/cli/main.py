@@ -1,7 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 from functools import wraps
-from typing import AsyncIterator, Callable, Any
+from typing import Any, AsyncContextManager, Callable
 
 import typer
 
@@ -21,16 +21,9 @@ def coro(func: Callable[..., Any]) -> Callable[..., Any]:
 
 
 @asynccontextmanager
-async def container() -> AsyncIterator[None]:
-    _container = Container()
-    _container.wire(packages=[cli])
-
-    await _container.init_resources()
-
-    try:
-        yield
-    finally:
-        await _container.shutdown_resources()
+async def container() -> AsyncContextManager[Container]:
+    async with Container.lifespan(wireable_packages=[cli]) as cont:
+        yield cont
 
 
 @app.command()

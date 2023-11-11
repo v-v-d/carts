@@ -27,4 +27,6 @@ async def shutdown(ctx: dict[str, Any]) -> None:
 class WorkerSettings:
     redis_settings: RedisSettings = RedisSettings(**config.ARQ_REDIS.model_dump())
     functions = [example_task]
-    queue_name = QueueNameEnum.TEST_QUEUE.value
+    queue_name = QueueNameEnum.EXAMPLE_QUEUE.value
+    on_startup = startup
+    on_shutdown = shutdown
