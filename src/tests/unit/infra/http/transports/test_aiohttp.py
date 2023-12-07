@@ -9,7 +9,7 @@ from pytest_asyncio.plugin import SubRequest
 from pytest_mock import MockerFixture
 
 from app.infra.http.transports.aiohttp import AioHttpTransport
-from app.infra.http.transports.base import HttpTransportError
+from app.infra.http.transports.base import HttpTransportConfig, HttpTransportError
 from tests.utils import fake
 
 
@@ -56,8 +56,13 @@ def session(request: SubRequest, mocker: MockerFixture, response: MagicMock) -> 
 
 
 @pytest.fixture()
-def transport(session: MagicMock) -> AioHttpTransport:
-    return AioHttpTransport(session=session)
+def config() -> HttpTransportConfig:
+    return HttpTransportConfig(integration_name="test")
+
+
+@pytest.fixture()
+def transport(session: MagicMock, config: HttpTransportConfig) -> AioHttpTransport:
+    return AioHttpTransport(session=session, config=config)
 
 
 @pytest.mark.parametrize(

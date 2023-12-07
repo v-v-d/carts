@@ -1,5 +1,7 @@
 import asyncio
-from typing import Any, Generator, Mapping
+from logging import DEBUG, getLogger
+from types import SimpleNamespace
+from typing import Any, Generator
 
 from aiohttp import (
     ClientConnectionError,
@@ -7,25 +9,30 @@ from aiohttp import (
     ClientResponse,
     ClientResponseError,
     ClientSession,
+    TraceConfig,
+    TraceRequestEndParams,
+    TraceRequestExceptionParams,
+    TraceRequestStartParams,
 )
 
-from app.infra.http.transports.base import HttpTransportError, IHttpTransport
+from app.infra.http.transports.base import (
+    HttpRequestInputDTO,
+    HttpTransportConfig,
+    HttpTransportError,
+    IHttpTransport,
+)
+
+logger = getLogger(__name__)
 
 
 class AioHttpTransport(IHttpTransport):
-    def __init__(self, session: ClientSession) -> None:
+    def __init__(self, session: ClientSession, config: HttpTransportConfig) -> None:
         self._session = session
+        self._config = config
 
-    async def request(
-        self,
-        method: str,
-        url: str,
-        headers: dict[str, Any] | None = None,
-        params: Mapping[str, str] | None = None,
-        data: str | dict | list | None = None,
-    ) -> dict[str, Any] | str:
+    async def request(self, data: HttpRequestInputDTO) -> dict[str, Any] | str:
         try:
-            return await self._try_to_make_request(method, url, headers, params, data)
+            return await self._try_to_make_request(data)
         except (
             ClientConnectionError,
             ClientPayloadError,
@@ -34,23 +41,19 @@ class AioHttpTransport(IHttpTransport):
         ) as err:
             raise HttpTransportError(str(err))
 
-    async def _try_to_make_request(
-        self,
-        method: str,
-        url: str,
-        headers: dict[str, Any] | None = None,
-        params: Mapping[str, str] | None = None,
-        data: str | dict | list | None = None,
-    ) -> dict[str, Any] | str:
+    async def _try_to_make_request(self, data: HttpRequestInputDTO) -> dict[str, Any] | str:
+        trace_ctx = SimpleNamespace(data=data, integration_name=self._config.integration_name)
+
         async with self._session.request(
-            method=method,
-            url=url,
-            headers=headers,
-            params=params,
-            data=data if isinstance(data, str) else None,
-            json=data if isinstance(data, (dict, list)) else None,
+            method=data.method,
+            url=data.url,
+            headers=data.headers,
+            params=data.params,
+            data=data.body if isinstance(data.body, str) else None,
+            json=data.body if isinstance(data.body, (dict, list)) else None,
+            trace_request_ctx=trace_ctx,
         ) as response:
-            data = await self._get_response_data(response)
+            data = await _get_response_data(response)
 
             try:
                 response.raise_for_status()
@@ -59,14 +62,60 @@ class AioHttpTransport(IHttpTransport):
 
             return data
 
-    async def _get_response_data(self, response: ClientResponse) -> dict[str, Any] | str:
-        if response.content_type == "application/json":
-            return await response.json()
 
-        return await response.text()
+async def _get_response_data(response: ClientResponse) -> dict[str, Any] | str:
+    if response.content_type == "application/json":
+        return await response.json()
+
+    return await response.text()
 
 
-async def init_aiohttp_transport() -> Generator[None, None, AioHttpTransport]:
-    session = ClientSession()
-    yield AioHttpTransport(session=session)
+async def _on_request_start(
+    _: ClientSession,
+    trace_ctx: SimpleNamespace,
+    __: TraceRequestStartParams,
+) -> None:
+    if logger.getEffectiveLevel() > DEBUG:  # pragma: no cover[coverage err]
+        return
+
+    logger.debug("Server make request: %s", vars(trace_ctx.trace_request_ctx))
+
+
+async def _on_request_end(
+    _: ClientSession,
+    trace_ctx: SimpleNamespace,
+    params: TraceRequestEndParams,
+) -> None:
+    if logger.getEffectiveLevel() > DEBUG:  # pragma: no cover[coverage err]
+        return
+
+    response = await _get_response_data(params.response)
+    logger.debug("Server got response: %s. %s", response, vars(trace_ctx.trace_request_ctx))
+
+
+async def _on_request_exception(
+    _: ClientSession,
+    trace_ctx: SimpleNamespace,
+    params: TraceRequestExceptionParams,
+) -> None:
+    logger.exception(
+        "Server got request error: %s - %s. %s",
+        params.exception.__class__.__name__,
+        params.exception,
+        vars(trace_ctx.trace_request_ctx),
+    )
+
+
+async def init_aiohttp_transport(
+    config: HttpTransportConfig,
+) -> Generator[None, None, AioHttpTransport]:
+    trace_config = TraceConfig()
+    trace_config.on_request_start.append(_on_request_start)
+    trace_config.on_request_exception.append(_on_request_exception)
+    trace_config.on_request_end.append(_on_request_end)
+
+    session = ClientSession(trace_configs=[trace_config])
+
+    yield AioHttpTransport(session=session, config=config)
+
     await session.close()

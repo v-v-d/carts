@@ -3,6 +3,8 @@ from typing import Any
 from pydantic import AnyHttpUrl, BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings
 
+from app.logging import LoggingConfig
+
 
 class DBConfig(BaseModel):
     app_name: str
@@ -20,7 +22,9 @@ class DBConfig(BaseModel):
 
 
 class ProductsClientConfig(BaseModel):
+    name: str
     base_url: AnyHttpUrl
+    retries_enabled: bool
 
 
 class ArqRedisConfig(BaseModel):
@@ -39,3 +43,4 @@ class Config(BaseSettings):
     PRODUCTS_CLIENT: ProductsClientConfig
     ARQ_REDIS: ArqRedisConfig
     DB: DBConfig
+    LOGGING: LoggingConfig

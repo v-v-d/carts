@@ -5,6 +5,7 @@ fastapi==0.103.1
 pydantic==2.4.0
 uvicorn==0.23.2
 uvloop==0.17.0
+backoff==2.2.1
 
 # Task management
 arq==0.25.0
@@ -30,5 +31,8 @@ asyncpg==0.28.0
 # CLI
 ipython==8.15.0
 typer==0.9.0
+
+# Logging
+python-json-logger==2.0.7
 
 -r requirements-dev.txt

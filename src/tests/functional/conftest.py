@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.infra.http.clients.products import ProductsHttpClient
 from app.infra.http.transports.aiohttp import AioHttpTransport
-from app.infra.http.transports.base import IHttpTransport
+from app.infra.http.transports.base import HttpTransportConfig, IHttpTransport
 from tests.utils import fake
 
 
@@ -53,8 +53,13 @@ def http_session(mocker: MockerFixture, http_response: AsyncMock) -> MagicMock:
 
 
 @pytest.fixture()
-def products_transport(http_session: AsyncMock) -> IHttpTransport:
-    return AioHttpTransport(session=http_session)
+def config() -> HttpTransportConfig:
+    return HttpTransportConfig(integration_name="test")
+
+
+@pytest.fixture()
+def products_transport(http_session: AsyncMock, config: HttpTransportConfig) -> IHttpTransport:
+    return AioHttpTransport(session=http_session, config=config)
 
 
 @pytest.fixture()

@@ -9,7 +9,9 @@ from app.app_layer.services.items.items_list import ItemsListService
 from app.config import Config
 from app.infra.events.arq import ArqTaskProducer, init_arq_redis
 from app.infra.http.clients.products import ProductsHttpClient
+from app.infra.http.retry_systems.backoff import BackoffConfig, BackoffRetrySystem
 from app.infra.http.transports.aiohttp import init_aiohttp_transport
+from app.infra.http.transports.base import HttpTransportConfig, RetryableHttpTransport
 from app.infra.repositories.sqla.db import Database
 from app.infra.unit_of_work.sqla import Uow
 
@@ -34,11 +36,27 @@ class DBContainer(containers.DeclarativeContainer):
 
 class ProductsClientContainer(containers.DeclarativeContainer):
     config = providers.Dependency(instance_of=Config)
-    http_transport = providers.Resource(init_aiohttp_transport)
+    transport = providers.Factory(
+        RetryableHttpTransport,
+        transport=providers.Resource(
+            init_aiohttp_transport,
+            config=providers.Factory(
+                HttpTransportConfig,
+                integration_name=config.provided.PRODUCTS_CLIENT.name,
+            ),
+        ),
+        retry_system=providers.Factory(
+            BackoffRetrySystem,
+            config=providers.Factory(
+                BackoffConfig,
+                enabled=config.provided.PRODUCTS_CLIENT.retries_enabled,
+            ),
+        ),
+    )
     client = providers.Factory(
         ProductsHttpClient,
         base_url=config.provided.PRODUCTS_CLIENT.base_url,
-        transport=http_transport,
+        transport=transport,
     )
 
 

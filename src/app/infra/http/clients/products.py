@@ -7,7 +7,7 @@ from pydantic import AnyHttpUrl, BaseModel, ValidationError
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.dto import ProductOutputDTO
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.infra.http.transports.base import HttpTransportError, IHttpTransport
+from app.infra.http.transports.base import HttpRequestInputDTO, HttpTransportError, IHttpTransport
 
 
 class ProductsHttpClient(IProductsClient):
@@ -17,7 +17,12 @@ class ProductsHttpClient(IProductsClient):
 
     async def get_product(self, item_id: int) -> ProductOutputDTO:
         url = furl(self._base_url).add(path="products").add(path=str(item_id)).url
-        response = await self._try_to_make_request(HTTPMethod.GET, url)
+        response = await self._try_to_make_request(
+            data=HttpRequestInputDTO(
+                method=HTTPMethod.GET,
+                url=url,
+            ),
+        )
 
         return self._try_to_get_dto(ProductOutputDTO, response)
 
