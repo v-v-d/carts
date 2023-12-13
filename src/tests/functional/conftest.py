@@ -53,13 +53,13 @@ def http_session(mocker: MockerFixture, http_response: AsyncMock) -> MagicMock:
 
 
 @pytest.fixture()
-def config() -> HttpTransportConfig:
+def http_config() -> HttpTransportConfig:
     return HttpTransportConfig(integration_name="test")
 
 
 @pytest.fixture()
-def products_transport(http_session: AsyncMock, config: HttpTransportConfig) -> IHttpTransport:
-    return AioHttpTransport(session=http_session, config=config)
+def products_transport(http_session: AsyncMock, http_config: HttpTransportConfig) -> IHttpTransport:
+    return AioHttpTransport(session=http_session, config=http_config)
 
 
 @pytest.fixture()

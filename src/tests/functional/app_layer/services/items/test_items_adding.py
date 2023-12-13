@@ -1,5 +1,6 @@
 from decimal import Decimal
 from http import HTTPMethod, HTTPStatus
+from types import SimpleNamespace
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
@@ -15,6 +16,7 @@ from app.app_layer.interfaces.services.items.items_adding import IItemsAddingSer
 from app.app_layer.services.items.items_adding import ItemsAddingService
 from app.domain.items.entities import Item
 from app.domain.items.exceptions import QtyValidationError
+from app.infra.http.transports.base import HttpRequestInputDTO, HttpTransportConfig
 from tests.environment.unit_of_work import TestUow
 from tests.utils import fake
 
@@ -45,14 +47,24 @@ def dto(request: SubRequest, item_id: int) -> ItemAddingInputDTO:
 
 
 @pytest.fixture()
-def expected_products_client_call(products_base_url: str, item_id: int) -> dict[str, Any]:
+def expected_products_client_call(
+    products_base_url: str,
+    item_id: int,
+    http_config: HttpTransportConfig,
+) -> dict[str, Any]:
+    url = f"{products_base_url}products/{item_id}"
+
     return {
         "method": HTTPMethod.GET,
-        "url": f"{products_base_url}products/{item_id}",
+        "url": url,
         "headers": None,
         "params": None,
         "data": None,
         "json": None,
+        "trace_request_ctx": SimpleNamespace(
+            data=HttpRequestInputDTO(method=HTTPMethod.GET, url=url),
+            integration_name=http_config.integration_name,
+        ),
     }
 
 
