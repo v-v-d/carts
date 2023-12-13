@@ -10,10 +10,10 @@ from pytest_asyncio.plugin import SubRequest
 
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.app_layer.interfaces.services.items.dto import ItemAddingInputDTO
 from app.app_layer.interfaces.services.items.items_adding import IItemsAddingService
 from app.app_layer.services.items.items_adding import ItemsAddingService
+from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.items.entities import Item
 from app.domain.items.exceptions import QtyValidationError
 from app.infra.http.transports.base import HttpRequestInputDTO, HttpTransportConfig

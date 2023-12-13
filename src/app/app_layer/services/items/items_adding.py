@@ -3,10 +3,10 @@ from logging import getLogger
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.dto import ProductOutputDTO
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.app_layer.interfaces.services.items.dto import ItemAddingInputDTO, ItemOutputDTO
 from app.app_layer.interfaces.services.items.items_adding import IItemsAddingService
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
+from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.items.dto import ItemDTO
 from app.domain.items.entities import Item
 

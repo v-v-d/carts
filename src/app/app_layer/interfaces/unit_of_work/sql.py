@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.app_layer.interfaces.repositories.items.repo import IItemsRepository
+from app.domain.interfaces.repositories.items.repo import IItemsRepository
 
 
 class IUnitOfWork(ABC):

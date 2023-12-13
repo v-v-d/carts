@@ -9,9 +9,9 @@ from pytest_mock import MockerFixture
 from app.api.rest.main import app, lifespan
 from app.api.rest.public.v1.items.errors import ITEM_ADDING_ERROR
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.app_layer.interfaces.services.items.dto import ItemAddingInputDTO, ItemAddingOutputDTO
 from app.app_layer.services.items.items_adding import ItemsAddingService
+from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.items.exceptions import QtyValidationError
 from tests.utils import fake
 

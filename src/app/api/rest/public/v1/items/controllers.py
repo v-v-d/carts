@@ -5,12 +5,12 @@ from pydantic import TypeAdapter
 from app.api.rest.public.v1.items.errors import ITEM_ADDING_ERROR
 from app.api.rest.public.v1.items.view_models import ItemAddingViewModel, ItemListViewModel
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.app_layer.interfaces.services.items.dto import ItemAddingInputDTO
 from app.app_layer.interfaces.services.items.items_adding import IItemsAddingService
 from app.app_layer.interfaces.services.items.items_list import IItemsListService
 from app.app_layer.interfaces.task_producer import ITaskProducer
 from app.containers import Container
+from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.items.exceptions import QtyValidationError
 
 router = APIRouter()

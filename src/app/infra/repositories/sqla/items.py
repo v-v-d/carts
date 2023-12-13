@@ -5,8 +5,8 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.app_layer.interfaces.repositories.items.exceptions import ItemAlreadyExists
-from app.app_layer.interfaces.repositories.items.repo import IItemsRepository
+from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
+from app.domain.interfaces.repositories.items.repo import IItemsRepository
 from app.domain.items.dto import ItemDTO
 from app.domain.items.entities import Item
 from app.infra.repositories.sqla import models
