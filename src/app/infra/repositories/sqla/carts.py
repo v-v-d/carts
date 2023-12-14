@@ -1,9 +1,10 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from app.domain.carts.dto import CartDTO
 from app.domain.carts.entities import Cart
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
 from app.domain.interfaces.repositories.carts.repo import ICartsRepository
@@ -20,7 +21,10 @@ class CartsRepository(ICartsRepository):
         stmt = (
             select(models.Cart)
             .options(joinedload(models.Cart.items))
-            .where(models.Cart.id == cart_id)
+            .where(
+                models.Cart.id == cart_id,
+                models.Cart.is_active.is_(True),
+            )
         )
         result = await self._session.scalars(stmt)
         obj = result.first()
@@ -29,6 +33,31 @@ class CartsRepository(ICartsRepository):
             raise CartNotFoundError
 
         return Cart(
-            cart_id=obj.id,
+            data=CartDTO.model_validate(obj),
             items=[Item(data=ItemDTO.model_validate(item)) for item in obj.items],
         )
+
+    async def update(self, cart: Cart) -> Cart:
+        stmt = update(models.Cart).where(models.Cart.id == cart.id).values(is_active=cart.is_active)
+        await self._session.execute(stmt)
+
+        return cart
+
+    async def get_list(self) -> list[Cart]:
+        stmt = (
+            select(models.Cart)
+            .options(joinedload(models.Cart.items))
+            .where(
+                models.Cart.is_active.is_(True),
+            )
+        )
+        result = await self._session.scalars(stmt)
+        obj_list = result.unique().all()
+
+        return [
+            Cart(
+                data=CartDTO.model_validate(obj),
+                items=[Item(data=ItemDTO.model_validate(item)) for item in obj.items],
+            )
+            for obj in obj_list
+        ]

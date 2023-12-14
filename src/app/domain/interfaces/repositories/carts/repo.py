@@ -8,3 +8,11 @@ class ICartsRepository(ABC):
     @abstractmethod
     async def retrieve(self, cart_id: UUID) -> Cart:
         ...
+
+    @abstractmethod
+    async def update(self, cart: Cart) -> Cart:
+        ...
+
+    @abstractmethod
+    async def get_list(self) -> Cart:
+        ...

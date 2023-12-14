@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from app.app_layer.interfaces.services.carts.cart_retrieve import ICartRetrieveService
-from app.app_layer.interfaces.services.carts.dto import CartOutputDTO
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
+from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
+from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
 
 
-class CartRetrieveService(ICartRetrieveService):
+class CartRetrieveUseCase(ICartRetrieveUseCase):
     def __init__(self, uow: IUnitOfWork) -> None:
         self._uow = uow
 

@@ -4,9 +4,11 @@ from typing import AsyncContextManager
 
 from dependency_injector import containers, providers
 
-from app.app_layer.services.carts.cart_retrieve import CartRetrieveService
-from app.app_layer.services.items.items_adding import ItemsAddingService
-from app.app_layer.services.items.items_list import ItemsListService
+from app.app_layer.use_cases.carts.cart_delete import CartDeleteUseCase
+from app.app_layer.use_cases.carts.cart_list import CartListUseCase
+from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
+from app.app_layer.use_cases.items.items_adding import ItemsAddingUseCase
+from app.app_layer.use_cases.items.items_list import ItemsListUseCase
 from app.config import Config
 from app.infra.events.arq import ArqTaskProducer, init_arq_redis
 from app.infra.http.clients.products import ProductsHttpClient
@@ -68,13 +70,15 @@ class Container(containers.DeclarativeContainer):
     db = providers.Container(DBContainer, config=config)
     products_client = providers.Container(ProductsClientContainer, config=config)
 
-    items_adding_service = providers.Factory(
-        ItemsAddingService,
+    items_adding_use_case = providers.Factory(
+        ItemsAddingUseCase,
         uow=db.container.uow,
         products_client=products_client.container.client,
     )
-    items_list_service = providers.Factory(ItemsListService, uow=db.container.uow)
-    cart_retrieve_service = providers.Factory(CartRetrieveService, uow=db.container.uow)
+    items_list_use_case = providers.Factory(ItemsListUseCase, uow=db.container.uow)
+    cart_retrieve_use_case = providers.Factory(CartRetrieveUseCase, uow=db.container.uow)
+    cart_delete_use_case = providers.Factory(CartDeleteUseCase, uow=db.container.uow)
+    cart_list_use_case = providers.Factory(CartListUseCase, uow=db.container.uow)
 
     @classmethod
     @asynccontextmanager

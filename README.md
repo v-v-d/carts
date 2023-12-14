@@ -16,7 +16,7 @@ clean-architecture/
     │   │
     │   ├── app_layer/          # Application layer (Use Case)
     │   │   ├── interfaces/     # Interfaces of the application layer
-    │   │   └── services/       # Services of the application layer (Use Cases)
+    │   │   └── use_cases/      # Use cases of the application layer
     │   │
     │   ├── domain/             # Domain layer (Business logic)
     │   │   ├── interfaces/     # Interfaces of the domain layer

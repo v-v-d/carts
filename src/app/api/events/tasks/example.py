@@ -2,13 +2,13 @@ from typing import Any
 
 from dependency_injector.wiring import Provide, inject
 
-from app.app_layer.interfaces.services.items.items_list import IItemsListService
+from app.app_layer.interfaces.use_cases.items.items_list import IItemsListUseCase
 from app.containers import Container
 
 
 @inject
 async def example_task(
     ctx: [str, Any],
-    service: IItemsListService = Provide[Container.items_list_service],
+    use_case: IItemsListUseCase = Provide[Container.items_list_use_case],
 ) -> None:
-    await service.execute()
+    await use_case.execute()

@@ -10,9 +10,9 @@ from pytest_asyncio.plugin import SubRequest
 
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.services.items.dto import ItemAddingInputDTO
-from app.app_layer.interfaces.services.items.items_adding import IItemsAddingService
-from app.app_layer.services.items.items_adding import ItemsAddingService
+from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO
+from app.app_layer.interfaces.use_cases.items.items_adding import IItemsAddingUseCase
+from app.app_layer.use_cases.items.items_adding import ItemsAddingUseCase
 from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.items.entities import Item
 from app.domain.items.exceptions import QtyValidationError
@@ -35,8 +35,8 @@ PRODUCTS_CLIENT_RESPONSE = {
 
 
 @pytest.fixture()
-def service(uow: TestUow, products_client: IProductsClient) -> IItemsAddingService:
-    return ItemsAddingService(uow=uow, products_client=products_client)
+def use_case(uow: TestUow, products_client: IProductsClient) -> IItemsAddingUseCase:
+    return ItemsAddingUseCase(uow=uow, products_client=products_client)
 
 
 @pytest.fixture()
@@ -77,11 +77,11 @@ async def test_ok(
     http_response: AsyncMock,
     http_session: MagicMock,
     uow: TestUow,
-    service: IItemsAddingService,
+    use_case: IItemsAddingUseCase,
     dto: ItemAddingInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
-    await service.execute(dto)
+    await use_case.execute(dto)
 
     async with uow(autocommit=False):
         items_in_db = await uow.items.get_items()
@@ -115,7 +115,7 @@ async def test_products_client_error(
     http_session: MagicMock,
     response_err_text: str,
     uow: TestUow,
-    service: IItemsAddingService,
+    use_case: IItemsAddingUseCase,
     dto: ItemAddingInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
@@ -123,7 +123,7 @@ async def test_products_client_error(
         ProductsClientError,
         match=f"{HTTPStatus.SERVICE_UNAVAILABLE} - {response_err_text}",
     ):
-        await service.execute(dto)
+        await use_case.execute(dto)
 
     async with uow(autocommit=False):
         items_in_db = await uow.items.get_items()
@@ -138,7 +138,7 @@ async def test_products_client_invalid_response(
     http_response: AsyncMock,
     http_session: MagicMock,
     uow: TestUow,
-    service: IItemsAddingService,
+    use_case: IItemsAddingUseCase,
     dto: ItemAddingInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
@@ -146,7 +146,7 @@ async def test_products_client_invalid_response(
         ProductsClientError,
         match="7 validation errors for ProductOutputDTO",
     ):
-        await service.execute(dto)
+        await use_case.execute(dto)
 
     async with uow(autocommit=False):
         items_in_db = await uow.items.get_items()
@@ -165,12 +165,12 @@ async def test_invalid_qty(
     http_response: AsyncMock,
     http_session: MagicMock,
     uow: TestUow,
-    service: IItemsAddingService,
+    use_case: IItemsAddingUseCase,
     dto: ItemAddingInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(QtyValidationError):
-        await service.execute(dto)
+        await use_case.execute(dto)
 
     async with uow(autocommit=False):
         items_in_db = await uow.items.get_items()
@@ -190,12 +190,12 @@ async def test_already_exists(
     http_response: AsyncMock,
     http_session: MagicMock,
     uow: TestUow,
-    service: IItemsAddingService,
+    use_case: IItemsAddingUseCase,
     dto: ItemAddingInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(ItemAlreadyExists):
-        await service.execute(dto)
+        await use_case.execute(dto)
 
     async with uow(autocommit=False):
         items_in_db = await uow.items.get_items()

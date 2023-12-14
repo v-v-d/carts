@@ -32,5 +32,6 @@ class Cart(Base):
     __tablename__ = "carts"
 
     id: Mapped[int] = mapped_column(sa.UUID(as_uuid=True), primary_key=True, default=uuid4)
+    is_active: Mapped[bool] = mapped_column(sa.Boolean, nullable=False, default=True)
 
     items: Mapped[list[Item]] = relationship("Item", lazy="noload", back_populates="cart")

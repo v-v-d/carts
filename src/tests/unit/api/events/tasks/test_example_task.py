@@ -7,15 +7,15 @@ from pytest_mock import MockerFixture
 
 from app.api import events
 from app.api.events.tasks.example import example_task
-from app.app_layer.interfaces.services.items.dto import ItemListOutputDTO
-from app.app_layer.services.items.items_list import ItemsListService
+from app.app_layer.interfaces.use_cases.items.dto import ItemListOutputDTO
+from app.app_layer.use_cases.items.items_list import ItemsListUseCase
 from app.containers import Container
 from tests.utils import fake
 
 
 @pytest.fixture()
-def service(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ItemsListService)
+def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
+    mock = mocker.AsyncMock(spec=ItemsListUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]
@@ -37,7 +37,7 @@ def ctx(container: Container) -> dict[str, Any]:
 
 
 @pytest.mark.parametrize(
-    "service",
+    "use_case",
     [
         {
             "returns": [
@@ -53,10 +53,10 @@ def ctx(container: Container) -> dict[str, Any]:
     ],
     indirect=True,
 )
-async def test_ok(ctx: dict[str, Any], service: AsyncMock) -> None:
+async def test_ok(ctx: dict[str, Any], use_case: AsyncMock) -> None:
     container: Container = ctx["container"]
 
-    with container.items_list_service.override(service):
+    with container.items_list_use_case.override(use_case):
         await example_task(ctx)
 
-    service.execute.assert_awaited_once()
+    use_case.execute.assert_awaited_once()

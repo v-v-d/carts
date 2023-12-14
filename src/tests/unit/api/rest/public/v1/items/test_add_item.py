@@ -9,8 +9,8 @@ from pytest_mock import MockerFixture
 from app.api.rest.main import app, lifespan
 from app.api.rest.public.v1.items.errors import ITEM_ADDING_ERROR
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.services.items.dto import ItemAddingInputDTO, ItemAddingOutputDTO
-from app.app_layer.services.items.items_adding import ItemsAddingService
+from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO, ItemAddingOutputDTO
+from app.app_layer.use_cases.items.items_adding import ItemsAddingUseCase
 from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.items.exceptions import QtyValidationError
 from tests.utils import fake
@@ -30,12 +30,12 @@ def request_body() -> ItemAddingInputDTO:
 
 
 @pytest.fixture()
-def service(
+def use_case(
     request: SubRequest,
     mocker: MockerFixture,
     request_body: ItemAddingInputDTO,
 ) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ItemsAddingService)
+    mock = mocker.AsyncMock(spec=ItemsAddingUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]
@@ -46,7 +46,7 @@ def service(
 
 
 @pytest.mark.parametrize(
-    "service",
+    "use_case",
     [
         {
             "returns": ItemAddingOutputDTO(
@@ -64,24 +64,24 @@ async def test_ok(
     http_client: AsyncClient,
     url_path: str,
     request_body: ItemAddingInputDTO,
-    service: AsyncMock,
+    use_case: AsyncMock,
 ) -> None:
     async with lifespan(app):
-        with app.container.items_adding_service.override(service):
+        with app.container.items_adding_use_case.override(use_case):
             response = await http_client.post(url=url_path, content=request_body.model_dump_json())
 
     assert response.status_code == HTTPStatus.OK, response.text
     assert response.json() == {
-        "id": service.execute.return_value.id,
-        "title": service.execute.return_value.name,
-        "quantity": service.execute.return_value.qty,
-        "price": service.execute.return_value.price,
-        "cost": service.execute.return_value.cost,
+        "id": use_case.execute.return_value.id,
+        "title": use_case.execute.return_value.name,
+        "quantity": use_case.execute.return_value.qty,
+        "price": use_case.execute.return_value.price,
+        "cost": use_case.execute.return_value.cost,
     }
 
 
 @pytest.mark.parametrize(
-    "service",
+    "use_case",
     [
         pytest.param({"raises": ProductsClientError}, id="products client error"),
         pytest.param({"raises": QtyValidationError}, id="qty validation error"),
@@ -93,10 +93,10 @@ async def test_failed(
     http_client: AsyncClient,
     url_path: str,
     request_body: ItemAddingInputDTO,
-    service: AsyncMock,
+    use_case: AsyncMock,
 ) -> None:
     async with lifespan(app):
-        with app.container.items_adding_service.override(service):
+        with app.container.items_adding_use_case.override(use_case):
             response = await http_client.post(url=url_path, content=request_body.model_dump_json())
 
     assert response.status_code == HTTPStatus.BAD_REQUEST, response.text

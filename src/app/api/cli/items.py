@@ -1,7 +1,7 @@
 from dependency_injector.wiring import Provide, inject
 
-from app.app_layer.interfaces.services.items.dto import ItemAddingInputDTO
-from app.app_layer.interfaces.services.items.items_adding import IItemsAddingService
+from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO
+from app.app_layer.interfaces.use_cases.items.items_adding import IItemsAddingUseCase
 from app.containers import Container
 
 
@@ -9,6 +9,6 @@ from app.containers import Container
 async def run_add_item_command(
     item_id: int,
     qty: int,
-    service: IItemsAddingService = Provide[Container.items_adding_service],
+    use_case: IItemsAddingUseCase = Provide[Container.items_adding_use_case],
 ) -> None:
-    await service.execute(data=ItemAddingInputDTO(id=item_id, qty=qty))
+    await use_case.execute(data=ItemAddingInputDTO(id=item_id, qty=qty))
