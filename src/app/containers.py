@@ -4,6 +4,7 @@ from typing import AsyncContextManager
 
 from dependency_injector import containers, providers
 
+from app.app_layer.services.carts.cart_retrieve import CartRetrieveService
 from app.app_layer.services.items.items_adding import ItemsAddingService
 from app.app_layer.services.items.items_list import ItemsListService
 from app.config import Config
@@ -73,6 +74,7 @@ class Container(containers.DeclarativeContainer):
         products_client=products_client.container.client,
     )
     items_list_service = providers.Factory(ItemsListService, uow=db.container.uow)
+    cart_retrieve_service = providers.Factory(CartRetrieveService, uow=db.container.uow)
 
     @classmethod
     @asynccontextmanager

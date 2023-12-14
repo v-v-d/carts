@@ -11,3 +11,4 @@ class ItemDTO(BaseModel):
     name: str
     qty: Decimal
     price: Decimal
+    is_weight: bool

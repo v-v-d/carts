@@ -17,9 +17,10 @@ class Item:
         self.name = data.name
         self.qty = data.qty
         self.price = data.price
-        self.cost = self.calculate_cost()
+        self.is_weight = data.is_weight
 
-    def calculate_cost(self) -> Decimal:
+    @property
+    def cost(self) -> Decimal:
         return self.price * self.qty
 
     def validate_qty(self) -> None:

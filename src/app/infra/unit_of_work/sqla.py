@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
+from app.infra.repositories.sqla.carts import CartsRepository
 from app.infra.repositories.sqla.items import ItemsRepository
 
 
@@ -12,6 +13,7 @@ class Uow(IUnitOfWork):
         self._session = self._session_factory()
 
         self.items = ItemsRepository(self._session)
+        self.carts = CartsRepository(self._session)
 
         return await super().__aenter__()
 
