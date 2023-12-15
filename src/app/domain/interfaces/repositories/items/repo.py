@@ -11,3 +11,11 @@ class IItemsRepository(ABC):
     @abstractmethod
     async def get_items(self) -> list[Item]:
         ...
+
+    @abstractmethod
+    async def update_item(self, item: Item) -> Item:
+        ...
+
+    @abstractmethod
+    async def remove_item(self, item: Item) -> None:
+        ...

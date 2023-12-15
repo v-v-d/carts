@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -12,3 +13,4 @@ class ItemDTO(BaseModel):
     qty: Decimal
     price: Decimal
     is_weight: bool
+    cart_id: UUID

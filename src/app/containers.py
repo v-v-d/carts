@@ -8,7 +8,7 @@ from app.app_layer.use_cases.carts.cart_delete import CartDeleteUseCase
 from app.app_layer.use_cases.carts.cart_list import CartListUseCase
 from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
 from app.app_layer.use_cases.items.items_adding import ItemsAddingUseCase
-from app.app_layer.use_cases.items.items_list import ItemsListUseCase
+from app.app_layer.use_cases.items.items_removing import ItemsRemovingUseCase
 from app.config import Config
 from app.infra.events.arq import ArqTaskProducer, init_arq_redis
 from app.infra.http.clients.products import ProductsHttpClient
@@ -75,10 +75,10 @@ class Container(containers.DeclarativeContainer):
         uow=db.container.uow,
         products_client=products_client.container.client,
     )
-    items_list_use_case = providers.Factory(ItemsListUseCase, uow=db.container.uow)
     cart_retrieve_use_case = providers.Factory(CartRetrieveUseCase, uow=db.container.uow)
     cart_delete_use_case = providers.Factory(CartDeleteUseCase, uow=db.container.uow)
     cart_list_use_case = providers.Factory(CartListUseCase, uow=db.container.uow)
+    items_removing_use_case = providers.Factory(ItemsRemovingUseCase, uow=db.container.uow)
 
     @classmethod
     @asynccontextmanager

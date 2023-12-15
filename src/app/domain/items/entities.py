@@ -18,6 +18,7 @@ class Item:
         self.qty = data.qty
         self.price = data.price
         self.is_weight = data.is_weight
+        self.cart_id = data.cart_id
 
     @property
     def cost(self) -> Decimal:

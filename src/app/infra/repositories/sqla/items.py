@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from sqlalchemy import select
+from sqlalchemy import select, update, delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +24,8 @@ class ItemsRepository(IItemsRepository):
             name=item.name,
             qty=item.qty,
             price=item.price,
+            is_weight=item.is_weight,
+            cart_id=item.cart_id,
         )
 
         try:
@@ -36,3 +38,25 @@ class ItemsRepository(IItemsRepository):
         result = await self._session.scalars(stmt)
 
         return [Item(data=ItemDTO.model_validate(item)) for item in result.all()]
+
+    async def update_item(self, item: Item) -> Item:
+        stmt = (
+            update(models.Item)
+            .where(models.Item.id == item.id, models.Item.cart_id == item.cart_id)
+            .values(
+                name=item.name,
+                qty=item.qty,
+                price=item.price,
+                is_weight=item.is_weight,
+            )
+        )
+        await self._session.execute(stmt)
+
+        return item
+
+    async def remove_item(self, item: Item) -> None:
+        stmt = (
+            delete(models.Item)
+            .where(models.Item.id == item.id, models.Item.cart_id == item.cart_id)
+        )
+        await self._session.execute(stmt)

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -25,3 +26,9 @@ class ItemAddingOutputDTO(ItemOutputDTO):
 
 class ItemListOutputDTO(ItemOutputDTO):
     pass
+
+
+class ItemRemovingInputDTO(BaseModel):
+    item_id: int
+    cart_id: UUID
+    qty: Decimal

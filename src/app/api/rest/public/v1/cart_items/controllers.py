@@ -1,14 +1,12 @@
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import TypeAdapter
 
-from app.api.rest.public.v1.items.errors import ITEM_ADDING_ERROR
-from app.api.rest.public.v1.items.view_models import ItemAddingViewModel, ItemListViewModel
+from app.api.rest.public.v1.cart_items.errors import ITEM_ADDING_ERROR
+from app.api.rest.public.v1.cart_items.view_models import CartItemAddingViewModel
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
 from app.app_layer.interfaces.task_producer import ITaskProducer
 from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO
 from app.app_layer.interfaces.use_cases.items.items_adding import IItemsAddingUseCase
-from app.app_layer.interfaces.use_cases.items.items_list import IItemsListUseCase
 from app.containers import Container
 from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.items.exceptions import QtyValidationError
@@ -16,28 +14,18 @@ from app.domain.items.exceptions import QtyValidationError
 router = APIRouter()
 
 
-@router.get("/")
+@router.post("/", response_model=CartItemAddingViewModel)
 @inject
-async def items_list(
-    use_case: IItemsListUseCase = Depends(Provide[Container.items_list_use_case]),
-) -> list[ItemListViewModel]:
-    result = await use_case.execute()
-
-    return TypeAdapter(list[ItemListViewModel]).validate_python(result)
-
-
-@router.post("/", response_model=ItemAddingViewModel)
-@inject
-async def add_item(
+async def add_item_to_cart(
     item: ItemAddingInputDTO,
     use_case: IItemsAddingUseCase = Depends(Provide[Container.items_adding_use_case]),
-) -> ItemAddingViewModel:
+) -> CartItemAddingViewModel:
     try:
         result = await use_case.execute(item)
     except (ProductsClientError, QtyValidationError, ItemAlreadyExists):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ITEM_ADDING_ERROR)
 
-    return ItemAddingViewModel.model_validate(result)
+    return CartItemAddingViewModel.model_validate(result)
 
 
 @router.post("/produce", status_code=status.HTTP_202_ACCEPTED)

@@ -7,7 +7,7 @@ from pytest_asyncio.plugin import SubRequest
 from pytest_mock import MockerFixture
 
 from app.api.rest.main import app, lifespan
-from app.api.rest.public.v1.items.errors import ITEM_ADDING_ERROR
+from app.api.rest.public.v1.cart_items.errors import ITEM_ADDING_ERROR
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
 from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO, ItemAddingOutputDTO
 from app.app_layer.use_cases.items.items_adding import ItemsAddingUseCase
