@@ -20,7 +20,7 @@ clean-architecture/
     │   │
     │   ├── domain/             # Domain layer (Business logic)
     │   │   ├── interfaces/     # Interfaces of the domain layer
-    │   │   ├── items/          # Entities and business logic for item domain
+    │   │   ├── cart_items/     # Entities and business logic for cart item domain
     │   │   └── carts/          # Entities and business logic for cart domain
     │   │
     │   ├── infra/              # Infrastructure layer (Secondary adapters layer)
