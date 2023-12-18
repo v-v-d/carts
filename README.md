@@ -14,16 +14,16 @@ clean-architecture/
     │   │   └── rest/           # Entry point for RESTful API
     │   │       └── main.py     # Main RESTful API file
     │   │
-    │   ├── app_layer/          # Application layer (Use Case)
+    │   ├── app_layer/          # Use cases (Application layer)
     │   │   ├── interfaces/     # Interfaces of the application layer
     │   │   └── use_cases/      # Use cases of the application layer
     │   │
-    │   ├── domain/             # Domain layer (Business logic)
+    │   ├── domain/             # Business entities (Domain layer)
     │   │   ├── interfaces/     # Interfaces of the domain layer
     │   │   ├── cart_items/     # Entities and business logic for cart item domain
     │   │   └── carts/          # Entities and business logic for cart domain
     │   │
-    │   ├── infra/              # Infrastructure layer (Secondary adapters layer)
+    │   ├── infra/              # Infrastructure components (Secondary adapters layer)
     │   │   ├── events/         # Event implementation (workers, queues, etc.)
     │   │   ├── http/           # HTTP transports, retry systems and clients
     │   │   ├── repositories/   # Data repositories
