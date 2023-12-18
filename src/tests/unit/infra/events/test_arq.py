@@ -5,8 +5,8 @@ from arq import ArqRedis
 from pytest_mock import MockerFixture
 
 from app.api.events.tasks.example import example_task
-from app.infra.events.arq import ArqTaskProducer
-from app.infra.events.workers.queues import QueueNameEnum
+from app.infra.events.arq.producer import ArqTaskProducer
+from app.infra.events.queues import QueueNameEnum
 
 
 @pytest.fixture()

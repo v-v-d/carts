@@ -6,7 +6,7 @@ from app.api import events
 from app.api.events.tasks.example import example_task
 from app.config import Config
 from app.containers import Container
-from app.infra.events.workers.queues import QueueNameEnum
+from app.infra.events.queues import QueueNameEnum
 
 config = Config()
 

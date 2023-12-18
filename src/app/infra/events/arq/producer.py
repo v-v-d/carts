@@ -5,7 +5,7 @@ from arq.connections import RedisSettings, create_pool
 
 from app.app_layer.interfaces.task_producer import ITaskProducer
 from app.config import ArqRedisConfig
-from app.infra.events.workers.queues import QueueNameEnum
+from app.infra.events.queues import QueueNameEnum
 
 
 class ArqTaskProducer(ITaskProducer):
