@@ -14,8 +14,8 @@ from app.app_layer.interfaces.use_cases.cart_items.dto import (
     AddItemToCartOutputDTO,
 )
 from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
+from app.domain.cart_items.exceptions import MinQtyLimitExceededError
 from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
-from app.domain.items.exceptions import MinQtyLimitExceededError
 from tests.utils import fake
 
 

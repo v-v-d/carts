@@ -5,13 +5,13 @@ from uuid import UUID
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
-from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
+from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
+from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.domain.cart_items.dto import ItemDTO
+from app.domain.cart_items.entities import CartItem
 from app.domain.carts.entities import Cart
 from app.domain.carts.exceptions import CartItemDoesNotExistError
-from app.domain.items.dto import ItemDTO
-from app.domain.items.entities import Item
 
 logger = getLogger(__name__)
 
@@ -26,7 +26,7 @@ class AddCartItemUseCase(IAddCartItemUseCase):
         self._products_client = products_client
 
     async def execute(self, cart_id: UUID, data: AddItemToCartInputDTO) -> CartOutputDTO:
-        Item.check_qty_above_min(data.qty)
+        CartItem.check_qty_above_min(data.qty)
 
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=cart_id)
@@ -56,7 +56,7 @@ class AddCartItemUseCase(IAddCartItemUseCase):
 
         return cart
 
-    async def _try_to_create_item(self, cart: Cart, data: AddItemToCartInputDTO) -> Item:
+    async def _try_to_create_item(self, cart: Cart, data: AddItemToCartInputDTO) -> CartItem:
         try:
             product = await self._products_client.get_product(item_id=data.id)
         except ProductsClientError as err:
@@ -68,7 +68,7 @@ class AddCartItemUseCase(IAddCartItemUseCase):
             )
             raise
 
-        return Item(
+        return CartItem(
             data=ItemDTO(
                 id=data.id,
                 qty=data.qty,
@@ -79,7 +79,7 @@ class AddCartItemUseCase(IAddCartItemUseCase):
             ),
         )
 
-    async def _increase_item_qty(self, cart: Cart, item: Item, qty: Decimal) -> Cart:
+    async def _increase_item_qty(self, cart: Cart, item: CartItem, qty: Decimal) -> Cart:
         cart.increase_item_qty(item_id=item.id, qty=qty)
 
         async with self._uow(autocommit=True):

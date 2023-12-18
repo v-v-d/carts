@@ -1,1 +1,1 @@
-from app.api.rest.public.v1 import carts, cart_items, example  # noqa: F401
+from app.api.rest.public.v1 import cart_items, carts, example  # noqa: F401

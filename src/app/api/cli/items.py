@@ -1,7 +1,7 @@
 from dependency_injector.wiring import Provide, inject
 
-from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
+from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.containers import Container
 
 

@@ -10,12 +10,12 @@ from pytest_asyncio.plugin import SubRequest
 
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
+from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
+from app.domain.cart_items.entities import CartItem
+from app.domain.cart_items.exceptions import MinQtyLimitExceededError
 from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
-from app.domain.items.entities import Item
-from app.domain.items.exceptions import MinQtyLimitExceededError
 from app.infra.http.transports.base import HttpRequestInputDTO, HttpTransportConfig
 from tests.environment.unit_of_work import TestUow
 from tests.utils import fake
@@ -158,7 +158,7 @@ async def test_products_client_invalid_response(
 
 @pytest.mark.parametrize(
     ("dto", "http_response"),
-    [({"qty": Item.min_valid_qty - 1}, {"returns": PRODUCTS_CLIENT_RESPONSE})],
+    [({"qty": CartItem.min_valid_qty - 1}, {"returns": PRODUCTS_CLIENT_RESPONSE})],
     indirect=True,
 )
 async def test_invalid_qty(

@@ -4,9 +4,9 @@ from decimal import Decimal
 from logging import getLogger
 from typing import ContextManager
 
+from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.exceptions import CartItemDoesNotExistError
-from app.domain.items.entities import Item
 
 logger = getLogger(__name__)
 
@@ -14,7 +14,7 @@ logger = getLogger(__name__)
 class Cart:
     weight_item_qty: Decimal = Decimal(1)
 
-    def __init__(self, data: CartDTO, items: list[Item]) -> None:
+    def __init__(self, data: CartDTO, items: list[CartItem]) -> None:
         self.id = data.id
         self.user_id = data.user_id
         self.is_active = data.is_active
@@ -51,7 +51,7 @@ class Cart:
                 items_by_id[item_id].qty,
             )
 
-    def add_new_item(self, item: Item) -> None:
+    def add_new_item(self, item: CartItem) -> None:
         self.items.append(item)
         logger.debug(
             "Cart %s. New item %s with %s qty added to cart.",
@@ -64,7 +64,7 @@ class Cart:
         self.is_active = False
         logger.debug("Cart %s deactivated.", self.id)
 
-    def get_item(self, item_id: int) -> Item:
+    def get_item(self, item_id: int) -> CartItem:
         items_by_id = {item.id: item for item in self.items}
 
         if item_id not in items_by_id:
@@ -85,7 +85,7 @@ class Cart:
                 items_by_id[item_id].qty,
             )
 
-    def delete_item(self, item: Item) -> None:
+    def delete_item(self, item: CartItem) -> None:
         with self._change_items() as items_by_id:
             items_by_id.pop(item.id)
             logger.debug("Cart %s, item %s deleted.", self.id, item.id)
@@ -95,7 +95,7 @@ class Cart:
         logger.debug("Cart %s has been cleared.", self.id)
 
     @contextmanager
-    def _change_items(self) -> ContextManager[dict[int:Item]]:
+    def _change_items(self) -> ContextManager[dict[int:CartItem]]:
         items_by_id = {item.id: item for item in self.items}
         yield items_by_id
         self.items = list(items_by_id.values())

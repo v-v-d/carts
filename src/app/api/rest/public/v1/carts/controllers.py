@@ -3,7 +3,7 @@ from uuid import UUID
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.rest.public.v1.errors import RETRIEVE_CART_ERROR, ACTIVE_CART_ALREADY_EXISTS_ERROR
+from app.api.rest.public.v1.errors import ACTIVE_CART_ALREADY_EXISTS_ERROR, RETRIEVE_CART_ERROR
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.use_cases.cart_items.dto import CreateCartInputDTO
 from app.app_layer.interfaces.use_cases.carts.cart_delete import ICartDeleteUseCase
@@ -11,8 +11,8 @@ from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieve
 from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
 from app.containers import Container
 from app.domain.interfaces.repositories.carts.exceptions import (
-    CartNotFoundError,
     ActiveCartAlreadyExistsError,
+    CartNotFoundError,
 )
 
 router = APIRouter()

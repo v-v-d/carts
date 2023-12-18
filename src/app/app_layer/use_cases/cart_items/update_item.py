@@ -1,12 +1,12 @@
 from decimal import Decimal
 
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
 from app.app_layer.interfaces.use_cases.cart_items.dto import UpdateCartItemInputDTO
 from app.app_layer.interfaces.use_cases.cart_items.update_item import IUpdateCartItemUseCase
+from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.domain.cart_items.entities import CartItem
+from app.domain.cart_items.exceptions import MinQtyLimitExceededError
 from app.domain.carts.entities import Cart
-from app.domain.items.entities import Item
-from app.domain.items.exceptions import MinQtyLimitExceededError
 
 
 class UpdateCartItemUseCase(IUpdateCartItemUseCase):
@@ -24,7 +24,7 @@ class UpdateCartItemUseCase(IUpdateCartItemUseCase):
     async def _update_item_qty(
         self,
         cart: Cart,
-        item: Item,
+        item: CartItem,
         new_qty: Decimal,
     ) -> Cart:
         cart.update_item_qty(item_id=item.id, qty=new_qty)
@@ -38,7 +38,7 @@ class UpdateCartItemUseCase(IUpdateCartItemUseCase):
 
         return cart
 
-    async def _delete_item_from_cart(self, cart: Cart, item: Item) -> Cart:
+    async def _delete_item_from_cart(self, cart: Cart, item: CartItem) -> Cart:
         cart.delete_item(item=item)
         await self._uow.items.delete_item(item=item)
 

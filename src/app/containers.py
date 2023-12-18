@@ -4,12 +4,12 @@ from typing import AsyncContextManager
 
 from dependency_injector import containers, providers
 
+from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
+from app.app_layer.use_cases.cart_items.delete_item import DeleteCartItemUseCase
+from app.app_layer.use_cases.cart_items.update_item import UpdateCartItemUseCase
 from app.app_layer.use_cases.carts.cart_delete import CartDeleteUseCase
 from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
 from app.app_layer.use_cases.carts.clear_cart import ClearCartUseCase
-from app.app_layer.use_cases.cart_items.delete_item import DeleteCartItemUseCase
-from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
-from app.app_layer.use_cases.cart_items.update_item import UpdateCartItemUseCase
 from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
 from app.config import Config
 from app.infra.events.arq import ArqTaskProducer, init_arq_redis

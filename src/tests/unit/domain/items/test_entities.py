@@ -2,14 +2,14 @@ from decimal import Decimal
 
 import pytest
 
-from app.domain.items.dto import ItemDTO
-from app.domain.items.entities import Item
-from app.domain.items.exceptions import MinQtyLimitExceededError
+from app.domain.cart_items.dto import ItemDTO
+from app.domain.cart_items.entities import CartItem
+from app.domain.cart_items.exceptions import MinQtyLimitExceededError
 from tests.utils import fake
 
 
 async def test_calculate_cost() -> None:
-    item = Item(
+    item = CartItem(
         data=ItemDTO(
             id=fake.numeric.integer_number(start=1),
             name=fake.text.word(),
@@ -21,11 +21,11 @@ async def test_calculate_cost() -> None:
 
 
 async def test_qty_validation_ok() -> None:
-    item = Item(
+    item = CartItem(
         data=ItemDTO(
             id=fake.numeric.integer_number(start=1),
             name=fake.text.word(),
-            qty=Decimal(Item.min_valid_qty),
+            qty=Decimal(CartItem.min_valid_qty),
             price=fake.numeric.integer_number(start=1, end=99),
         )
     )
@@ -33,11 +33,11 @@ async def test_qty_validation_ok() -> None:
 
 
 async def test_qty_validation_failed() -> None:
-    item = Item(
+    item = CartItem(
         data=ItemDTO(
             id=fake.numeric.integer_number(start=1),
             name=fake.text.word(),
-            qty=Decimal(Item.min_valid_qty - 1),
+            qty=Decimal(CartItem.min_valid_qty - 1),
             price=fake.numeric.integer_number(start=1, end=99),
         )
     )

@@ -5,9 +5,9 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.rest.public.v1.errors import (
-    RETRIEVE_CART_ERROR,
     ADD_CART_ITEM_ERROR,
     DELETE_CART_ITEM_ERROR,
+    RETRIEVE_CART_ERROR,
 )
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
@@ -15,15 +15,15 @@ from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemU
 from app.app_layer.interfaces.use_cases.cart_items.delete_item import IDeleteCartItemUseCase
 from app.app_layer.interfaces.use_cases.cart_items.dto import (
     AddItemToCartInputDTO,
-    UpdateCartItemInputDTO,
     DeleteCartItemInputDTO,
+    UpdateCartItemInputDTO,
 )
 from app.app_layer.interfaces.use_cases.cart_items.update_item import IUpdateCartItemUseCase
 from app.app_layer.interfaces.use_cases.carts.clear_cart import IClearCartUseCase
 from app.containers import Container
+from app.domain.cart_items.exceptions import MinQtyLimitExceededError
 from app.domain.carts.exceptions import CartItemDoesNotExistError
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
-from app.domain.items.exceptions import MinQtyLimitExceededError
 
 router = APIRouter()
 

@@ -1,20 +1,20 @@
 from uuid import UUID
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from app.domain.cart_items.dto import ItemDTO
+from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.entities import Cart
 from app.domain.interfaces.repositories.carts.exceptions import (
-    CartNotFoundError,
     ActiveCartAlreadyExistsError,
+    CartNotFoundError,
 )
 from app.domain.interfaces.repositories.carts.repo import ICartsRepository
-from app.domain.items.dto import ItemDTO
-from app.domain.items.entities import Item
 from app.infra.repositories.sqla import models
 
 
@@ -53,7 +53,7 @@ class CartsRepository(ICartsRepository):
 
         return Cart(
             data=CartDTO.model_validate(obj),
-            items=[Item(data=ItemDTO.model_validate(item)) for item in obj.items],
+            items=[CartItem(data=ItemDTO.model_validate(item)) for item in obj.items],
         )
 
     async def update(self, cart: Cart) -> Cart:
@@ -76,7 +76,7 @@ class CartsRepository(ICartsRepository):
         return [
             Cart(
                 data=CartDTO.model_validate(obj),
-                items=[Item(data=ItemDTO.model_validate(item)) for item in obj.items],
+                items=[CartItem(data=ItemDTO.model_validate(item)) for item in obj.items],
             )
             for obj in obj_list
         ]

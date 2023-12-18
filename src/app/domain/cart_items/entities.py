@@ -1,13 +1,13 @@
 from decimal import Decimal
 from logging import getLogger
 
-from app.domain.items.dto import ItemDTO
-from app.domain.items.exceptions import MinQtyLimitExceededError
+from app.domain.cart_items.dto import ItemDTO
+from app.domain.cart_items.exceptions import MinQtyLimitExceededError
 
 logger = getLogger(__name__)
 
 
-class Item:
+class CartItem:
     min_valid_qty: int = 1
     price_precision: int = 10
     price_scale: int = 2
@@ -24,12 +24,12 @@ class Item:
     def cost(self) -> Decimal:
         return self.price * self.qty
 
-    def check_item_qty_above_min(self) -> None:
-        self._check_item_qty_above_min(self.qty)
-
     @classmethod
     def check_qty_above_min(cls, qty: Decimal) -> None:
         cls._check_item_qty_above_min(qty)
+
+    def check_item_qty_above_min(self) -> None:
+        self._check_item_qty_above_min(self.qty)
 
     @classmethod
     def _check_item_qty_above_min(cls, qty: Decimal) -> None:

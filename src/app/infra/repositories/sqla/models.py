@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy import Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.domain.items import entities
+from app.domain.cart_items import entities
 from app.infra.repositories.sqla.base import Base
 
 
@@ -21,13 +21,13 @@ class CartItem(Base):
     name: Mapped[str] = mapped_column(sa.Text, nullable=False)
     qty: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     price: Mapped[Decimal] = mapped_column(
-        sa.Numeric(entities.Item.price_precision, entities.Item.price_scale),
+        sa.Numeric(entities.CartItem.price_precision, entities.CartItem.price_scale),
         nullable=False,
     )
     is_weight: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
 
     cart: Mapped["Cart"] = relationship(
-        "Cart", lazy="noload", back_populates="items", uselist=False
+        "Cart", lazy="noload", back_populates="cart_items", uselist=False
     )
 
 
