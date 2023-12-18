@@ -2,7 +2,7 @@ from decimal import Decimal
 from logging import getLogger
 
 from app.domain.items.dto import ItemDTO
-from app.domain.items.exceptions import QtyValidationError
+from app.domain.items.exceptions import MinQtyLimitExceededError
 
 logger = getLogger(__name__)
 
@@ -24,12 +24,19 @@ class Item:
     def cost(self) -> Decimal:
         return self.price * self.qty
 
-    def validate_qty(self) -> None:
-        if self.qty < self.min_valid_qty:
+    def check_item_qty_above_min(self) -> None:
+        self._check_item_qty_above_min(self.qty)
+
+    @classmethod
+    def check_qty_above_min(cls, qty: Decimal) -> None:
+        cls._check_item_qty_above_min(qty)
+
+    @classmethod
+    def _check_item_qty_above_min(cls, qty: Decimal) -> None:
+        if qty < cls.min_valid_qty:
             logger.info(
-                "Invalid item %s qty detected! Required >= %s, got %s.",
-                self.id,
-                self.min_valid_qty,
-                self.qty,
+                "Invalid item qty detected! Required >= %s, got %s.",
+                cls.min_valid_qty,
+                qty,
             )
-            raise QtyValidationError
+            raise MinQtyLimitExceededError

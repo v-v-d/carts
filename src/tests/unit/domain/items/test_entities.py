@@ -4,7 +4,7 @@ import pytest
 
 from app.domain.items.dto import ItemDTO
 from app.domain.items.entities import Item
-from app.domain.items.exceptions import QtyValidationError
+from app.domain.items.exceptions import MinQtyLimitExceededError
 from tests.utils import fake
 
 
@@ -29,7 +29,7 @@ async def test_qty_validation_ok() -> None:
             price=fake.numeric.integer_number(start=1, end=99),
         )
     )
-    item.validate_qty()
+    item.check_item_qty_above_min()
 
 
 async def test_qty_validation_failed() -> None:
@@ -42,5 +42,5 @@ async def test_qty_validation_failed() -> None:
         )
     )
 
-    with pytest.raises(QtyValidationError):
-        item.validate_qty()
+    with pytest.raises(MinQtyLimitExceededError):
+        item.check_item_qty_above_min()

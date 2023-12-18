@@ -17,5 +17,5 @@ class IItemsRepository(ABC):
         ...
 
     @abstractmethod
-    async def remove_item(self, item: Item) -> None:
+    async def delete_item(self, item: Item) -> None:
         ...

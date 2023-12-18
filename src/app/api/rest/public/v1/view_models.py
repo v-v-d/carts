@@ -3,7 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
-class BaseItemViewModel(BaseModel):
+class ItemViewModel(BaseModel):
     class Config:
         from_attributes = True
         populate_by_name = True
@@ -22,6 +22,7 @@ class CartViewModel(BaseModel):
         populate_by_name = True
 
     id: UUID
-    items: list[BaseItemViewModel]
+    user_id: int
+    items: list[ItemViewModel]
     items_qty: float = Field(alias="items_quantity")
     cost: float

@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class ItemAddingInputDTO(BaseModel):
+class AddItemToCartInputDTO(BaseModel):
     id: int
     qty: Decimal
 
@@ -20,15 +20,24 @@ class ItemOutputDTO(BaseModel):
     cost: Decimal
 
 
-class ItemAddingOutputDTO(ItemOutputDTO):
+class AddItemToCartOutputDTO(ItemOutputDTO):
     pass
 
 
-class ItemListOutputDTO(ItemOutputDTO):
+class AddItemToCartListOutputDTO(ItemOutputDTO):
     pass
 
 
-class ItemRemovingInputDTO(BaseModel):
+class UpdateCartItemInputDTO(BaseModel):
     item_id: int
     cart_id: UUID
     qty: Decimal
+
+
+class DeleteCartItemInputDTO(BaseModel):
+    item_id: int
+    cart_id: UUID
+
+
+class CreateCartInputDTO(BaseModel):
+    user_id: int

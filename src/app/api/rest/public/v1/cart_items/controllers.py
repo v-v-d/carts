@@ -1,36 +1,103 @@
+from decimal import Decimal
+from uuid import UUID
+
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.rest.public.v1.cart_items.errors import ITEM_ADDING_ERROR
-from app.api.rest.public.v1.cart_items.view_models import CartItemAddingViewModel
+from app.api.rest.public.v1.errors import (
+    RETRIEVE_CART_ERROR,
+    ADD_CART_ITEM_ERROR,
+    DELETE_CART_ITEM_ERROR,
+)
+from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.task_producer import ITaskProducer
-from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO
-from app.app_layer.interfaces.use_cases.items.items_adding import IItemsAddingUseCase
+from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
+from app.app_layer.interfaces.use_cases.cart_items.delete_item import IDeleteCartItemUseCase
+from app.app_layer.interfaces.use_cases.cart_items.dto import (
+    AddItemToCartInputDTO,
+    UpdateCartItemInputDTO,
+    DeleteCartItemInputDTO,
+)
+from app.app_layer.interfaces.use_cases.cart_items.update_item import IUpdateCartItemUseCase
+from app.app_layer.interfaces.use_cases.carts.clear_cart import IClearCartUseCase
 from app.containers import Container
-from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
-from app.domain.items.exceptions import QtyValidationError
+from app.domain.carts.exceptions import CartItemDoesNotExistError
+from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
+from app.domain.items.exceptions import MinQtyLimitExceededError
 
 router = APIRouter()
 
 
-@router.post("/", response_model=CartItemAddingViewModel)
+@router.post("")
 @inject
-async def add_item_to_cart(
-    item: ItemAddingInputDTO,
-    use_case: IItemsAddingUseCase = Depends(Provide[Container.items_adding_use_case]),
-) -> CartItemAddingViewModel:
+async def add_item(
+    cart_id: UUID,
+    data: AddItemToCartInputDTO,
+    use_case: IAddCartItemUseCase = Depends(Provide[Container.add_cart_item_use_case]),
+) -> CartViewModel:
     try:
-        result = await use_case.execute(item)
-    except (ProductsClientError, QtyValidationError, ItemAlreadyExists):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ITEM_ADDING_ERROR)
+        result = await use_case.execute(cart_id=cart_id, data=data)
+    except CartNotFoundError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+    except (ProductsClientError, MinQtyLimitExceededError):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ADD_CART_ITEM_ERROR)
 
-    return CartItemAddingViewModel.model_validate(result)
+    return CartViewModel.model_validate(result)
 
 
-@router.post("/produce", status_code=status.HTTP_202_ACCEPTED)
+@router.put("/{item_id}")
 @inject
-async def produce(
-    task_producer: ITaskProducer = Depends(Provide[Container.events.task_producer]),
-) -> None:
-    await task_producer.enqueue_example_task()
+async def update_item(
+    cart_id: UUID,
+    item_id: int,
+    qty: Decimal,
+    use_case: IUpdateCartItemUseCase = Depends(Provide[Container.update_cart_item_use_case]),
+) -> CartViewModel:
+    try:
+        result = await use_case.execute(
+            data=UpdateCartItemInputDTO(
+                item_id=item_id,
+                cart_id=cart_id,
+                qty=qty,
+            ),
+        )
+    except CartNotFoundError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+    except CartItemDoesNotExistError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=DELETE_CART_ITEM_ERROR)
+
+    return CartViewModel.model_validate(result)
+
+
+@router.delete("/{item_id}")
+@inject
+async def delete_item(
+    cart_id: UUID,
+    item_id: int,
+    use_case: IDeleteCartItemUseCase = Depends(Provide[Container.delete_cart_item_use_case]),
+) -> CartViewModel:
+    try:
+        result = await use_case.execute(
+            data=DeleteCartItemInputDTO(
+                item_id=item_id,
+                cart_id=cart_id,
+            ),
+        )
+    except CartNotFoundError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+
+    return CartViewModel.model_validate(result)
+
+
+@router.delete("")
+@inject
+async def clear(
+    cart_id: UUID,
+    use_case: IClearCartUseCase = Depends(Provide[Container.clear_cart_use_case]),
+) -> CartViewModel:
+    try:
+        result = await use_case.execute(cart_id=cart_id)
+    except CartNotFoundError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+
+    return CartViewModel.model_validate(result)

@@ -1,25 +1,38 @@
-from decimal import Decimal
 from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import TypeAdapter
 
-from app.api.rest.public.v1.carts.errors import CART_RETRIEVE_ERROR, ITEM_ADDING_ERROR, ITEM_REMOVING_ERROR
+from app.api.rest.public.v1.errors import RETRIEVE_CART_ERROR, ACTIVE_CART_ALREADY_EXISTS_ERROR
 from app.api.rest.public.v1.view_models import CartViewModel
-from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
+from app.app_layer.interfaces.use_cases.cart_items.dto import CreateCartInputDTO
 from app.app_layer.interfaces.use_cases.carts.cart_delete import ICartDeleteUseCase
-from app.app_layer.interfaces.use_cases.carts.cart_list import ICartListUseCase
 from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
-from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO, ItemRemovingInputDTO
-from app.app_layer.interfaces.use_cases.items.items_adding import IItemsAddingUseCase
-from app.app_layer.interfaces.use_cases.items.items_removing import IItemsRemovingUseCase
+from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
 from app.containers import Container
-from app.domain.carts.exceptions import ItemDoesNotExistInCartError
-from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
-from app.domain.items.exceptions import QtyValidationError
+from app.domain.interfaces.repositories.carts.exceptions import (
+    CartNotFoundError,
+    ActiveCartAlreadyExistsError,
+)
 
 router = APIRouter()
+
+
+@router.post("")
+@inject
+async def create(
+    data: CreateCartInputDTO,
+    use_case: ICreateCartUseCase = Depends(Provide[Container.create_cart_use_case]),
+) -> CartViewModel:
+    try:
+        result = await use_case.execute(data=data)
+    except ActiveCartAlreadyExistsError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ACTIVE_CART_ALREADY_EXISTS_ERROR,
+        )
+
+    return CartViewModel.model_validate(result)
 
 
 @router.get("/{cart_id}")
@@ -31,7 +44,7 @@ async def retrieve(
     try:
         result = await use_case.execute(cart_id=cart_id)
     except CartNotFoundError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=CART_RETRIEVE_ERROR)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
 
     return CartViewModel.model_validate(result)
 
@@ -45,55 +58,4 @@ async def deactivate(
     try:
         await use_case.execute(cart_id=cart_id)
     except CartNotFoundError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=CART_RETRIEVE_ERROR)
-
-
-@router.get("")
-@inject
-async def get_list(
-    use_case: ICartListUseCase = Depends(Provide[Container.cart_list_use_case]),
-) -> list[CartViewModel]:
-    result = await use_case.execute()
-
-    return TypeAdapter(list[CartViewModel]).validate_python(result)
-
-
-@router.post("/{cart_id}/items")
-@inject
-async def add_item(
-    cart_id: UUID,
-    data: ItemAddingInputDTO,
-    use_case: IItemsAddingUseCase = Depends(Provide[Container.items_adding_use_case]),
-) -> CartViewModel:
-    try:
-        result = await use_case.execute(cart_id=cart_id, data=data)
-    except CartNotFoundError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=CART_RETRIEVE_ERROR)
-    except (ProductsClientError, QtyValidationError):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ITEM_ADDING_ERROR)
-
-    return CartViewModel.model_validate(result)
-
-
-@router.post("/{cart_id}/items/{item_id}/remove")
-@inject
-async def remove_item(
-    cart_id: UUID,
-    item_id: int,
-    qty: Decimal,
-    use_case: IItemsRemovingUseCase = Depends(Provide[Container.items_removing_use_case]),
-) -> CartViewModel:
-    try:
-        result = await use_case.execute(
-            data=ItemRemovingInputDTO(
-                item_id=item_id,
-                cart_id=cart_id,
-                qty=qty,
-            )
-        )
-    except CartNotFoundError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=CART_RETRIEVE_ERROR)
-    except ItemDoesNotExistInCartError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ITEM_REMOVING_ERROR)
-
-    return CartViewModel.model_validate(result)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)

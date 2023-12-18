@@ -5,10 +5,12 @@ from typing import AsyncContextManager
 from dependency_injector import containers, providers
 
 from app.app_layer.use_cases.carts.cart_delete import CartDeleteUseCase
-from app.app_layer.use_cases.carts.cart_list import CartListUseCase
 from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
-from app.app_layer.use_cases.items.items_adding import ItemsAddingUseCase
-from app.app_layer.use_cases.items.items_removing import ItemsRemovingUseCase
+from app.app_layer.use_cases.carts.clear_cart import ClearCartUseCase
+from app.app_layer.use_cases.cart_items.delete_item import DeleteCartItemUseCase
+from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
+from app.app_layer.use_cases.cart_items.update_item import UpdateCartItemUseCase
+from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
 from app.config import Config
 from app.infra.events.arq import ArqTaskProducer, init_arq_redis
 from app.infra.http.clients.products import ProductsHttpClient
@@ -70,15 +72,17 @@ class Container(containers.DeclarativeContainer):
     db = providers.Container(DBContainer, config=config)
     products_client = providers.Container(ProductsClientContainer, config=config)
 
-    items_adding_use_case = providers.Factory(
-        ItemsAddingUseCase,
+    create_cart_use_case = providers.Factory(CreateCartUseCase, uow=db.container.uow)
+    add_cart_item_use_case = providers.Factory(
+        AddCartItemUseCase,
         uow=db.container.uow,
         products_client=products_client.container.client,
     )
     cart_retrieve_use_case = providers.Factory(CartRetrieveUseCase, uow=db.container.uow)
     cart_delete_use_case = providers.Factory(CartDeleteUseCase, uow=db.container.uow)
-    cart_list_use_case = providers.Factory(CartListUseCase, uow=db.container.uow)
-    items_removing_use_case = providers.Factory(ItemsRemovingUseCase, uow=db.container.uow)
+    update_cart_item_use_case = providers.Factory(UpdateCartItemUseCase, uow=db.container.uow)
+    delete_cart_item_use_case = providers.Factory(DeleteCartItemUseCase, uow=db.container.uow)
+    clear_cart_use_case = providers.Factory(ClearCartUseCase, uow=db.container.uow)
 
     @classmethod
     @asynccontextmanager

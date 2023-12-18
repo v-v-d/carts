@@ -2,5 +2,5 @@ class BaseItemsDomainError(Exception):
     pass
 
 
-class QtyValidationError(BaseItemsDomainError):
+class MinQtyLimitExceededError(BaseItemsDomainError):
     pass

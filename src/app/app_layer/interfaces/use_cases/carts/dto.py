@@ -21,6 +21,7 @@ class CartOutputDTO(BaseModel):
         from_attributes = True
 
     id: UUID
+    user_id: int
     items: list[ItemOutputDTO]
     items_qty: Decimal
     cost: Decimal

@@ -2,5 +2,5 @@ class BaseCartDomainError(Exception):
     pass
 
 
-class ItemDoesNotExistInCartError(BaseCartDomainError):
+class CartItemDoesNotExistError(BaseCartDomainError):
     pass

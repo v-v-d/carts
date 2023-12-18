@@ -4,3 +4,7 @@ class BaseCartsRepoError(Exception):
 
 class CartNotFoundError(BaseCartsRepoError):
     pass
+
+
+class ActiveCartAlreadyExistsError(BaseCartsRepoError):
+    pass

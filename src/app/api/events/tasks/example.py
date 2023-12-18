@@ -3,7 +3,7 @@
 #
 # from dependency_injector.wiring import Provide, inject
 #
-# from app.app_layer.interfaces.use_cases.cart_items.items_list import IItemsListUseCase
+# from app.app_layer.interfaces.use_cases.example.items_list import IItemsListUseCase
 # from app.containers import Container
 #
 #

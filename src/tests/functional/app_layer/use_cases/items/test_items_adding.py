@@ -10,12 +10,12 @@ from pytest_asyncio.plugin import SubRequest
 
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO
-from app.app_layer.interfaces.use_cases.items.items_adding import IItemsAddingUseCase
-from app.app_layer.use_cases.items.items_adding import ItemsAddingUseCase
+from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
+from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
+from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
 from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.items.entities import Item
-from app.domain.items.exceptions import QtyValidationError
+from app.domain.items.exceptions import MinQtyLimitExceededError
 from app.infra.http.transports.base import HttpRequestInputDTO, HttpTransportConfig
 from tests.environment.unit_of_work import TestUow
 from tests.utils import fake
@@ -35,15 +35,15 @@ PRODUCTS_CLIENT_RESPONSE = {
 
 
 @pytest.fixture()
-def use_case(uow: TestUow, products_client: IProductsClient) -> IItemsAddingUseCase:
-    return ItemsAddingUseCase(uow=uow, products_client=products_client)
+def use_case(uow: TestUow, products_client: IProductsClient) -> IAddCartItemUseCase:
+    return AddCartItemUseCase(uow=uow, products_client=products_client)
 
 
 @pytest.fixture()
-def dto(request: SubRequest, item_id: int) -> ItemAddingInputDTO:
+def dto(request: SubRequest, item_id: int) -> AddItemToCartInputDTO:
     extra_data = request.param if hasattr(request, "param") else {}
 
-    return ItemAddingInputDTO(**{"id": item_id, "qty": 2, **extra_data})
+    return AddItemToCartInputDTO(**{"id": item_id, "qty": 2, **extra_data})
 
 
 @pytest.fixture()
@@ -77,8 +77,8 @@ async def test_ok(
     http_response: AsyncMock,
     http_session: MagicMock,
     uow: TestUow,
-    use_case: IItemsAddingUseCase,
-    dto: ItemAddingInputDTO,
+    use_case: IAddCartItemUseCase,
+    dto: AddItemToCartInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
     await use_case.execute(dto)
@@ -115,8 +115,8 @@ async def test_products_client_error(
     http_session: MagicMock,
     response_err_text: str,
     uow: TestUow,
-    use_case: IItemsAddingUseCase,
-    dto: ItemAddingInputDTO,
+    use_case: IAddCartItemUseCase,
+    dto: AddItemToCartInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(
@@ -138,8 +138,8 @@ async def test_products_client_invalid_response(
     http_response: AsyncMock,
     http_session: MagicMock,
     uow: TestUow,
-    use_case: IItemsAddingUseCase,
-    dto: ItemAddingInputDTO,
+    use_case: IAddCartItemUseCase,
+    dto: AddItemToCartInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(
@@ -165,11 +165,11 @@ async def test_invalid_qty(
     http_response: AsyncMock,
     http_session: MagicMock,
     uow: TestUow,
-    use_case: IItemsAddingUseCase,
-    dto: ItemAddingInputDTO,
+    use_case: IAddCartItemUseCase,
+    dto: AddItemToCartInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
-    with pytest.raises(QtyValidationError):
+    with pytest.raises(MinQtyLimitExceededError):
         await use_case.execute(dto)
 
     async with uow(autocommit=False):
@@ -190,8 +190,8 @@ async def test_already_exists(
     http_response: AsyncMock,
     http_session: MagicMock,
     uow: TestUow,
-    use_case: IItemsAddingUseCase,
-    dto: ItemAddingInputDTO,
+    use_case: IAddCartItemUseCase,
+    dto: AddItemToCartInputDTO,
     expected_products_client_call: dict[str, Any],
 ) -> None:
     with pytest.raises(ItemAlreadyExists):

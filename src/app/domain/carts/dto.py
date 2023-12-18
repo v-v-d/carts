@@ -8,4 +8,5 @@ class CartDTO(BaseModel):
         from_attributes = True
 
     id: UUID
+    user_id: int
     is_active: bool

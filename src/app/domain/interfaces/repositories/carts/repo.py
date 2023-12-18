@@ -6,6 +6,10 @@ from app.domain.carts.entities import Cart
 
 class ICartsRepository(ABC):
     @abstractmethod
+    async def create(self, cart: Cart) -> Cart:
+        ...
+
+    @abstractmethod
     async def retrieve(self, cart_id: UUID) -> Cart:
         ...
 
@@ -14,5 +18,5 @@ class ICartsRepository(ABC):
         ...
 
     @abstractmethod
-    async def get_list(self) -> Cart:
+    async def clear(self, cart_id: UUID) -> None:
         ...

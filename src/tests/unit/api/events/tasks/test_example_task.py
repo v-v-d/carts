@@ -7,8 +7,8 @@ from pytest_mock import MockerFixture
 
 from app.api import events
 from app.api.events.tasks.example import example_task
-from app.app_layer.interfaces.use_cases.items.dto import ItemListOutputDTO
-from app.app_layer.use_cases.items.items_list import ItemsListUseCase
+from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartListOutputDTO
+from app.app_layer.use_cases.cart_items.items_list import ItemsListUseCase
 from app.containers import Container
 from tests.utils import fake
 
@@ -41,7 +41,7 @@ def ctx(container: Container) -> dict[str, Any]:
     [
         {
             "returns": [
-                ItemListOutputDTO(
+                AddItemToCartListOutputDTO(
                     id=fake.numeric.integer_number(start=1),
                     name=fake.text.word(),
                     qty=fake.numeric.decimal_number(start=1),

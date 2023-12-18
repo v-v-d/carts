@@ -11,7 +11,7 @@ from app.infra.events.arq import ArqTaskProducer
 
 @pytest.fixture()
 def url_path() -> str:
-    return "api/v1/items/produce"
+    return "api/v1/cart_items/produce"
 
 
 @pytest.fixture()

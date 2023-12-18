@@ -1,7 +1,7 @@
 from dependency_injector.wiring import Provide, inject
 
-from app.app_layer.interfaces.use_cases.items.dto import ItemAddingInputDTO
-from app.app_layer.interfaces.use_cases.items.items_adding import IItemsAddingUseCase
+from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
+from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
 from app.containers import Container
 
 
@@ -9,6 +9,6 @@ from app.containers import Container
 async def run_add_item_command(
     item_id: int,
     qty: int,
-    use_case: IItemsAddingUseCase = Provide[Container.items_adding_use_case],
+    use_case: IAddCartItemUseCase = Provide[Container.add_cart_item_use_case],
 ) -> None:
-    await use_case.execute(data=ItemAddingInputDTO(id=item_id, qty=qty))
+    await use_case.execute(data=AddItemToCartInputDTO(id=item_id, qty=qty))
