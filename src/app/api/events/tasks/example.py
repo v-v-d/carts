@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
@@ -8,7 +9,7 @@ from app.containers import Container
 
 @inject
 async def example_task(
-    # ctx: [str, Any],
+    ctx: [str, Any],
     auth_data: str,
     cart_id: UUID,
     use_case: ICartRetrieveUseCase = Provide[Container.cart_retrieve_use_case],
