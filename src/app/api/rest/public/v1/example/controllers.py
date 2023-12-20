@@ -14,6 +14,6 @@ router = APIRouter()
 async def produce(
     cart_id: UUID,
     auth_data: str = Header(..., alias="Authorization"),
-    task_producer: ITaskProducer = Depends(Provide[Container.events.rq_task_producer]),
+    task_producer: ITaskProducer = Depends(Provide[Container.events.task_producer]),
 ) -> None:
     await task_producer.enqueue_example_task(auth_data=auth_data, cart_id=cart_id)
