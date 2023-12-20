@@ -5,11 +5,11 @@ from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 
 _USERS_BY_TOKEN = {
-    "Bearer fa.ke.1": {"id": 1},
-    "Bearer fa.ke.2": {"id": 2},
-    "Bearer fa.ke.3": {"id": 3},
-    "Bearer fa.ke.4": {"id": 4},
-    "Bearer fa.ke.5": {"id": 5},
+    "fa.ke.1": {"id": 1},
+    "fa.ke.2": {"id": 2},
+    "fa.ke.3": {"id": 3},
+    "fa.ke.4": {"id": 4},
+    "fa.ke.5": {"id": 5},
 }
 
 

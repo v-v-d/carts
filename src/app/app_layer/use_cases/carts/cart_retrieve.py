@@ -12,9 +12,9 @@ class CartRetrieveUseCase(ICartRetrieveUseCase):
         self._auth_system = auth_system
 
     async def execute(self, auth_data: str, cart_id: UUID) -> CartOutputDTO:
-        user = self._auth_system.get_user_data()
+        self._auth_system.validate_auth_data(auth_data=auth_data)
 
         async with self._uow(autocommit=True):
-            cart = await self._uow.carts.retrieve(user_id=user.id, cart_id=cart_id)
+            cart = await self._uow.carts.retrieve(cart_id=cart_id)
 
         return CartOutputDTO.model_validate(cart)

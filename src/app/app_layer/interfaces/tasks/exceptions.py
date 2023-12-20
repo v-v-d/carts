@@ -1,0 +1,2 @@
+class TaskProducerError(Exception):
+    pass
