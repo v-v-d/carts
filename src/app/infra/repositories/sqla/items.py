@@ -1,11 +1,10 @@
 from logging import getLogger
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.cart_items.dto import ItemDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.interfaces.repositories.items.repo import IItemsRepository
@@ -32,12 +31,6 @@ class ItemsRepository(IItemsRepository):
             await self._session.execute(stmt)
         except IntegrityError as err:
             raise ItemAlreadyExists(str(err)) from err
-
-    async def get_items(self) -> list[CartItem]:
-        stmt = select(models.CartItem)
-        result = await self._session.scalars(stmt)
-
-        return [CartItem(data=ItemDTO.model_validate(item)) for item in result.all()]
 
     async def update_item(self, item: CartItem) -> CartItem:
         stmt = (

@@ -14,8 +14,9 @@ class ClearCartUseCase(IClearCartUseCase):
         user = self._auth_system.get_user_data(auth_data=data.auth_data)
 
         async with self._uow(autocommit=True):
-            cart = await self._uow.carts.retrieve(user_id=user.id, cart_id=data.cart_id)
+            cart = await self._uow.carts.retrieve(cart_id=data.cart_id)
+            cart.check_user_ownership(user_id=user.id)
             cart.clear()
-            await self._uow.carts.clear(user_id=user.id, cart_id=cart.id)
+            await self._uow.carts.clear(cart_id=cart.id)
 
         return CartOutputDTO.model_validate(cart)

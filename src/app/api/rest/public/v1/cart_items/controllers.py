@@ -7,8 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, Header, Body
 
 from app.api.rest.public.v1.errors import (
     ADD_CART_ITEM_ERROR,
-    DELETE_CART_ITEM_ERROR,
-    RETRIEVE_CART_ERROR, AUTHORIZATION_ERROR,
+    RETRIEVE_CART_ERROR,
+    AUTHORIZATION_ERROR,
+    FORBIDDEN_ERROR,
+    UPDATE_CART_ITEM_ERROR,
 )
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
@@ -18,13 +20,14 @@ from app.app_layer.interfaces.use_cases.cart_items.delete_item import IDeleteCar
 from app.app_layer.interfaces.use_cases.cart_items.dto import (
     AddItemToCartInputDTO,
     DeleteCartItemInputDTO,
-    UpdateCartItemInputDTO, ClearCartInputDTO,
+    UpdateCartItemInputDTO,
+    ClearCartInputDTO,
 )
 from app.app_layer.interfaces.use_cases.cart_items.update_item import IUpdateCartItemUseCase
 from app.app_layer.interfaces.use_cases.carts.clear_cart import IClearCartUseCase
 from app.containers import Container
 from app.domain.cart_items.exceptions import MinQtyLimitExceededError
-from app.domain.carts.exceptions import CartItemDoesNotExistError
+from app.domain.carts.exceptions import CartItemDoesNotExistError, NotOwnedByUserError
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
 
 router = APIRouter()
@@ -55,6 +58,8 @@ async def add_item(
         )
     except CartNotFoundError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+    except NotOwnedByUserError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR)
     except (ProductsClientError, MinQtyLimitExceededError):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ADD_CART_ITEM_ERROR)
 
@@ -86,8 +91,10 @@ async def update_item(
         )
     except CartNotFoundError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+    except NotOwnedByUserError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR)
     except CartItemDoesNotExistError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=DELETE_CART_ITEM_ERROR)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=UPDATE_CART_ITEM_ERROR)
 
     return CartViewModel.model_validate(result)
 
@@ -115,6 +122,8 @@ async def delete_item(
         )
     except CartNotFoundError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+    except NotOwnedByUserError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR)
 
     return CartViewModel.model_validate(result)
 
@@ -140,5 +149,7 @@ async def clear(
         )
     except CartNotFoundError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+    except NotOwnedByUserError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR)
 
     return CartViewModel.model_validate(result)

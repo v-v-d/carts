@@ -6,7 +6,7 @@ from typing import ContextManager
 
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
-from app.domain.carts.exceptions import CartItemDoesNotExistError
+from app.domain.carts.exceptions import CartItemDoesNotExistError, NotOwnedByUserError
 from app.domain.carts.value_objects import CartStatusEnum
 
 logger = getLogger(__name__)
@@ -94,6 +94,16 @@ class Cart:
     def clear(self) -> None:
         self.items = []
         logger.debug("Cart %s has been cleared.", self.id)
+
+    def check_user_ownership(self, user_id: int) -> None:
+        if self.user_id != user_id:
+            logger.debug(
+                "Cart %s. Invalid user_id detected! Expected %s, got %s",
+                self.id,
+                self.user_id,
+                user_id,
+            )
+            raise NotOwnedByUserError
 
     @contextmanager
     def _change_items(self) -> ContextManager[dict[int:CartItem]]:

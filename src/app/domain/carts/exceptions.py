@@ -4,3 +4,7 @@ class BaseCartDomainError(Exception):
 
 class CartItemDoesNotExistError(BaseCartDomainError):
     pass
+
+
+class NotOwnedByUserError(BaseCartDomainError):
+    pass

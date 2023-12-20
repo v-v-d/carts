@@ -63,23 +63,6 @@ class CartsRepository(ICartsRepository):
 
         return cart
 
-    async def get_list(self) -> list[Cart]:
-        stmt = (
-            select(models.Cart)
-            .options(joinedload(models.Cart.items))
-            .where(models.Cart.status != CartStatusEnum.DEACTIVATED)
-        )
-        result = await self._session.scalars(stmt)
-        obj_list = result.unique().all()
-
-        return [
-            Cart(
-                data=CartDTO.model_validate(obj),
-                items=[CartItem(data=ItemDTO.model_validate(item)) for item in obj.items],
-            )
-            for obj in obj_list
-        ]
-
     async def clear(self, cart_id: UUID) -> None:
         stmt = delete(models.CartItem).where(models.CartItem.cart_id == cart_id)
         await self._session.execute(stmt)

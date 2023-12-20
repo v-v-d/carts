@@ -15,8 +15,9 @@ class CartDeleteUseCase(ICartDeleteUseCase):
         user = self._auth_system.get_user_data(auth_data=auth_data)
 
         async with self._uow(autocommit=True):
-            cart = await self._uow.carts.retrieve(user_id=user.id, cart_id=cart_id)
+            cart = await self._uow.carts.retrieve(cart_id=cart_id)
+            cart.check_user_ownership(user_id=user.id)
             cart.deactivate()
-            await self._uow.carts.update(user_id=user.id, cart=cart)
+            await self._uow.carts.update(cart=cart)
 
         return CartOutputDTO.model_validate(cart)

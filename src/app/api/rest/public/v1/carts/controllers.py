@@ -14,6 +14,7 @@ from app.app_layer.interfaces.use_cases.carts.cart_delete import ICartDeleteUseC
 from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
 from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
 from app.containers import Container
+from app.domain.carts.exceptions import NotOwnedByUserError
 from app.domain.interfaces.repositories.carts.exceptions import (
     ActiveCartAlreadyExistsError,
     CartNotFoundError,
@@ -58,7 +59,7 @@ async def retrieve(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=AUTHORIZATION_ERROR,
         )
-    except CartNotFoundError:
+    except (CartNotFoundError, NotOwnedByUserError):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
 
     return CartViewModel.model_validate(result)
@@ -78,5 +79,5 @@ async def deactivate(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=AUTHORIZATION_ERROR,
         )
-    except CartNotFoundError:
+    except (CartNotFoundError, NotOwnedByUserError):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)

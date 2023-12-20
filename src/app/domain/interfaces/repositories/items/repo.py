@@ -9,10 +9,6 @@ class IItemsRepository(ABC):
         ...
 
     @abstractmethod
-    async def get_items(self) -> list[CartItem]:
-        ...
-
-    @abstractmethod
     async def update_item(self, item: CartItem) -> CartItem:
         ...
 
