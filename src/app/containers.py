@@ -12,7 +12,8 @@ from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
 from app.app_layer.use_cases.carts.clear_cart import ClearCartUseCase
 from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
 from app.config import Config
-from app.infra.events.arq.producer import ArqTaskProducer, init_arq_redis
+from app.infra.auth_system import FakeJWTAuthSystem
+from app.infra.events.arq.producer import ArqTaskProducer
 from app.infra.http.clients.products import ProductsHttpClient
 from app.infra.http.retry_systems.backoff import BackoffConfig, BackoffRetrySystem
 from app.infra.http.transports.aiohttp import init_aiohttp_transport
@@ -23,13 +24,9 @@ from app.infra.unit_of_work.sqla import Uow
 
 class EventsContainer(containers.DeclarativeContainer):
     config = providers.Dependency(instance_of=Config)
-    task_broker = providers.Resource(
-        init_arq_redis,
+    task_producer = providers.Resource(
+        ArqTaskProducer.create,
         config=config.provided.ARQ_REDIS,
-    )
-    task_producer = providers.Factory(
-        ArqTaskProducer,
-        broker=task_broker,
     )
 
 
@@ -71,18 +68,36 @@ class Container(containers.DeclarativeContainer):
     events = providers.Container(EventsContainer, config=config)
     db = providers.Container(DBContainer, config=config)
     products_client = providers.Container(ProductsClientContainer, config=config)
+    auth_system = providers.Factory(FakeJWTAuthSystem)
 
-    create_cart_use_case = providers.Factory(CreateCartUseCase, uow=db.container.uow)
+    create_cart_use_case = providers.Factory(
+        CreateCartUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
+    )
     add_cart_item_use_case = providers.Factory(
         AddCartItemUseCase,
         uow=db.container.uow,
         products_client=products_client.container.client,
+        auth_system=auth_system,
     )
-    cart_retrieve_use_case = providers.Factory(CartRetrieveUseCase, uow=db.container.uow)
-    cart_delete_use_case = providers.Factory(CartDeleteUseCase, uow=db.container.uow)
+    cart_retrieve_use_case = providers.Factory(
+        CartRetrieveUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
+    )
+    cart_delete_use_case = providers.Factory(
+        CartDeleteUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
+    )
     update_cart_item_use_case = providers.Factory(UpdateCartItemUseCase, uow=db.container.uow)
     delete_cart_item_use_case = providers.Factory(DeleteCartItemUseCase, uow=db.container.uow)
-    clear_cart_use_case = providers.Factory(ClearCartUseCase, uow=db.container.uow)
+    clear_cart_use_case = providers.Factory(
+        ClearCartUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
+    )
 
     @classmethod
     @asynccontextmanager
