@@ -10,6 +10,7 @@ from app.domain.cart_items.dto import ItemDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.entities import Cart
+from app.domain.carts.value_objects import CartStatusEnum
 from app.domain.interfaces.repositories.carts.exceptions import (
     ActiveCartAlreadyExistsError,
     CartNotFoundError,
@@ -26,7 +27,7 @@ class CartsRepository(ICartsRepository):
         stmt = insert(models.Cart).values(
             id=cart.id,
             user_id=cart.user_id,
-            is_active=cart.is_active,
+            status=cart.status,
         )
 
         try:
@@ -42,7 +43,7 @@ class CartsRepository(ICartsRepository):
             .options(joinedload(models.Cart.items))
             .where(
                 models.Cart.id == cart_id,
-                models.Cart.is_active.is_(True),
+                models.Cart.status != CartStatusEnum.DEACTIVATED,
             )
         )
         result = await self._session.scalars(stmt)
@@ -57,7 +58,7 @@ class CartsRepository(ICartsRepository):
         )
 
     async def update(self, cart: Cart) -> Cart:
-        stmt = update(models.Cart).where(models.Cart.id == cart.id).values(is_active=cart.is_active)
+        stmt = update(models.Cart).where(models.Cart.id == cart.id).values(status=cart.status)
         await self._session.execute(stmt)
 
         return cart
@@ -66,9 +67,7 @@ class CartsRepository(ICartsRepository):
         stmt = (
             select(models.Cart)
             .options(joinedload(models.Cart.items))
-            .where(
-                models.Cart.is_active.is_(True),
-            )
+            .where(models.Cart.status != CartStatusEnum.DEACTIVATED)
         )
         result = await self._session.scalars(stmt)
         obj_list = result.unique().all()

@@ -7,6 +7,8 @@ from pydantic import BaseModel
 class AddItemToCartInputDTO(BaseModel):
     id: int
     qty: Decimal
+    auth_data: str
+    cart_id: UUID
 
 
 class ItemOutputDTO(BaseModel):
@@ -32,12 +34,15 @@ class UpdateCartItemInputDTO(BaseModel):
     item_id: int
     cart_id: UUID
     qty: Decimal
+    auth_data: str
 
 
 class DeleteCartItemInputDTO(BaseModel):
     item_id: int
     cart_id: UUID
+    auth_data: str
 
 
-class CreateCartInputDTO(BaseModel):
-    user_id: int
+class ClearCartInputDTO(BaseModel):
+    cart_id: UUID
+    auth_data: str

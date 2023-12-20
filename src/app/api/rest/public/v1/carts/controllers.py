@@ -1,11 +1,15 @@
 from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 
-from app.api.rest.public.v1.errors import ACTIVE_CART_ALREADY_EXISTS_ERROR, RETRIEVE_CART_ERROR
+from app.api.rest.public.v1.errors import (
+    ACTIVE_CART_ALREADY_EXISTS_ERROR,
+    RETRIEVE_CART_ERROR,
+    AUTHORIZATION_ERROR,
+)
 from app.api.rest.public.v1.view_models import CartViewModel
-from app.app_layer.interfaces.use_cases.cart_items.dto import CreateCartInputDTO
+from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.use_cases.carts.cart_delete import ICartDeleteUseCase
 from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
 from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
@@ -21,11 +25,16 @@ router = APIRouter()
 @router.post("")
 @inject
 async def create(
-    data: CreateCartInputDTO,
+    auth_data: str = Header(..., alias="Authorization"),
     use_case: ICreateCartUseCase = Depends(Provide[Container.create_cart_use_case]),
 ) -> CartViewModel:
     try:
-        result = await use_case.execute(data=data)
+        result = await use_case.execute(auth_data=auth_data)
+    except InvalidAuthDataError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=AUTHORIZATION_ERROR,
+        )
     except ActiveCartAlreadyExistsError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -39,10 +48,16 @@ async def create(
 @inject
 async def retrieve(
     cart_id: UUID,
+    auth_data: str = Header(..., alias="Authorization"),
     use_case: ICartRetrieveUseCase = Depends(Provide[Container.cart_retrieve_use_case]),
 ) -> CartViewModel:
     try:
-        result = await use_case.execute(cart_id=cart_id)
+        result = await use_case.execute(auth_data=auth_data, cart_id=cart_id)
+    except InvalidAuthDataError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=AUTHORIZATION_ERROR,
+        )
     except CartNotFoundError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
 
@@ -53,9 +68,15 @@ async def retrieve(
 @inject
 async def deactivate(
     cart_id: UUID,
+    auth_data: str = Header(..., alias="Authorization"),
     use_case: ICartDeleteUseCase = Depends(Provide[Container.cart_delete_use_case]),
 ) -> None:
     try:
-        await use_case.execute(cart_id=cart_id)
+        await use_case.execute(auth_data=auth_data, cart_id=cart_id)
+    except InvalidAuthDataError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=AUTHORIZATION_ERROR,
+        )
     except CartNotFoundError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)

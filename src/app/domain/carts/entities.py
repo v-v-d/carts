@@ -7,22 +7,23 @@ from typing import ContextManager
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.exceptions import CartItemDoesNotExistError
+from app.domain.carts.value_objects import CartStatusEnum
 
 logger = getLogger(__name__)
 
 
 class Cart:
-    weight_item_qty: Decimal = Decimal(1)
+    WEIGHT_ITEM_QTY: Decimal = Decimal(1)
 
     def __init__(self, data: CartDTO, items: list[CartItem]) -> None:
         self.id = data.id
         self.user_id = data.user_id
-        self.is_active = data.is_active
+        self.status = data.status
         self.items = items
 
     @property
     def items_qty(self) -> Decimal:
-        return sum([self.weight_item_qty if item.is_weight else item.qty for item in self.items])
+        return sum([self.WEIGHT_ITEM_QTY if item.is_weight else item.qty for item in self.items])
 
     @property
     def cost(self) -> Decimal:
@@ -34,7 +35,7 @@ class Cart:
             data=CartDTO(
                 id=uuid.uuid4(),
                 user_id=user_id,
-                is_active=True,
+                status=CartStatusEnum.OPENED,
             ),
             items=[],
         )
@@ -61,7 +62,7 @@ class Cart:
         )
 
     def deactivate(self) -> None:
-        self.is_active = False
+        self.status = CartStatusEnum.DEACTIVATED
         logger.debug("Cart %s deactivated.", self.id)
 
     def get_item(self, item_id: int) -> CartItem:

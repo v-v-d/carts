@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.domain.carts.value_objects import CartStatusEnum
+
 
 class ItemOutputDTO(BaseModel):
     class Config:
@@ -22,6 +24,7 @@ class CartOutputDTO(BaseModel):
 
     id: UUID
     user_id: int
+    status: CartStatusEnum
     items: list[ItemOutputDTO]
     items_qty: Decimal
     cost: Decimal

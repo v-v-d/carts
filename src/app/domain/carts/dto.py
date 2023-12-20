@@ -2,6 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.domain.carts.value_objects import CartStatusEnum
+
 
 class CartDTO(BaseModel):
     class Config:
@@ -9,4 +11,4 @@ class CartDTO(BaseModel):
 
     id: UUID
     user_id: int
-    is_active: bool
+    status: CartStatusEnum

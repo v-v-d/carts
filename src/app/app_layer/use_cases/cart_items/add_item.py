@@ -1,7 +1,7 @@
 from decimal import Decimal
 from logging import getLogger
-from uuid import UUID
 
+from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
@@ -21,15 +21,18 @@ class AddCartItemUseCase(IAddCartItemUseCase):
         self,
         uow: IUnitOfWork,
         products_client: IProductsClient,
+        auth_system: IAuthSystem,
     ) -> None:
         self._uow = uow
         self._products_client = products_client
+        self._auth_system = auth_system
 
-    async def execute(self, cart_id: UUID, data: AddItemToCartInputDTO) -> CartOutputDTO:
+    async def execute(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
+        user = self._auth_system.get_user_data(auth_data=data.auth_data)
         CartItem.check_qty_above_min(data.qty)
 
         async with self._uow(autocommit=True):
-            cart = await self._uow.carts.retrieve(cart_id=cart_id)
+            cart = await self._uow.carts.retrieve(user_id=user.id, cart_id=data.cart_id)
 
         cart = await self._update_cart(cart=cart, data=data)
 

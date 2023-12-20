@@ -2,6 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.domain.carts.value_objects import CartStatusEnum
+
 
 class ItemViewModel(BaseModel):
     class Config:
@@ -23,6 +25,7 @@ class CartViewModel(BaseModel):
 
     id: UUID
     user_id: int
+    status: CartStatusEnum
     items: list[ItemViewModel]
     items_qty: float = Field(alias="items_quantity")
     cost: float

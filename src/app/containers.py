@@ -12,7 +12,7 @@ from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
 from app.app_layer.use_cases.carts.clear_cart import ClearCartUseCase
 from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
 from app.config import Config
-from app.infra.events.arq import ArqTaskProducer, init_arq_redis
+from app.infra.events.arq.producer import ArqTaskProducer, init_arq_redis
 from app.infra.http.clients.products import ProductsHttpClient
 from app.infra.http.retry_systems.backoff import BackoffConfig, BackoffRetrySystem
 from app.infra.http.transports.aiohttp import init_aiohttp_transport

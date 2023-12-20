@@ -6,6 +6,7 @@ from sqlalchemy import Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.cart_items import entities
+from app.domain.carts.value_objects import CartStatusEnum
 from app.infra.repositories.sqla.base import Base
 
 
@@ -27,7 +28,7 @@ class CartItem(Base):
     is_weight: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
 
     cart: Mapped["Cart"] = relationship(
-        "Cart", lazy="noload", back_populates="cart_items", uselist=False
+        "Cart", lazy="noload", back_populates="items", uselist=False
     )
 
 
@@ -36,16 +37,19 @@ class Cart(Base):
 
     id: Mapped[int] = mapped_column(sa.UUID(as_uuid=True), primary_key=True, default=uuid4)
     user_id: Mapped[int] = mapped_column(sa.Integer, nullable=False)
-    is_active: Mapped[bool] = mapped_column(sa.Boolean, nullable=False, default=True)
+    status: Mapped[CartStatusEnum] = mapped_column(
+        default=CartStatusEnum.OPENED,
+        server_default=CartStatusEnum.OPENED,
+    )
 
     items: Mapped[list[CartItem]] = relationship("CartItem", lazy="noload", back_populates="cart")
 
     __table_args__ = (
         Index(
-            "idx_user_id_is_active_unique",
+            "idx_user_id_opened_status_unique",
             "user_id",
-            "is_active",
+            "status",
             unique=True,
-            postgresql_where=(is_active.is_(True)),
+            postgresql_where=(status.__eq__(CartStatusEnum.OPENED.value)),
         ),
     )
