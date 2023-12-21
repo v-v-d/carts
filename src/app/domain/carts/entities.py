@@ -4,33 +4,38 @@ from decimal import Decimal
 from logging import getLogger
 from typing import ContextManager
 
+from app.config import CartConfig
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
-from app.domain.carts.exceptions import CartItemDoesNotExistError, NotOwnedByUserError
+from app.domain.carts.exceptions import (
+    CartItemDoesNotExistError,
+    NotOwnedByUserError,
+    MaxItemsQtyLimitExceeded,
+)
 from app.domain.carts.value_objects import CartStatusEnum
 
 logger = getLogger(__name__)
 
 
 class Cart:
-    WEIGHT_ITEM_QTY: Decimal = Decimal(1)
-
-    def __init__(self, data: CartDTO, items: list[CartItem]) -> None:
+    def __init__(self, data: CartDTO, items: list[CartItem], config: CartConfig) -> None:
         self.id = data.id
         self.user_id = data.user_id
         self.status = data.status
         self.items = items
 
+        self._config = config
+
     @property
     def items_qty(self) -> Decimal:
-        return sum([self.WEIGHT_ITEM_QTY if item.is_weight else item.qty for item in self.items])
+        return sum([self._config.weight_item_qty if item.is_weight else item.qty for item in self.items])
 
     @property
     def cost(self) -> Decimal:
         return sum([item.cost for item in self.items])
 
     @classmethod
-    def create(cls, user_id: int) -> "Cart":
+    def create(cls, user_id: int, config: CartConfig) -> "Cart":
         return cls(
             data=CartDTO(
                 id=uuid.uuid4(),
@@ -38,10 +43,14 @@ class Cart:
                 status=CartStatusEnum.OPENED,
             ),
             items=[],
+            config=config,
         )
 
     def increase_item_qty(self, item_id: int, qty: Decimal) -> None:
         with self._change_items() as items_by_id:
+            item = items_by_id[item_id]
+            self._validate_items_qty_limit()
+
             old_qty = items_by_id[item_id].qty
             items_by_id[item_id].qty += qty
             logger.debug(
@@ -104,6 +113,16 @@ class Cart:
                 user_id,
             )
             raise NotOwnedByUserError
+
+    def validate_items_qty_limit(self) -> None:
+        if self.items_qty > self._config.restrictions.max_items_qty:
+            logger.debug(
+                "Cart %s. Max items qty limit exceeded! Limit %s, got %s",
+                self.id,
+                self._config.restrictions.max_items_qty,
+                self.items_qty,
+            )
+            raise MaxItemsQtyLimitExceeded
 
     @contextmanager
     def _change_items(self) -> ContextManager[dict[int:CartItem]]:

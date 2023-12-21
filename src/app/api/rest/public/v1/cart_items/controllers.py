@@ -11,6 +11,8 @@ from app.api.rest.public.v1.errors import (
     AUTHORIZATION_ERROR,
     FORBIDDEN_ERROR,
     UPDATE_CART_ITEM_ERROR,
+    ADD_CART_ITEM_MAX_QTY_ERROR,
+    UPDATE_CART_ITEM_MAX_QTY_ERROR,
 )
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
@@ -27,7 +29,11 @@ from app.app_layer.interfaces.use_cases.cart_items.update_item import IUpdateCar
 from app.app_layer.interfaces.use_cases.carts.clear_cart import IClearCartUseCase
 from app.containers import Container
 from app.domain.cart_items.exceptions import MinQtyLimitExceededError
-from app.domain.carts.exceptions import CartItemDoesNotExistError, NotOwnedByUserError
+from app.domain.carts.exceptions import (
+    CartItemDoesNotExistError,
+    NotOwnedByUserError,
+    MaxItemsQtyLimitExceeded,
+)
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
 
 router = APIRouter()
@@ -62,6 +68,8 @@ async def add_item(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR)
     except (ProductsClientError, MinQtyLimitExceededError):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ADD_CART_ITEM_ERROR)
+    except MaxItemsQtyLimitExceeded:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ADD_CART_ITEM_MAX_QTY_ERROR)
 
     return CartViewModel.model_validate(result)
 
@@ -93,8 +101,10 @@ async def update_item(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
     except NotOwnedByUserError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR)
-    except CartItemDoesNotExistError:
+    except (CartItemDoesNotExistError, MinQtyLimitExceededError):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=UPDATE_CART_ITEM_ERROR)
+    except MaxItemsQtyLimitExceeded:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=UPDATE_CART_ITEM_MAX_QTY_ERROR)
 
     return CartViewModel.model_validate(result)
 

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any
 
 from pydantic import AnyHttpUrl, BaseModel, PostgresDsn
@@ -35,6 +36,15 @@ class ArqRedisConfig(BaseModel):
     conn_timeout: int = 60
 
 
+class CartRestrictionsConfig(BaseModel):
+    max_items_qty: int = 30
+
+
+class CartConfig(BaseModel):
+    restrictions: CartRestrictionsConfig
+    weight_item_qty: Decimal = Decimal(1)
+
+
 class Config(BaseSettings):
     class Config:
         env_file = ".env"
@@ -44,3 +54,4 @@ class Config(BaseSettings):
     ARQ_REDIS: ArqRedisConfig
     DB: DBConfig
     LOGGING: LoggingConfig
+    CART: CartConfig

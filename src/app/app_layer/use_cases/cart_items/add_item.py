@@ -29,7 +29,7 @@ class AddCartItemUseCase(IAddCartItemUseCase):
 
     async def execute(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=data.auth_data)
-        CartItem.check_qty_above_min(data.qty)
+        CartItem.check_qty_above_min(qty=data.qty)
 
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)
@@ -54,6 +54,7 @@ class AddCartItemUseCase(IAddCartItemUseCase):
     ) -> Cart:
         item = await self._try_to_create_item(cart=cart, data=data)
         cart.add_new_item(item)
+        cart.validate_items_qty_limit()
 
         async with self._uow(autocommit=True):
             await self._uow.items.add_item(item=item)
@@ -85,6 +86,7 @@ class AddCartItemUseCase(IAddCartItemUseCase):
 
     async def _increase_item_qty(self, cart: Cart, item: CartItem, qty: Decimal) -> Cart:
         cart.increase_item_qty(item_id=item.id, qty=qty)
+        cart.validate_items_qty_limit()
 
         async with self._uow(autocommit=True):
             await self._uow.items.update_item(item=item)

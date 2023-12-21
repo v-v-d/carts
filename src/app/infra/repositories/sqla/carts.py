@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from app.config import CartConfig
 from app.domain.cart_items.dto import ItemDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
@@ -20,8 +21,9 @@ from app.infra.repositories.sqla import models
 
 
 class CartsRepository(ICartsRepository):
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, config: CartConfig) -> None:
         self._session = session
+        self._config = config
 
     async def create(self, cart: Cart) -> Cart:
         stmt = insert(models.Cart).values(
@@ -55,6 +57,7 @@ class CartsRepository(ICartsRepository):
         return Cart(
             data=CartDTO.model_validate(obj),
             items=[CartItem(data=ItemDTO.model_validate(item)) for item in obj.items],
+            config=self._config,
         )
 
     async def update(self, cart: Cart) -> Cart:

@@ -33,7 +33,11 @@ class EventsContainer(containers.DeclarativeContainer):
 class DBContainer(containers.DeclarativeContainer):
     config = providers.Dependency(instance_of=Config)
     db = providers.Singleton(Database, config=config.provided.DB)
-    uow = providers.Factory(Uow, session_factory=db.provided.session_factory)
+    uow = providers.Factory(
+        Uow,
+        session_factory=db.provided.session_factory,
+        config=config.provided,
+    )
 
 
 class ProductsClientContainer(containers.DeclarativeContainer):
@@ -74,6 +78,7 @@ class Container(containers.DeclarativeContainer):
         CreateCartUseCase,
         uow=db.container.uow,
         auth_system=auth_system,
+        config=config.CART,
     )
     add_cart_item_use_case = providers.Factory(
         AddCartItemUseCase,

@@ -8,3 +8,7 @@ class CartItemDoesNotExistError(BaseCartDomainError):
 
 class NotOwnedByUserError(BaseCartDomainError):
     pass
+
+
+class MaxItemsQtyLimitExceeded(BaseCartDomainError):
+    pass

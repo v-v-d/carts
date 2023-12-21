@@ -17,6 +17,7 @@ class UpdateCartItemUseCase(IUpdateCartItemUseCase):
 
     async def execute(self, data: UpdateCartItemInputDTO) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=data.auth_data)
+        CartItem.check_qty_above_min(qty=data.qty)
 
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)
@@ -33,6 +34,7 @@ class UpdateCartItemUseCase(IUpdateCartItemUseCase):
         new_qty: Decimal,
     ) -> Cart:
         cart.update_item_qty(item_id=item.id, qty=new_qty)
+        cart.validate_items_qty_limit()
 
         try:
             item.check_item_qty_above_min()
