@@ -28,3 +28,4 @@ class CartOutputDTO(BaseModel):
     items: list[ItemOutputDTO]
     items_qty: Decimal
     cost: Decimal
+    checkout_enabled: bool

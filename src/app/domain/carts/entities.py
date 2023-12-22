@@ -48,6 +48,10 @@ class Cart:
     def cost(self) -> Decimal:
         return sum([item.cost for item in self.items])
 
+    @property
+    def checkout_enabled(self) -> bool:
+        return self.cost >= self._config.restrictions.min_cost_for_checkout
+
     @classmethod
     def create(cls, user_id: int, config: CartConfig) -> "Cart":
         return cls(

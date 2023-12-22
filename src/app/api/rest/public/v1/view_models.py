@@ -29,3 +29,4 @@ class CartViewModel(BaseModel):
     items: list[ItemViewModel]
     items_qty: float = Field(alias="items_quantity")
     cost: float
+    checkout_enabled: bool

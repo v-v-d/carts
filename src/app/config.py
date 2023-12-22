@@ -38,6 +38,7 @@ class ArqRedisConfig(BaseModel):
 
 class CartRestrictionsConfig(BaseModel):
     max_items_qty: int = 30
+    min_cost_for_checkout: int = 500
 
 
 class CartConfig(BaseModel):
