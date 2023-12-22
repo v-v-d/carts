@@ -61,7 +61,11 @@ class CartsRepository(ICartsRepository):
         )
 
     async def update(self, cart: Cart) -> Cart:
-        stmt = update(models.Cart).where(models.Cart.id == cart.id).values(status=cart.status)
+        stmt = (
+            update(models.Cart)
+            .where(models.Cart.id == cart.id)
+            .values(status=cart.status)
+        )
         await self._session.execute(stmt)
 
         return cart

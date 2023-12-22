@@ -3,7 +3,9 @@ from decimal import Decimal
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.cart_items.dto import UpdateCartItemInputDTO
-from app.app_layer.interfaces.use_cases.cart_items.update_item import IUpdateCartItemUseCase
+from app.app_layer.interfaces.use_cases.cart_items.update_item import (
+    IUpdateCartItemUseCase,
+)
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.cart_items.exceptions import MinQtyLimitExceededError
@@ -34,7 +36,6 @@ class UpdateCartItemUseCase(IUpdateCartItemUseCase):
         new_qty: Decimal,
     ) -> Cart:
         cart.update_item_qty(item_id=item.id, qty=new_qty)
-        cart.validate_items_qty_limit()
 
         try:
             item.check_item_qty_above_min()

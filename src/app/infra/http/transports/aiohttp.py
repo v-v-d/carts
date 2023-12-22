@@ -41,8 +41,12 @@ class AioHttpTransport(IHttpTransport):
         ) as err:
             raise HttpTransportError(str(err))
 
-    async def _try_to_make_request(self, data: HttpRequestInputDTO) -> dict[str, Any] | str:
-        trace_ctx = SimpleNamespace(data=data, integration_name=self._config.integration_name)
+    async def _try_to_make_request(
+        self, data: HttpRequestInputDTO
+    ) -> dict[str, Any] | str:
+        trace_ctx = SimpleNamespace(
+            data=data, integration_name=self._config.integration_name
+        )
 
         async with self._session.request(
             method=data.method,
@@ -90,7 +94,9 @@ async def _on_request_end(
         return
 
     response = await _get_response_data(params.response)
-    logger.debug("Server got response: %s. %s", response, vars(trace_ctx.trace_request_ctx))
+    logger.debug(
+        "Server got response: %s. %s", response, vars(trace_ctx.trace_request_ctx)
+    )
 
 
 async def _on_request_exception(

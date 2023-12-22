@@ -54,14 +54,17 @@ class AddCartItemUseCase(IAddCartItemUseCase):
     ) -> Cart:
         item = await self._try_to_create_item(cart=cart, data=data)
         cart.add_new_item(item)
-        cart.validate_items_qty_limit()
 
         async with self._uow(autocommit=True):
             await self._uow.items.add_item(item=item)
 
         return cart
 
-    async def _try_to_create_item(self, cart: Cart, data: AddItemToCartInputDTO) -> CartItem:
+    async def _try_to_create_item(
+        self,
+        cart: Cart,
+        data: AddItemToCartInputDTO,
+    ) -> CartItem:
         try:
             product = await self._products_client.get_product(item_id=data.id)
         except ProductsClientError as err:
@@ -86,7 +89,6 @@ class AddCartItemUseCase(IAddCartItemUseCase):
 
     async def _increase_item_qty(self, cart: Cart, item: CartItem, qty: Decimal) -> Cart:
         cart.increase_item_qty(item_id=item.id, qty=qty)
-        cart.validate_items_qty_limit()
 
         async with self._uow(autocommit=True):
             await self._uow.items.update_item(item=item)

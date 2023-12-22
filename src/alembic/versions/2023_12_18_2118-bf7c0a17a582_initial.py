@@ -28,7 +28,9 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column(
             "status",
-            sa.Enum("OPENED", "DEACTIVATED", "LOCKED", "COMPLETED", name="cart_status_enum"),
+            sa.Enum(
+                "OPENED", "DEACTIVATED", "LOCKED", "COMPLETED", name="cart_status_enum"
+            ),
             server_default="OPENED",
             nullable=False,
         ),
@@ -52,7 +54,10 @@ def upgrade() -> None:
         sa.Column("price", sa.Numeric(precision=10, scale=2), nullable=False),
         sa.Column("is_weight", sa.Boolean(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["cart_id"], ["content.carts.id"], name="item_cart_id_fkey", ondelete="CASCADE"
+            ["cart_id"],
+            ["content.carts.id"],
+            name="item_cart_id_fkey",
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", "cart_id"),
         schema="content",

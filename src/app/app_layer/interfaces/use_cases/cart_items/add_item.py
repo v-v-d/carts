@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
 
 from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO

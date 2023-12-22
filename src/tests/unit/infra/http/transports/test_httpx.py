@@ -57,12 +57,16 @@ def transport(client: MagicMock) -> HttpxTransport:
     ("request_data", "response"),
     [
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"Content-Type": "application/json", "returns": {"200": "OK"}},
             id="application/json & method & url",
         ),
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"Content-Type": "text/html", "returns": "200 OK"},
             id="text/html & method & url",
         ),
@@ -154,13 +158,17 @@ async def test_request_ok(
     ("request_data", "response", "client"),
     [
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"Content-Type": "text/html", "returns": "200 OK"},
             {"raises": asyncio.TimeoutError},
             id="asyncio.TimeoutError",
         ),
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"Content-Type": "text/html", "returns": "200 OK"},
             {"raises": BrokenPipeError},
             id="BrokenPipeError",
@@ -191,7 +199,9 @@ async def test_connection_error(
     ("request_data", "response"),
     [
         (
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {
                 "Content-Type": "application/json",
                 "raises": HTTPStatusError(

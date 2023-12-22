@@ -3,7 +3,11 @@ from typing import Any, Generator
 
 from httpx import AsyncClient, HTTPError, Response
 
-from app.infra.http.transports.base import HttpRequestInputDTO, HttpTransportError, IHttpTransport
+from app.infra.http.transports.base import (
+    HttpRequestInputDTO,
+    HttpTransportError,
+    IHttpTransport,
+)
 
 
 class HttpxTransport(IHttpTransport):
@@ -18,7 +22,9 @@ class HttpxTransport(IHttpTransport):
         except (asyncio.TimeoutError, BrokenPipeError) as err:
             raise HttpTransportError(str(err))
 
-    async def _try_to_make_request(self, data: HttpRequestInputDTO) -> dict[str, Any] | str:
+    async def _try_to_make_request(
+        self, data: HttpRequestInputDTO
+    ) -> dict[str, Any] | str:
         response = await self._client.request(
             method=data.method,
             url=data.url,

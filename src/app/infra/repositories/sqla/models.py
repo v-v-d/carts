@@ -35,14 +35,18 @@ class CartItem(Base):
 class Cart(Base):
     __tablename__ = "carts"
 
-    id: Mapped[int] = mapped_column(sa.UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id: Mapped[int] = mapped_column(
+        sa.UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
     user_id: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     status: Mapped[CartStatusEnum] = mapped_column(
         default=CartStatusEnum.OPENED,
         server_default=CartStatusEnum.OPENED,
     )
 
-    items: Mapped[list[CartItem]] = relationship("CartItem", lazy="noload", back_populates="cart")
+    items: Mapped[list[CartItem]] = relationship(
+        "CartItem", lazy="noload", back_populates="cart"
+    )
 
     __table_args__ = (
         Index(

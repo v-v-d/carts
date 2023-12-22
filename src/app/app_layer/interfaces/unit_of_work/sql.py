@@ -16,7 +16,9 @@ class IUnitOfWork(ABC):
     async def __aenter__(self) -> "IUnitOfWork":
         return self  # pragma: no cover
 
-    async def __aexit__(self, exc_type: type[BaseException] | None, *args, **kwargs) -> None:
+    async def __aexit__(
+        self, exc_type: type[BaseException] | None, *args, **kwargs
+    ) -> None:
         if exc_type is not None:
             await self.rollback()
         else:

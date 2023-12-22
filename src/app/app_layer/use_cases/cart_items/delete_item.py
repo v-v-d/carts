@@ -1,6 +1,8 @@
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.cart_items.delete_item import IDeleteCartItemUseCase
+from app.app_layer.interfaces.use_cases.cart_items.delete_item import (
+    IDeleteCartItemUseCase,
+)
 from app.app_layer.interfaces.use_cases.cart_items.dto import DeleteCartItemInputDTO
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
 from app.domain.cart_items.entities import CartItem

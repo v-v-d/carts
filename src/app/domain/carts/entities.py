@@ -1,16 +1,16 @@
 import uuid
-from contextlib import contextmanager
 from decimal import Decimal
 from logging import getLogger
-from typing import ContextManager
 
 from app.config import CartConfig
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.exceptions import (
     CartItemDoesNotExistError,
-    NotOwnedByUserError,
+    ChangeStatusError,
     MaxItemsQtyLimitExceeded,
+    NotOwnedByUserError,
+    OperationForbiddenError,
 )
 from app.domain.carts.value_objects import CartStatusEnum
 
@@ -18,6 +18,15 @@ logger = getLogger(__name__)
 
 
 class Cart:
+    STATUS_TRANSITION_RULESET: dict[
+        CartStatusEnum, dict[CartStatusEnum, CartStatusEnum]
+    ] = {
+        CartStatusEnum.OPENED: {CartStatusEnum.DEACTIVATED, CartStatusEnum.LOCKED},
+        CartStatusEnum.DEACTIVATED: {},
+        CartStatusEnum.LOCKED: {CartStatusEnum.OPENED, CartStatusEnum.COMPLETED},
+        CartStatusEnum.COMPLETED: {},
+    }
+
     def __init__(self, data: CartDTO, items: list[CartItem], config: CartConfig) -> None:
         self.id = data.id
         self.user_id = data.user_id
@@ -28,7 +37,12 @@ class Cart:
 
     @property
     def items_qty(self) -> Decimal:
-        return sum([self._config.weight_item_qty if item.is_weight else item.qty for item in self.items])
+        return sum(
+            [
+                self._config.weight_item_qty if item.is_weight else item.qty
+                for item in self.items
+            ]
+        )
 
     @property
     def cost(self) -> Decimal:
@@ -47,32 +61,21 @@ class Cart:
         )
 
     def increase_item_qty(self, item_id: int, qty: Decimal) -> None:
-        with self._change_items() as items_by_id:
-            item = items_by_id[item_id]
-            self._validate_items_qty_limit()
+        self._check_can_be_modified(action="increase item qty")
 
-            old_qty = items_by_id[item_id].qty
-            items_by_id[item_id].qty += qty
-            logger.debug(
-                "Cart %s, item %s. Item qty changed from %s to %s.",
-                self.id,
-                item_id,
-                old_qty,
-                items_by_id[item_id].qty,
-            )
+        items_by_id = {item.id: item for item in self.items}
+        items_by_id[item_id].qty += qty
+
+        self._validate_items_qty_limit()
 
     def add_new_item(self, item: CartItem) -> None:
+        self._check_can_be_modified(action="add new item")
         self.items.append(item)
-        logger.debug(
-            "Cart %s. New item %s with %s qty added to cart.",
-            self.id,
-            item.id,
-            item.qty,
-        )
+        self._validate_items_qty_limit()
 
     def deactivate(self) -> None:
+        self._validate_status_transition(new_status=CartStatusEnum.DEACTIVATED)
         self.status = CartStatusEnum.DEACTIVATED
-        logger.debug("Cart %s deactivated.", self.id)
 
     def get_item(self, item_id: int) -> CartItem:
         items_by_id = {item.id: item for item in self.items}
@@ -84,48 +87,60 @@ class Cart:
         return items_by_id[item_id]
 
     def update_item_qty(self, item_id: int, qty: Decimal) -> None:
-        with self._change_items() as items_by_id:
-            old_qty = items_by_id[item_id].qty
-            items_by_id[item_id].qty = qty
-            logger.debug(
-                "Cart %s, item %s. Item qty changed from %s to %s.",
-                self.id,
-                item_id,
-                old_qty,
-                items_by_id[item_id].qty,
-            )
+        self._check_can_be_modified(action="update item qty")
+
+        items_by_id = {item.id: item for item in self.items}
+        items_by_id[item_id].qty = qty
+
+        self._validate_items_qty_limit()
 
     def delete_item(self, item: CartItem) -> None:
-        with self._change_items() as items_by_id:
-            items_by_id.pop(item.id)
-            logger.debug("Cart %s, item %s deleted.", self.id, item.id)
+        self._check_can_be_modified(action="delete item")
+
+        items_by_id = {item.id: item for item in self.items}
+        items_by_id.pop(item.id)
+        self.items = list(items_by_id.values())
 
     def clear(self) -> None:
+        self._check_can_be_modified(action="clear cart")
         self.items = []
-        logger.debug("Cart %s has been cleared.", self.id)
 
     def check_user_ownership(self, user_id: int) -> None:
         if self.user_id != user_id:
             logger.debug(
-                "Cart %s. Invalid user_id detected! Expected %s, got %s",
+                "Cart %s. Invalid user_id detected! Expected: %s, got: %s",
                 self.id,
                 self.user_id,
                 user_id,
             )
             raise NotOwnedByUserError
 
-    def validate_items_qty_limit(self) -> None:
+    def _validate_items_qty_limit(self) -> None:
         if self.items_qty > self._config.restrictions.max_items_qty:
             logger.debug(
-                "Cart %s. Max items qty limit exceeded! Limit %s, got %s",
+                "Cart %s. Max items qty limit exceeded! Limit: %s, got: %s",
                 self.id,
                 self._config.restrictions.max_items_qty,
                 self.items_qty,
             )
             raise MaxItemsQtyLimitExceeded
 
-    @contextmanager
-    def _change_items(self) -> ContextManager[dict[int:CartItem]]:
-        items_by_id = {item.id: item for item in self.items}
-        yield items_by_id
-        self.items = list(items_by_id.values())
+    def _validate_status_transition(self, new_status: CartStatusEnum) -> None:
+        if new_status not in self.STATUS_TRANSITION_RULESET[self.status]:
+            logger.error(
+                "Cart %s. Change status error! Expected: %s, got: %s",
+                self.id,
+                self.STATUS_TRANSITION_RULESET[self.status],
+                new_status,
+            )
+            raise ChangeStatusError
+
+    def _check_can_be_modified(self, action: str) -> None:
+        if self.status != CartStatusEnum.OPENED:
+            logger.error(
+                f"Cart %s. Failed to {action} due to bad status! Expected: %s, actual: %s",
+                self.id,
+                CartStatusEnum.OPENED,
+                self.status,
+            )
+            raise OperationForbiddenError

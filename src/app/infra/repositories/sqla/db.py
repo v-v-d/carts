@@ -41,7 +41,9 @@ class Database:
             json_deserializer=orjson.loads,
             echo=config.debug,
         )
-        self._session_factory = async_sessionmaker(bind=self._engine, expire_on_commit=False)
+        self._session_factory = async_sessionmaker(
+            bind=self._engine, expire_on_commit=False
+        )
 
     @property
     def engine(self) -> AsyncEngine:

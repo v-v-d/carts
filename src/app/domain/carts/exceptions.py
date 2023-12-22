@@ -12,3 +12,11 @@ class NotOwnedByUserError(BaseCartDomainError):
 
 class MaxItemsQtyLimitExceeded(BaseCartDomainError):
     pass
+
+
+class ChangeStatusError(BaseCartDomainError):
+    pass
+
+
+class OperationForbiddenError(BaseCartDomainError):
+    pass

@@ -19,7 +19,9 @@ def task_producer(mocker: MockerFixture) -> AsyncMock:
     return mocker.AsyncMock(spec=ArqTaskProducer)
 
 
-async def test_ok(http_client: AsyncClient, url_path: str, task_producer: AsyncMock) -> None:
+async def test_ok(
+    http_client: AsyncClient, url_path: str, task_producer: AsyncMock
+) -> None:
     async with lifespan(app):
         with app.container.events.task_producer.override(task_producer):
             response = await http_client.post(url=url_path)

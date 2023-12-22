@@ -71,7 +71,9 @@ async def test_ok(
 ) -> None:
     async with lifespan(app):
         with app.container.add_cart_item_use_case.override(use_case):
-            response = await http_client.post(url=url_path, content=request_body.model_dump_json())
+            response = await http_client.post(
+                url=url_path, content=request_body.model_dump_json()
+            )
 
     assert response.status_code == HTTPStatus.OK, response.text
     assert response.json() == {
@@ -100,7 +102,9 @@ async def test_failed(
 ) -> None:
     async with lifespan(app):
         with app.container.add_cart_item_use_case.override(use_case):
-            response = await http_client.post(url=url_path, content=request_body.model_dump_json())
+            response = await http_client.post(
+                url=url_path, content=request_body.model_dump_json()
+            )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST, response.text
     assert response.json()["detail"] == ITEM_ADDING_ERROR

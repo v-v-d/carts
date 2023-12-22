@@ -4,7 +4,12 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from aiohttp import ClientConnectionError, ClientPayloadError, ClientResponseError, ClientSession
+from aiohttp import (
+    ClientConnectionError,
+    ClientPayloadError,
+    ClientResponseError,
+    ClientSession,
+)
 from pytest_asyncio.plugin import SubRequest
 from pytest_mock import MockerFixture
 
@@ -73,12 +78,16 @@ def transport(session: MagicMock, config: HttpTransportConfig) -> AioHttpTranspo
     ("request_data", "response"),
     [
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"content_type": "application/json", "returns": {"200": "OK"}},
             id="application/json & method & url",
         ),
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"content_type": "text/html", "returns": "200 OK"},
             id="text/html & method & url",
         ),
@@ -175,25 +184,33 @@ async def test_request_ok(
     ("request_data", "response", "session"),
     [
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"content_type": "text/html", "returns": "200 OK"},
             {"raises": ClientConnectionError},
             id="ClientConnectionError",
         ),
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"content_type": "text/html", "returns": "200 OK"},
             {"raises": ClientPayloadError},
             id="ClientPayloadError",
         ),
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"content_type": "text/html", "returns": "200 OK"},
             {"raises": asyncio.TimeoutError},
             id="asyncio.TimeoutError",
         ),
         pytest.param(
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {"content_type": "text/html", "returns": "200 OK"},
             {"raises": BrokenPipeError},
             id="BrokenPipeError",
@@ -229,7 +246,9 @@ async def test_connection_error(
     ("request_data", "response"),
     [
         (
-            HttpRequestInputDTO(method=fake.internet.http_method(), url=fake.internet.url()),
+            HttpRequestInputDTO(
+                method=fake.internet.http_method(), url=fake.internet.url()
+            ),
             {
                 "content_type": "application/json",
                 "raises": ClientResponseError(

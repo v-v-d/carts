@@ -1,12 +1,13 @@
 from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from app.api.rest.public.v1.errors import (
     ACTIVE_CART_ALREADY_EXISTS_ERROR,
-    RETRIEVE_CART_ERROR,
     AUTHORIZATION_ERROR,
+    DELETE_CART_ERROR,
+    RETRIEVE_CART_ERROR,
 )
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
@@ -14,7 +15,7 @@ from app.app_layer.interfaces.use_cases.carts.cart_delete import ICartDeleteUseC
 from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
 from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
 from app.containers import Container
-from app.domain.carts.exceptions import NotOwnedByUserError
+from app.domain.carts.exceptions import ChangeStatusError, NotOwnedByUserError
 from app.domain.interfaces.repositories.carts.exceptions import (
     ActiveCartAlreadyExistsError,
     CartNotFoundError,
@@ -60,7 +61,10 @@ async def retrieve(
             detail=AUTHORIZATION_ERROR,
         )
     except (CartNotFoundError, NotOwnedByUserError):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=RETRIEVE_CART_ERROR,
+        )
 
     return CartViewModel.model_validate(result)
 
@@ -80,4 +84,11 @@ async def deactivate(
             detail=AUTHORIZATION_ERROR,
         )
     except (CartNotFoundError, NotOwnedByUserError):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR
+        )
+    except ChangeStatusError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=DELETE_CART_ERROR,
+        )

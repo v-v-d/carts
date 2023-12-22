@@ -58,10 +58,14 @@ def http_config() -> HttpTransportConfig:
 
 
 @pytest.fixture()
-def products_transport(http_session: AsyncMock, http_config: HttpTransportConfig) -> IHttpTransport:
+def products_transport(
+    http_session: AsyncMock, http_config: HttpTransportConfig
+) -> IHttpTransport:
     return AioHttpTransport(session=http_session, config=http_config)
 
 
 @pytest.fixture()
-def products_client(products_base_url: str, products_transport: IHttpTransport) -> IProductsClient:
+def products_client(
+    products_base_url: str, products_transport: IHttpTransport
+) -> IProductsClient:
     return ProductsHttpClient(base_url=products_base_url, transport=products_transport)

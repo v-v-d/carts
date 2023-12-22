@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, status, Header
+from fastapi import APIRouter, Depends, Header, status
 
 from app.app_layer.interfaces.tasks.producer import ITaskProducer
 from app.containers import Container

@@ -96,8 +96,16 @@ class Container(containers.DeclarativeContainer):
         uow=db.container.uow,
         auth_system=auth_system,
     )
-    update_cart_item_use_case = providers.Factory(UpdateCartItemUseCase, uow=db.container.uow)
-    delete_cart_item_use_case = providers.Factory(DeleteCartItemUseCase, uow=db.container.uow)
+    update_cart_item_use_case = providers.Factory(
+        UpdateCartItemUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
+    )
+    delete_cart_item_use_case = providers.Factory(
+        DeleteCartItemUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
+    )
     clear_cart_use_case = providers.Factory(
         ClearCartUseCase,
         uow=db.container.uow,

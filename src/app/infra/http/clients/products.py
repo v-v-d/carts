@@ -7,7 +7,11 @@ from pydantic import AnyHttpUrl, BaseModel, ValidationError
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.dto import ProductOutputDTO
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
-from app.infra.http.transports.base import HttpRequestInputDTO, HttpTransportError, IHttpTransport
+from app.infra.http.transports.base import (
+    HttpRequestInputDTO,
+    HttpTransportError,
+    IHttpTransport,
+)
 
 
 class ProductsHttpClient(IProductsClient):
@@ -32,7 +36,9 @@ class ProductsHttpClient(IProductsClient):
         except HttpTransportError as err:
             raise ProductsClientError(str(err))
 
-    def _try_to_get_dto(self, dto_model: Type[BaseModel], response: dict[str, Any] | str) -> Any:
+    def _try_to_get_dto(
+        self, dto_model: Type[BaseModel], response: dict[str, Any] | str
+    ) -> Any:
         try:
             return dto_model(**response)
         except (ValidationError, TypeError) as err:

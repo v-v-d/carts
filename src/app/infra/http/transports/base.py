@@ -45,7 +45,9 @@ class RetryableHttpTransport(IHttpTransport):
         self._transport = transport
         self._retry_system = retry_system
 
-    async def request(self, data: HttpRequestInputDTO) -> list[Any] | dict[Any, Any] | str:
+    async def request(
+        self, data: HttpRequestInputDTO
+    ) -> list[Any] | dict[Any, Any] | str:
         if not self._retry_system.enabled:
             return await self._transport.request(data)
 
