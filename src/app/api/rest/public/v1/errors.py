@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 ACTIVE_CART_ALREADY_EXISTS_ERROR_CODE = 1000
 ACTIVE_CART_ALREADY_EXISTS_ERROR_TEXT = "Active cart already exists."
 RETRIEVE_CART_ERROR_CODE = 1001
@@ -20,10 +22,24 @@ UPDATE_CART_ITEM_ERROR_CODE = 2002
 UPDATE_CART_ITEM_ERROR_TEXT = "Failed to update cart item."
 DELETE_CART_ITEM_ERROR_CODE = 2003
 DELETE_CART_ITEM_ERROR_TEXT = "Cart item doesn't exist."
+CART_ITEM_QTY_LIMIT_EXCEEDED_CODE = 2004
+CART_ITEM_QTY_LIMIT_EXCEEDED_TEXT = (
+    "Item qty limit exceeded. Limit: {limit}, got: {actual}."
+)
 AUTHORIZATION_ERROR_CODE = 3000
 AUTHORIZATION_ERROR_TEXT = "Authorization failed."
 FORBIDDEN_ERROR_CODE = 3001
 FORBIDDEN_ERROR_TEXT = "Forbidden."
+
+
+def get_cart_item_qty_limit_exceeded_error(
+    limit: Decimal,
+    actual: Decimal,
+) -> dict[str, str]:
+    return {
+        "code": CART_ITEM_QTY_LIMIT_EXCEEDED_CODE,
+        "message": CART_ITEM_QTY_LIMIT_EXCEEDED_TEXT.format(limit, actual),
+    }
 
 
 RETRIEVE_CART_ERROR = {

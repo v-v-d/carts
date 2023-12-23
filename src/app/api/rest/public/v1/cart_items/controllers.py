@@ -14,6 +14,7 @@ from app.api.rest.public.v1.errors import (
     RETRIEVE_CART_ERROR,
     UPDATE_CART_ITEM_ERROR,
     UPDATE_CART_ITEM_MAX_QTY_ERROR,
+    get_cart_item_qty_limit_exceeded_error,
 )
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
@@ -39,6 +40,7 @@ from app.domain.carts.exceptions import (
     MaxItemsQtyLimitExceeded,
     NotOwnedByUserError,
     OperationForbiddenError,
+    SpecificItemQtyLimitExceeded,
 )
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
 
@@ -84,6 +86,13 @@ async def add_item(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=ADD_CART_ITEM_ERROR
         )
+    except SpecificItemQtyLimitExceeded as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=get_cart_item_qty_limit_exceeded_error(
+                limit=err.limit, actual=err.actual
+            ),
+        )
     except MaxItemsQtyLimitExceeded:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=ADD_CART_ITEM_MAX_QTY_ERROR
@@ -92,7 +101,7 @@ async def add_item(
     return CartViewModel.model_validate(result)
 
 
-@router.put("/{item_id}")
+@router.patch("/{item_id}")
 @inject
 async def update_item(
     cart_id: UUID,
@@ -132,6 +141,13 @@ async def update_item(
     except (CartItemDoesNotExistError, MinQtyLimitExceededError):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=UPDATE_CART_ITEM_ERROR
+        )
+    except SpecificItemQtyLimitExceeded as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=get_cart_item_qty_limit_exceeded_error(
+                limit=err.limit, actual=err.actual
+            ),
         )
     except MaxItemsQtyLimitExceeded:
         raise HTTPException(

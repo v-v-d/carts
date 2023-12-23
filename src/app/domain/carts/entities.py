@@ -11,6 +11,7 @@ from app.domain.carts.exceptions import (
     MaxItemsQtyLimitExceeded,
     NotOwnedByUserError,
     OperationForbiddenError,
+    SpecificItemQtyLimitExceeded,
 )
 from app.domain.carts.value_objects import CartStatusEnum
 
@@ -70,10 +71,12 @@ class Cart:
         items_by_id = {item.id: item for item in self.items}
         items_by_id[item_id].qty += qty
 
+        self._check_specific_item_qty_limit(item=items_by_id[item_id])
         self._validate_items_qty_limit()
 
     def add_new_item(self, item: CartItem) -> None:
         self._check_can_be_modified(action="add new item")
+        self._check_specific_item_qty_limit(item=item)
         self.items.append(item)
         self._validate_items_qty_limit()
 
@@ -96,6 +99,7 @@ class Cart:
         items_by_id = {item.id: item for item in self.items}
         items_by_id[item_id].qty = qty
 
+        self._check_specific_item_qty_limit(item=items_by_id[item_id])
         self._validate_items_qty_limit()
 
     def delete_item(self, item: CartItem) -> None:
@@ -111,7 +115,7 @@ class Cart:
 
     def check_user_ownership(self, user_id: int) -> None:
         if self.user_id != user_id:
-            logger.debug(
+            logger.info(
                 "Cart %s. Invalid user_id detected! Expected: %s, got: %s",
                 self.id,
                 self.user_id,
@@ -119,9 +123,26 @@ class Cart:
             )
             raise NotOwnedByUserError
 
+    def _check_specific_item_qty_limit(self, item: CartItem) -> None:
+        if item.id not in self._config.restrictions.limit_items_by_id:
+            return
+
+        if item.qty > self._config.restrictions.limit_items_by_id[item.id]:
+            logger.info(
+                "Cart %s. Specific item %s qty limit exceeded! Limit: %s, got: %s",
+                self.id,
+                item.id,
+                self._config.restrictions.limit_items_by_id[item.id],
+                item.qty,
+            )
+            raise SpecificItemQtyLimitExceeded(
+                limit=self._config.restrictions.limit_items_by_id[item.id],
+                actual=item.qty,
+            )
+
     def _validate_items_qty_limit(self) -> None:
         if self.items_qty > self._config.restrictions.max_items_qty:
-            logger.debug(
+            logger.info(
                 "Cart %s. Max items qty limit exceeded! Limit: %s, got: %s",
                 self.id,
                 self._config.restrictions.max_items_qty,
@@ -131,7 +152,7 @@ class Cart:
 
     def _validate_status_transition(self, new_status: CartStatusEnum) -> None:
         if new_status not in self.STATUS_TRANSITION_RULESET[self.status]:
-            logger.error(
+            logger.info(
                 "Cart %s. Change status error! Expected: %s, got: %s",
                 self.id,
                 self.STATUS_TRANSITION_RULESET[self.status],
@@ -141,7 +162,7 @@ class Cart:
 
     def _check_can_be_modified(self, action: str) -> None:
         if self.status != CartStatusEnum.OPENED:
-            logger.error(
+            logger.info(
                 f"Cart %s. Failed to {action} due to bad status! Expected: %s, actual: %s",
                 self.id,
                 CartStatusEnum.OPENED,

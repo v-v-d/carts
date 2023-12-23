@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+
 class BaseCartDomainError(Exception):
     pass
 
@@ -12,6 +15,12 @@ class NotOwnedByUserError(BaseCartDomainError):
 
 class MaxItemsQtyLimitExceeded(BaseCartDomainError):
     pass
+
+
+class SpecificItemQtyLimitExceeded(BaseCartDomainError):
+    def __init__(self, limit: Decimal, actual: Decimal) -> None:
+        self.limit = limit
+        self.actual = actual
 
 
 class ChangeStatusError(BaseCartDomainError):
