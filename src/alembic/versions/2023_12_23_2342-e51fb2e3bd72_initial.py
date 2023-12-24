@@ -55,7 +55,7 @@ def upgrade() -> None:
         ["user_id", "status"],
         unique=True,
         schema="content",
-        postgresql_where=sa.text("status = 'OPENED'"),
+        postgresql_where=sa.text("status in ('OPENED', 'LOCKED')"),
     )
     op.create_table(
         "carts_coupons",
@@ -124,7 +124,7 @@ def downgrade() -> None:
         "idx_user_id_opened_status_unique",
         table_name="carts",
         schema="content",
-        postgresql_where=sa.text("status = 'OPENED'"),
+        postgresql_where=sa.text("status in ('OPENED', 'LOCKED')"),
     )
     op.drop_table("carts", schema="content")
     # ### end Alembic commands ###

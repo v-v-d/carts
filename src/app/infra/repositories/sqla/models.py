@@ -85,7 +85,9 @@ class Cart(TimestampMixin, Base):
             "user_id",
             "status",
             unique=True,
-            postgresql_where=(status.__eq__(CartStatusEnum.OPENED.value)),
+            postgresql_where=(
+                status.in_([CartStatusEnum.OPENED.value, CartStatusEnum.LOCKED.value])
+            ),
         ),
     )
 

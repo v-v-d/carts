@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
+from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.carts.cart_delete import ICartDeleteUseCase
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
@@ -21,3 +22,17 @@ class CartDeleteUseCase(ICartDeleteUseCase):
             await self._uow.carts.update(cart=cart)
 
         return CartOutputDTO.model_validate(cart)
+
+
+class LockableCartDeleteUseCase(ICartDeleteUseCase):
+    def __init__(
+        self,
+        use_case: ICartDeleteUseCase,
+        distributed_lock_system: IDistributedLockSystem,
+    ) -> None:
+        self._use_case = use_case
+        self._distributed_lock_system = distributed_lock_system
+
+    async def execute(self, auth_data: str, cart_id: UUID) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=str(cart_id)):
+            return await self.execute(auth_data=auth_data, cart_id=cart_id)

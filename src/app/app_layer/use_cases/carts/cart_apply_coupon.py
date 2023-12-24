@@ -5,6 +5,7 @@ from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.clients.coupons.client import ICouponsClient
 from app.app_layer.interfaces.clients.coupons.dto import CouponOutputDTO
 from app.app_layer.interfaces.clients.coupons.exceptions import CouponsClientError
+from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.carts.cart_apply_coupon import (
     ICartApplyCouponUseCase,
@@ -52,7 +53,7 @@ class CartApplyCouponUseCase(ICartApplyCouponUseCase):
 
     def _check_can_coupon_be_applied(self, user: UserDataOutputDTO, cart: Cart) -> None:
         cart.check_user_ownership(user_id=user.id)
-        cart.check_has_coupon()
+        cart.check_can_coupon_be_applied()
 
     async def _try_to_get_coupon_data(
         self, coupon_name: str, cart: Cart
@@ -84,3 +85,17 @@ class CartApplyCouponUseCase(ICartApplyCouponUseCase):
                 cart=cart,
             ),
         )
+
+
+class LockableCartApplyCouponUseCase(ICartApplyCouponUseCase):
+    def __init__(
+        self,
+        use_case: ICartApplyCouponUseCase,
+        distributed_lock_system: IDistributedLockSystem,
+    ) -> None:
+        self._use_case = use_case
+        self._distributed_lock_system = distributed_lock_system
+
+    async def execute(self, data: CartApplyCouponInputDTO) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=str(data.cart_id)):
+            return await self._use_case.execute(data=data)

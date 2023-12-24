@@ -1,4 +1,5 @@
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
+from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.carts.cart_remove_coupon import (
     ICartRemoveCouponUseCase,
@@ -35,3 +36,17 @@ class CartRemoveCouponUseCase(ICartRemoveCouponUseCase):
         await self._uow.cart_coupons.delete(cart_id=cart.id)
 
         return cart
+
+
+class LockableCartRemoveCouponUseCase(ICartRemoveCouponUseCase):
+    def __init__(
+        self,
+        use_case: ICartRemoveCouponUseCase,
+        distributed_lock_system: IDistributedLockSystem,
+    ) -> None:
+        self._use_case = use_case
+        self._distributed_lock_system = distributed_lock_system
+
+    async def execute(self, data: CartRemoveCouponInputDTO) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=str(data.cart_id)):
+            return await self._use_case.execute(data=data)

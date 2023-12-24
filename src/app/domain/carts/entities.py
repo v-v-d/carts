@@ -7,6 +7,7 @@ from app.domain.cart_coupons.entities import CartCoupon
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.exceptions import (
+    CantBeLockedError,
     CartItemDoesNotExistError,
     ChangeStatusError,
     CouponAlreadyAppliedError,
@@ -123,6 +124,9 @@ class Cart:
         self._check_can_be_modified(action="clear cart")
         self.items = []
 
+    def check_item_can_be_deleted(self) -> None:
+        self._check_can_be_modified(action="delete item")
+
     def check_user_ownership(self, user_id: int) -> None:
         if self.user_id != user_id:
             logger.info(
@@ -133,7 +137,9 @@ class Cart:
             )
             raise NotOwnedByUserError
 
-    def check_has_coupon(self) -> None:
+    def check_can_coupon_be_applied(self) -> None:
+        self._check_can_be_modified(action="apply coupon")
+
         if self.coupon is not None:
             logger.info(
                 "Cart %s. Coupon %s already applied!",
@@ -146,6 +152,8 @@ class Cart:
         self.coupon = coupon
 
     def remove_coupon(self) -> None:
+        self._check_can_be_modified(action="remove coupon")
+
         if self.coupon is None:
             logger.info(
                 "Cart %s. Failed to remove coupon! Coupon doesn't exist!", self.id
@@ -153,6 +161,23 @@ class Cart:
             raise CouponDoesNotExistError
 
         self.coupon = None
+
+    def lock(self) -> None:
+        self._validate_status_transition(new_status=CartStatusEnum.LOCKED)
+
+        if not self.checkout_enabled:
+            logger.info("Cart %s. Failed to lock cart due to checkout disabled!", self.id)
+            raise CantBeLockedError
+
+        self.status = CartStatusEnum.LOCKED
+
+    def unlock(self) -> None:
+        self._validate_status_transition(new_status=CartStatusEnum.OPENED)
+        self.status = CartStatusEnum.OPENED
+
+    def complete(self) -> None:
+        self._validate_status_transition(new_status=CartStatusEnum.COMPLETED)
+        self.status = CartStatusEnum.COMPLETED
 
     def _check_specific_item_qty_limit(self, item: CartItem) -> None:
         if item.id not in self._config.restrictions.limit_items_by_id:

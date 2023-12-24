@@ -2,15 +2,16 @@ from typing import Annotated
 from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Body, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Body, Depends, Header, status
 
-from app.api.rest.public.v1.errors import (
-    ACTIVE_CART_ALREADY_EXISTS_ERROR,
-    AUTHORIZATION_ERROR,
-    COUPON_ALREADY_APPLIED_ERROR,
-    COUPON_APPLYING_ERROR,
-    DELETE_CART_ERROR,
-    RETRIEVE_CART_ERROR,
+from app.api.rest.errors import (
+    ACTIVE_CART_ALREADY_EXISTS_HTTP_ERROR,
+    AUTHORIZATION_HTTP_ERROR,
+    CART_OPERATION_FORBIDDEN_HTTP_ERROR,
+    COUPON_ALREADY_APPLIED_HTTP_ERROR,
+    COUPON_APPLYING_HTTP_ERROR,
+    DELETE_CART_HTTP_ERROR,
+    RETRIEVE_CART_HTTP_ERROR,
 )
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
@@ -33,6 +34,7 @@ from app.domain.carts.exceptions import (
     ChangeStatusError,
     CouponAlreadyAppliedError,
     NotOwnedByUserError,
+    OperationForbiddenError,
 )
 from app.domain.interfaces.repositories.carts.exceptions import (
     ActiveCartAlreadyExistsError,
@@ -51,15 +53,9 @@ async def create(
     try:
         result = await use_case.execute(auth_data=auth_data)
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except ActiveCartAlreadyExistsError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=ACTIVE_CART_ALREADY_EXISTS_ERROR,
-        )
+        raise ACTIVE_CART_ALREADY_EXISTS_HTTP_ERROR
 
     return CartViewModel.model_validate(result)
 
@@ -74,15 +70,9 @@ async def retrieve(
     try:
         result = await use_case.execute(auth_data=auth_data, cart_id=cart_id)
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=RETRIEVE_CART_ERROR,
-        )
+        raise RETRIEVE_CART_HTTP_ERROR
 
     return CartViewModel.model_validate(result)
 
@@ -97,19 +87,11 @@ async def deactivate(
     try:
         await use_case.execute(auth_data=auth_data, cart_id=cart_id)
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR
-        )
+        raise RETRIEVE_CART_HTTP_ERROR
     except ChangeStatusError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=DELETE_CART_ERROR,
-        )
+        raise DELETE_CART_HTTP_ERROR
 
 
 @router.post("/{cart_id}/apply-coupon")
@@ -131,24 +113,15 @@ async def apply_coupon(
             )
         )
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR
-        )
+        raise RETRIEVE_CART_HTTP_ERROR
     except CouponAlreadyAppliedError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=COUPON_ALREADY_APPLIED_ERROR,
-        )
+        raise COUPON_ALREADY_APPLIED_HTTP_ERROR
     except CouponsClientError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=COUPON_APPLYING_ERROR,
-        )
+        raise COUPON_APPLYING_HTTP_ERROR
+    except OperationForbiddenError:
+        raise CART_OPERATION_FORBIDDEN_HTTP_ERROR
 
     return CartViewModel.model_validate(result)
 
@@ -170,13 +143,10 @@ async def remove_coupon(
             )
         )
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR
-        )
+        raise RETRIEVE_CART_HTTP_ERROR
+    except OperationForbiddenError:
+        raise CART_OPERATION_FORBIDDEN_HTTP_ERROR
 
     return CartViewModel.model_validate(result)

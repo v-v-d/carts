@@ -1,4 +1,6 @@
+from app.app_layer.interfaces.auth_system.dto import UserDataOutputDTO
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
+from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.cart_items.delete_item import (
     IDeleteCartItemUseCase,
@@ -20,10 +22,14 @@ class DeleteCartItemUseCase(IDeleteCartItemUseCase):
 
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)
-            cart.check_user_ownership(user_id=user.id)
+            self._check_item_can_be_deleted(cart=cart, user=user)
             cart = await self._update_cart(cart=cart, data=data)
 
         return CartOutputDTO.model_validate(cart)
+
+    def _check_item_can_be_deleted(self, cart: Cart, user: UserDataOutputDTO) -> None:
+        cart.check_user_ownership(user_id=user.id)
+        cart.check_item_can_be_deleted()
 
     async def _update_cart(self, cart: Cart, data: DeleteCartItemInputDTO) -> Cart:
         try:
@@ -38,3 +44,17 @@ class DeleteCartItemUseCase(IDeleteCartItemUseCase):
         await self._uow.items.delete_item(item=item)
 
         return cart
+
+
+class LockableDeleteCartItemUseCase(IDeleteCartItemUseCase):
+    def __init__(
+        self,
+        use_case: IDeleteCartItemUseCase,
+        distributed_lock_system: IDistributedLockSystem,
+    ) -> None:
+        self._use_case = use_case
+        self._distributed_lock_system = distributed_lock_system
+
+    async def execute(self, data: DeleteCartItemInputDTO) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=str(data.cart_id)):
+            return await self._use_case.execute(data=data)

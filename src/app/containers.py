@@ -4,14 +4,47 @@ from typing import AsyncContextManager
 
 from dependency_injector import containers, providers
 
-from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
-from app.app_layer.use_cases.cart_items.delete_item import DeleteCartItemUseCase
-from app.app_layer.use_cases.cart_items.update_item import UpdateCartItemUseCase
-from app.app_layer.use_cases.carts.cart_apply_coupon import CartApplyCouponUseCase
-from app.app_layer.use_cases.carts.cart_delete import CartDeleteUseCase
-from app.app_layer.use_cases.carts.cart_remove_coupon import CartRemoveCouponUseCase
+from app.app_layer.use_cases.cart_items.add_item import (
+    AddCartItemUseCase,
+    LockableAddCartItemUseCase,
+)
+from app.app_layer.use_cases.cart_items.delete_item import (
+    DeleteCartItemUseCase,
+    LockableDeleteCartItemUseCase,
+)
+from app.app_layer.use_cases.cart_items.update_item import (
+    LockableUpdateCartItemUseCase,
+    UpdateCartItemUseCase,
+)
+from app.app_layer.use_cases.carts.cart_apply_coupon import (
+    CartApplyCouponUseCase,
+    LockableCartApplyCouponUseCase,
+)
+from app.app_layer.use_cases.carts.cart_complete import (
+    CompleteCartUseCase,
+    LockableCompleteCartUseCase,
+)
+from app.app_layer.use_cases.carts.cart_delete import (
+    CartDeleteUseCase,
+    LockableCartDeleteUseCase,
+)
+from app.app_layer.use_cases.carts.cart_lock import (
+    LockableLockCartUseCase,
+    LockCartUseCase,
+)
+from app.app_layer.use_cases.carts.cart_remove_coupon import (
+    CartRemoveCouponUseCase,
+    LockableCartRemoveCouponUseCase,
+)
 from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
-from app.app_layer.use_cases.carts.clear_cart import ClearCartUseCase
+from app.app_layer.use_cases.carts.cart_unlock import (
+    LockableUnlockCartUseCase,
+    UnlockCartUseCase,
+)
+from app.app_layer.use_cases.carts.clear_cart import (
+    ClearCartUseCase,
+    LockableClearCartUseCase,
+)
 from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
 from app.config import Config
 from app.infra.auth_system import FakeJWTAuthSystem
@@ -21,6 +54,7 @@ from app.infra.http.clients.products import ProductsHttpClient
 from app.infra.http.retry_systems.backoff import BackoffConfig, BackoffRetrySystem
 from app.infra.http.transports.aiohttp import init_aiohttp_transport
 from app.infra.http.transports.base import HttpTransportConfig, RetryableHttpTransport
+from app.infra.redis_lock_system import RedisLockSystem, init_redis
 from app.infra.repositories.sqla.db import Database
 from app.infra.unit_of_work.sqla import Uow
 
@@ -95,6 +129,19 @@ class CouponsClientContainer(containers.DeclarativeContainer):
     )
 
 
+class DistributedLockSystemContainer(containers.DeclarativeContainer):
+    config = providers.Dependency(instance_of=Config)
+    redis = providers.Resource(
+        init_redis,
+        config=config.provided.REDIS_LOCK,
+    )
+    system = providers.Factory(
+        RedisLockSystem,
+        redis=redis,
+        config=config.provided.REDIS_LOCK,
+    )
+
+
 class Container(containers.DeclarativeContainer):
     config = Config()
 
@@ -103,6 +150,10 @@ class Container(containers.DeclarativeContainer):
     products_client = providers.Container(ProductsClientContainer, config=config)
     coupons_client = providers.Container(CouponsClientContainer, config=config)
     auth_system = providers.Factory(FakeJWTAuthSystem)
+    distributed_lock_system = providers.Container(
+        DistributedLockSystemContainer,
+        config=config,
+    )
 
     create_cart_use_case = providers.Factory(
         CreateCartUseCase,
@@ -110,47 +161,93 @@ class Container(containers.DeclarativeContainer):
         auth_system=auth_system,
         config=config.CART,
     )
-    add_cart_item_use_case = providers.Factory(
-        AddCartItemUseCase,
-        uow=db.container.uow,
-        products_client=products_client.container.client,
-        auth_system=auth_system,
-    )
     cart_retrieve_use_case = providers.Factory(
         CartRetrieveUseCase,
         uow=db.container.uow,
         auth_system=auth_system,
     )
     cart_delete_use_case = providers.Factory(
-        CartDeleteUseCase,
-        uow=db.container.uow,
-        auth_system=auth_system,
+        LockableCartDeleteUseCase,
+        use_case=providers.Factory(
+            CartDeleteUseCase,
+            uow=db.container.uow,
+            auth_system=auth_system,
+        ),
+        distributed_lock_system=distributed_lock_system.container.system,
+    )
+
+    add_cart_item_use_case = providers.Factory(
+        LockableAddCartItemUseCase,
+        use_case=providers.Factory(
+            AddCartItemUseCase,
+            uow=db.container.uow,
+            products_client=products_client.container.client,
+            auth_system=auth_system,
+        ),
+        distributed_lock_system=distributed_lock_system.container.system,
     )
     update_cart_item_use_case = providers.Factory(
-        UpdateCartItemUseCase,
-        uow=db.container.uow,
-        auth_system=auth_system,
+        LockableUpdateCartItemUseCase,
+        use_case=providers.Factory(
+            UpdateCartItemUseCase,
+            uow=db.container.uow,
+            auth_system=auth_system,
+        ),
+        distributed_lock_system=distributed_lock_system.container.system,
     )
     delete_cart_item_use_case = providers.Factory(
-        DeleteCartItemUseCase,
-        uow=db.container.uow,
-        auth_system=auth_system,
+        LockableDeleteCartItemUseCase,
+        use_case=providers.Factory(
+            DeleteCartItemUseCase,
+            uow=db.container.uow,
+            auth_system=auth_system,
+        ),
+        distributed_lock_system=distributed_lock_system.container.system,
     )
     clear_cart_use_case = providers.Factory(
-        ClearCartUseCase,
-        uow=db.container.uow,
-        auth_system=auth_system,
+        LockableClearCartUseCase,
+        use_case=providers.Factory(
+            ClearCartUseCase,
+            uow=db.container.uow,
+            auth_system=auth_system,
+        ),
+        distributed_lock_system=distributed_lock_system.container.system,
     )
+
     cart_apply_coupon_use_case = providers.Factory(
-        CartApplyCouponUseCase,
-        uow=db.container.uow,
-        coupons_client=coupons_client.container.client,
-        auth_system=auth_system,
+        LockableCartApplyCouponUseCase,
+        use_case=providers.Factory(
+            CartApplyCouponUseCase,
+            uow=db.container.uow,
+            coupons_client=coupons_client.container.client,
+            auth_system=auth_system,
+        ),
+        distributed_lock_system=distributed_lock_system.container.system,
     )
     cart_remove_coupon_use_case = providers.Factory(
-        CartRemoveCouponUseCase,
-        uow=db.container.uow,
-        auth_system=auth_system,
+        LockableCartRemoveCouponUseCase,
+        use_case=providers.Factory(
+            CartRemoveCouponUseCase,
+            uow=db.container.uow,
+            auth_system=auth_system,
+        ),
+        distributed_lock_system=distributed_lock_system.container.system,
+    )
+
+    lock_cart_use_case = providers.Factory(
+        LockableLockCartUseCase,
+        use_case=providers.Factory(LockCartUseCase, uow=db.container.uow),
+        distributed_lock_system=distributed_lock_system.container.system,
+    )
+    unlock_cart_use_case = providers.Factory(
+        LockableUnlockCartUseCase,
+        use_case=providers.Factory(UnlockCartUseCase, uow=db.container.uow),
+        distributed_lock_system=distributed_lock_system.container.system,
+    )
+    complete_cart_use_case = providers.Factory(
+        LockableCompleteCartUseCase,
+        use_case=providers.Factory(CompleteCartUseCase, uow=db.container.uow),
+        distributed_lock_system=distributed_lock_system.container.system,
     )
 
     @classmethod

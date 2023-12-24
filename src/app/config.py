@@ -42,6 +42,17 @@ class ArqRedisConfig(BaseModel):
     conn_timeout: int = 60
 
 
+class RedisLockConfig(BaseModel):
+    host: str
+    port: int
+    pool_size: int
+    conn_timeout_sec: int = 60
+    ttl_sec: float
+    acquire_tries_interval_sec: float = 0.1
+    wait_mode: bool = True
+    time_to_wait_sec: float = 5.0
+
+
 class CartRestrictionsConfig(BaseModel):
     max_items_qty: int = 30
     min_cost_for_checkout: int = 500
@@ -64,3 +75,4 @@ class Config(BaseSettings):
     DB: DBConfig
     LOGGING: LoggingConfig
     CART: CartConfig
+    REDIS_LOCK: RedisLockConfig

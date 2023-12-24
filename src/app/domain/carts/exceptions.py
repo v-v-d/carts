@@ -40,3 +40,7 @@ class CouponAlreadyAppliedError(BaseCartDomainError):
 
 class CouponDoesNotExistError(BaseCartDomainError):
     pass
+
+
+class CantBeLockedError(BaseCartDomainError):
+    pass

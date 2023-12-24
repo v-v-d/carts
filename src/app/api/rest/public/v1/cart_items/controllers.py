@@ -3,18 +3,17 @@ from typing import Annotated
 from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Body, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Body, Depends, Header
 
-from app.api.rest.public.v1.errors import (
-    ADD_CART_ITEM_ERROR,
-    ADD_CART_ITEM_MAX_QTY_ERROR,
-    AUTHORIZATION_ERROR,
-    CART_OPERATION_FORBIDDEN,
-    FORBIDDEN_ERROR,
-    RETRIEVE_CART_ERROR,
-    UPDATE_CART_ITEM_ERROR,
-    UPDATE_CART_ITEM_MAX_QTY_ERROR,
-    get_cart_item_qty_limit_exceeded_error,
+from app.api.rest.errors import (
+    ADD_CART_ITEM_HTTP_ERROR,
+    AUTHORIZATION_HTTP_ERROR,
+    CART_ITEM_MAX_QTY_HTTP_ERROR,
+    CART_ITEM_QTY_LIMIT_EXCEEDED_HTTP_ERROR,
+    CART_OPERATION_FORBIDDEN_HTTP_ERROR,
+    FORBIDDEN_HTTP_ERROR,
+    RETRIEVE_CART_HTTP_ERROR,
+    UPDATE_CART_ITEM_HTTP_ERROR,
 )
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
@@ -66,37 +65,19 @@ async def add_item(
             ),
         )
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except CartNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR
-        )
+        raise RETRIEVE_CART_HTTP_ERROR
     except NotOwnedByUserError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR
-        )
+        raise FORBIDDEN_HTTP_ERROR
     except OperationForbiddenError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=CART_OPERATION_FORBIDDEN
-        )
+        raise CART_OPERATION_FORBIDDEN_HTTP_ERROR
     except (ProductsClientError, MinQtyLimitExceededError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=ADD_CART_ITEM_ERROR
-        )
+        raise ADD_CART_ITEM_HTTP_ERROR
     except SpecificItemQtyLimitExceeded as err:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=get_cart_item_qty_limit_exceeded_error(
-                limit=err.limit, actual=err.actual
-            ),
-        )
+        raise CART_ITEM_QTY_LIMIT_EXCEEDED_HTTP_ERROR(err)
     except MaxItemsQtyLimitExceeded:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=ADD_CART_ITEM_MAX_QTY_ERROR
-        )
+        raise CART_ITEM_MAX_QTY_HTTP_ERROR
 
     return CartViewModel.model_validate(result)
 
@@ -122,37 +103,19 @@ async def update_item(
             ),
         )
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except CartNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR
-        )
+        raise RETRIEVE_CART_HTTP_ERROR
     except NotOwnedByUserError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR
-        )
+        raise FORBIDDEN_HTTP_ERROR
     except OperationForbiddenError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=CART_OPERATION_FORBIDDEN
-        )
+        raise CART_OPERATION_FORBIDDEN_HTTP_ERROR
     except (CartItemDoesNotExistError, MinQtyLimitExceededError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=UPDATE_CART_ITEM_ERROR
-        )
+        raise UPDATE_CART_ITEM_HTTP_ERROR
     except SpecificItemQtyLimitExceeded as err:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=get_cart_item_qty_limit_exceeded_error(
-                limit=err.limit, actual=err.actual
-            ),
-        )
+        raise CART_ITEM_QTY_LIMIT_EXCEEDED_HTTP_ERROR(err)
     except MaxItemsQtyLimitExceeded:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=UPDATE_CART_ITEM_MAX_QTY_ERROR
-        )
+        raise CART_ITEM_MAX_QTY_HTTP_ERROR
 
     return CartViewModel.model_validate(result)
 
@@ -176,22 +139,13 @@ async def delete_item(
             ),
         )
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except CartNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR
-        )
+        raise RETRIEVE_CART_HTTP_ERROR
     except NotOwnedByUserError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR
-        )
+        raise FORBIDDEN_HTTP_ERROR
     except OperationForbiddenError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=CART_OPERATION_FORBIDDEN
-        )
+        raise CART_OPERATION_FORBIDDEN_HTTP_ERROR
 
     return CartViewModel.model_validate(result)
 
@@ -211,21 +165,12 @@ async def clear(
             )
         )
     except InvalidAuthDataError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=AUTHORIZATION_ERROR,
-        )
+        raise AUTHORIZATION_HTTP_ERROR
     except CartNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=RETRIEVE_CART_ERROR
-        )
+        raise RETRIEVE_CART_HTTP_ERROR
     except NotOwnedByUserError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=FORBIDDEN_ERROR
-        )
+        raise FORBIDDEN_HTTP_ERROR
     except OperationForbiddenError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=CART_OPERATION_FORBIDDEN
-        )
+        raise CART_OPERATION_FORBIDDEN_HTTP_ERROR
 
     return CartViewModel.model_validate(result)

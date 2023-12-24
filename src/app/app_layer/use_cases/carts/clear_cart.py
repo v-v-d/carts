@@ -1,4 +1,5 @@
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
+from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.cart_items.dto import ClearCartInputDTO
 from app.app_layer.interfaces.use_cases.carts.clear_cart import IClearCartUseCase
@@ -20,3 +21,17 @@ class ClearCartUseCase(IClearCartUseCase):
             await self._uow.carts.clear(cart_id=cart.id)
 
         return CartOutputDTO.model_validate(cart)
+
+
+class LockableClearCartUseCase(IClearCartUseCase):
+    def __init__(
+        self,
+        use_case: IClearCartUseCase,
+        distributed_lock_system: IDistributedLockSystem,
+    ) -> None:
+        self._use_case = use_case
+        self._distributed_lock_system = distributed_lock_system
+
+    async def execute(self, data: ClearCartInputDTO) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=str(data.cart_id)):
+            return await self._use_case.execute(data=data)
