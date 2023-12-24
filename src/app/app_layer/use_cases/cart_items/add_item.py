@@ -29,7 +29,6 @@ class AddCartItemUseCase(IAddCartItemUseCase):
 
     async def execute(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=data.auth_data)
-        CartItem.check_qty_above_min(qty=data.qty)
 
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)

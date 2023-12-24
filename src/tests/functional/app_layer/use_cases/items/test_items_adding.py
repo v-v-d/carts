@@ -158,7 +158,7 @@ async def test_products_client_invalid_response(
 
 @pytest.mark.parametrize(
     ("dto", "http_response"),
-    [({"qty": CartItem.min_valid_qty - 1}, {"returns": PRODUCTS_CLIENT_RESPONSE})],
+    [({"qty": CartItem.MIN_VALID_QTY - 1}, {"returns": PRODUCTS_CLIENT_RESPONSE})],
     indirect=True,
 )
 async def test_invalid_qty(

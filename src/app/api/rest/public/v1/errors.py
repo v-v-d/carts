@@ -30,6 +30,13 @@ AUTHORIZATION_ERROR_CODE = 3000
 AUTHORIZATION_ERROR_TEXT = "Authorization failed."
 FORBIDDEN_ERROR_CODE = 3001
 FORBIDDEN_ERROR_TEXT = "Forbidden."
+COUPON_ALREADY_APPLIED_ERROR_CODE = 4000
+COUPON_ALREADY_APPLIED_ERROR_TEXT = (
+    "Coupon has already been applied. You need to delete the existing coupon "
+    "before applying a new one."
+)
+COUPON_APPLYING_ERROR_CODE = 4001
+COUPON_APPLYING_ERROR_TEXT = "Failed to apply the coupon. Please try applying it again."
 
 
 def get_cart_item_qty_limit_exceeded_error(
@@ -38,7 +45,7 @@ def get_cart_item_qty_limit_exceeded_error(
 ) -> dict[str, str]:
     return {
         "code": CART_ITEM_QTY_LIMIT_EXCEEDED_CODE,
-        "message": CART_ITEM_QTY_LIMIT_EXCEEDED_TEXT.format(limit, actual),
+        "message": CART_ITEM_QTY_LIMIT_EXCEEDED_TEXT.format(limit=limit, actual=actual),
     }
 
 
@@ -80,3 +87,11 @@ AUTHORIZATION_ERROR = {
     "message": AUTHORIZATION_ERROR_TEXT,
 }
 FORBIDDEN_ERROR = {"code": FORBIDDEN_ERROR_CODE, "message": FORBIDDEN_ERROR_TEXT}
+COUPON_ALREADY_APPLIED_ERROR = {
+    "code": COUPON_ALREADY_APPLIED_ERROR_CODE,
+    "message": COUPON_ALREADY_APPLIED_ERROR_TEXT,
+}
+COUPON_APPLYING_ERROR = {
+    "code": COUPON_APPLYING_ERROR_CODE,
+    "message": COUPON_APPLYING_ERROR_TEXT,
+}

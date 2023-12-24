@@ -3,10 +3,12 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.domain.cart_items.value_objects import Qty
+
 
 class AddItemToCartInputDTO(BaseModel):
     id: int
-    qty: Decimal
+    qty: Qty
     auth_data: str
     cart_id: UUID
 
@@ -22,18 +24,10 @@ class ItemOutputDTO(BaseModel):
     cost: Decimal
 
 
-class AddItemToCartOutputDTO(ItemOutputDTO):
-    pass
-
-
-class AddItemToCartListOutputDTO(ItemOutputDTO):
-    pass
-
-
 class UpdateCartItemInputDTO(BaseModel):
     item_id: int
     cart_id: UUID
-    qty: Decimal
+    qty: Qty
     auth_data: str
 
 

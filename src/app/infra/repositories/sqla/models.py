@@ -1,16 +1,44 @@
+from datetime import datetime
 from decimal import Decimal
+from typing import Annotated
 from uuid import UUID, uuid4
 
 import sqlalchemy as sa
-from sqlalchemy import Index
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Index, func
+from sqlalchemy.orm import Mapped, declarative_mixin, mapped_column, relationship
 
-from app.domain.cart_items import entities
+from app.domain.cart_coupons.value_objects import (
+    CART_COST_PRECISION,
+    CART_COST_SCALE,
+    DISCOUNT_PRECISION,
+    DISCOUNT_SCALE,
+    CartCost,
+    Discount,
+)
+from app.domain.cart_items.value_objects import ITEM_PRICE_PRECISION, ITEM_PRICE_SCALE
 from app.domain.carts.value_objects import CartStatusEnum
 from app.infra.repositories.sqla.base import Base
 
 
-class CartItem(Base):
+@declarative_mixin
+class TimestampMixin:
+    timestamp = Annotated[
+        datetime,
+        mapped_column(
+            nullable=False,
+            default=datetime.utcnow,
+            server_default=func.CURRENT_TIMESTAMP(),
+        ),
+    ]
+
+    created_at: Mapped[timestamp]
+    updated_at: Mapped[timestamp] = mapped_column(
+        onupdate=datetime.utcnow,
+        server_onupdate=func.CURRENT_TIMESTAMP(),
+    )
+
+
+class CartItem(TimestampMixin, Base):
     __tablename__ = "cart_items"
 
     id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)
@@ -22,7 +50,7 @@ class CartItem(Base):
     name: Mapped[str] = mapped_column(sa.Text, nullable=False)
     qty: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     price: Mapped[Decimal] = mapped_column(
-        sa.Numeric(entities.CartItem.price_precision, entities.CartItem.price_scale),
+        sa.Numeric(precision=ITEM_PRICE_PRECISION, scale=ITEM_PRICE_SCALE),
         nullable=False,
     )
     is_weight: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
@@ -32,7 +60,7 @@ class CartItem(Base):
     )
 
 
-class Cart(Base):
+class Cart(TimestampMixin, Base):
     __tablename__ = "carts"
 
     id: Mapped[int] = mapped_column(
@@ -47,6 +75,9 @@ class Cart(Base):
     items: Mapped[list[CartItem]] = relationship(
         "CartItem", lazy="noload", back_populates="cart"
     )
+    coupon: Mapped["CartCoupon"] = relationship(
+        "CartCoupon", lazy="noload", uselist=False
+    )
 
     __table_args__ = (
         Index(
@@ -56,4 +87,24 @@ class Cart(Base):
             unique=True,
             postgresql_where=(status.__eq__(CartStatusEnum.OPENED.value)),
         ),
+    )
+
+
+class CartCoupon(TimestampMixin, Base):
+    __tablename__ = "carts_coupons"
+
+    cart_id: Mapped[UUID] = mapped_column(
+        sa.ForeignKey(
+            column="carts.id", name="cart_coupon_cart_id_fkey", ondelete="CASCADE"
+        ),
+        primary_key=True,
+    )
+    coupon_id: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    min_cart_cost: Mapped[CartCost] = mapped_column(
+        sa.Numeric(precision=CART_COST_PRECISION, scale=CART_COST_SCALE),
+        nullable=False,
+    )
+    discount_abs: Mapped[Discount] = mapped_column(
+        sa.Numeric(precision=DISCOUNT_PRECISION, scale=DISCOUNT_SCALE),
+        nullable=False,
     )

@@ -28,6 +28,12 @@ class ProductsClientConfig(BaseModel):
     retries_enabled: bool
 
 
+class CouponsClientConfig(BaseModel):
+    name: str
+    base_url: AnyHttpUrl
+    retries_enabled: bool
+
+
 class ArqRedisConfig(BaseModel):
     host: str
     port: int
@@ -53,6 +59,7 @@ class Config(BaseSettings):
         env_nested_delimiter = "__"
 
     PRODUCTS_CLIENT: ProductsClientConfig
+    COUPONS_CLIENT: CouponsClientConfig
     ARQ_REDIS: ArqRedisConfig
     DB: DBConfig
     LOGGING: LoggingConfig

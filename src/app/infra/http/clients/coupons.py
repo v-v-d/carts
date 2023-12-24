@@ -4,9 +4,9 @@ from typing import Any, Type
 from furl import furl
 from pydantic import AnyHttpUrl, BaseModel, ValidationError
 
-from app.app_layer.interfaces.clients.products.client import IProductsClient
-from app.app_layer.interfaces.clients.products.dto import ProductOutputDTO
-from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
+from app.app_layer.interfaces.clients.coupons.client import ICouponsClient
+from app.app_layer.interfaces.clients.coupons.dto import CouponOutputDTO
+from app.app_layer.interfaces.clients.coupons.exceptions import CouponsClientError
 from app.infra.http.transports.base import (
     HttpRequestInputDTO,
     HttpTransportError,
@@ -14,27 +14,30 @@ from app.infra.http.transports.base import (
 )
 
 
-class ProductsHttpClient(IProductsClient):
+class CouponsHttpClient(ICouponsClient):
     def __init__(self, base_url: AnyHttpUrl, transport: IHttpTransport) -> None:
         self._base_url = base_url
         self._transport = transport
 
-    async def get_product(self, item_id: int) -> ProductOutputDTO:
-        url = furl(self._base_url).add(path="products").add(path=str(item_id)).url
+    async def get_coupon(self, coupon_name: str) -> CouponOutputDTO:
+        url = furl(self._base_url).add(path="coupons").url
+
         response = await self._try_to_make_request(
             data=HttpRequestInputDTO(
                 method=HTTPMethod.GET,
                 url=url,
+                headers={"Accept": "application/json"},
+                body={"name": coupon_name},
             ),
         )
 
-        return self._try_to_get_dto(ProductOutputDTO, response)
+        return self._try_to_get_dto(CouponOutputDTO, response)
 
     async def _try_to_make_request(self, *args, **kwargs) -> Any:
         try:
             return await self._transport.request(*args, **kwargs)
         except HttpTransportError as err:
-            raise ProductsClientError(str(err))
+            raise CouponsClientError(str(err))
 
     def _try_to_get_dto(
         self, dto_model: Type[BaseModel], response: dict[str, Any] | str
@@ -42,4 +45,4 @@ class ProductsHttpClient(IProductsClient):
         try:
             return dto_model.model_validate(response)
         except (ValidationError, TypeError) as err:
-            raise ProductsClientError(f"{str(err)} - {response}")
+            raise CouponsClientError(f"{str(err)} - {response}")

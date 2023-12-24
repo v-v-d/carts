@@ -25,7 +25,7 @@ async def test_qty_validation_ok() -> None:
         data=ItemDTO(
             id=fake.numeric.integer_number(start=1),
             name=fake.text.word(),
-            qty=Decimal(CartItem.min_valid_qty),
+            qty=Decimal(CartItem.MIN_VALID_QTY),
             price=fake.numeric.integer_number(start=1, end=99),
         )
     )
@@ -37,7 +37,7 @@ async def test_qty_validation_failed() -> None:
         data=ItemDTO(
             id=fake.numeric.integer_number(start=1),
             name=fake.text.word(),
-            qty=Decimal(CartItem.min_valid_qty - 1),
+            qty=Decimal(CartItem.MIN_VALID_QTY - 1),
             price=fake.numeric.integer_number(start=1, end=99),
         )
     )

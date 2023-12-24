@@ -18,6 +18,17 @@ class ItemOutputDTO(BaseModel):
     is_weight: bool
 
 
+class CartCouponOutputDTO(BaseModel):
+    class Config:
+        from_attributes = True
+
+    coupon_id: str
+    min_cart_cost: Decimal
+    discount_abs: Decimal
+    cart_cost: Decimal
+    applied: bool
+
+
 class CartOutputDTO(BaseModel):
     class Config:
         from_attributes = True
@@ -29,3 +40,15 @@ class CartOutputDTO(BaseModel):
     items_qty: Decimal
     cost: Decimal
     checkout_enabled: bool
+    coupon: CartCouponOutputDTO | None = None
+
+
+class CartApplyCouponInputDTO(BaseModel):
+    cart_id: UUID
+    coupon_name: str
+    auth_data: str
+
+
+class CartRemoveCouponInputDTO(BaseModel):
+    cart_id: UUID
+    auth_data: str

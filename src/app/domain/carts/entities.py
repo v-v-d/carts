@@ -3,11 +3,14 @@ from decimal import Decimal
 from logging import getLogger
 
 from app.config import CartConfig
+from app.domain.cart_coupons.entities import CartCoupon
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.exceptions import (
     CartItemDoesNotExistError,
     ChangeStatusError,
+    CouponAlreadyAppliedError,
+    CouponDoesNotExistError,
     MaxItemsQtyLimitExceeded,
     NotOwnedByUserError,
     OperationForbiddenError,
@@ -28,11 +31,18 @@ class Cart:
         CartStatusEnum.COMPLETED: {},
     }
 
-    def __init__(self, data: CartDTO, items: list[CartItem], config: CartConfig) -> None:
+    def __init__(
+        self,
+        data: CartDTO,
+        items: list[CartItem],
+        config: CartConfig,
+        coupon: CartCoupon | None = None,
+    ) -> None:
         self.id = data.id
         self.user_id = data.user_id
         self.status = data.status
         self.items = items
+        self.coupon = coupon
 
         self._config = config
 
@@ -122,6 +132,27 @@ class Cart:
                 user_id,
             )
             raise NotOwnedByUserError
+
+    def check_has_coupon(self) -> None:
+        if self.coupon is not None:
+            logger.info(
+                "Cart %s. Coupon %s already applied!",
+                self.id,
+                self.coupon.coupon_id,
+            )
+            raise CouponAlreadyAppliedError
+
+    def set_coupon(self, coupon: CartCoupon) -> None:
+        self.coupon = coupon
+
+    def remove_coupon(self) -> None:
+        if self.coupon is None:
+            logger.info(
+                "Cart %s. Failed to remove coupon! Coupon doesn't exist!", self.id
+            )
+            raise CouponDoesNotExistError
+
+        self.coupon = None
 
     def _check_specific_item_qty_limit(self, item: CartItem) -> None:
         if item.id not in self._config.restrictions.limit_items_by_id:

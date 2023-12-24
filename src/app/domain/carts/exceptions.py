@@ -22,10 +22,21 @@ class SpecificItemQtyLimitExceeded(BaseCartDomainError):
         self.limit = limit
         self.actual = actual
 
+    def __str__(self) -> str:
+        return f"limit: {self.limit}, actual: {self.actual}"
+
 
 class ChangeStatusError(BaseCartDomainError):
     pass
 
 
 class OperationForbiddenError(BaseCartDomainError):
+    pass
+
+
+class CouponAlreadyAppliedError(BaseCartDomainError):
+    pass
+
+
+class CouponDoesNotExistError(BaseCartDomainError):
     pass

@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.domain.cart_items.value_objects import Qty
+
 
 class ItemDTO(BaseModel):
     class Config:
@@ -10,7 +12,7 @@ class ItemDTO(BaseModel):
 
     id: int
     name: str
-    qty: Decimal
+    qty: Qty
     price: Decimal
     is_weight: bool
     cart_id: UUID

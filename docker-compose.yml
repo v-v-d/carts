@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   app:
-    container_name: template_app
+    container_name: app
     build:
       context: .
     volumes:

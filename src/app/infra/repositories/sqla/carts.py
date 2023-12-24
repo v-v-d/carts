@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.config import CartConfig
+from app.domain.cart_coupons.dto import CartCouponDTO
+from app.domain.cart_coupons.entities import CartCoupon
 from app.domain.cart_items.dto import ItemDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
@@ -43,6 +45,7 @@ class CartsRepository(ICartsRepository):
         stmt = (
             select(models.Cart)
             .options(joinedload(models.Cart.items))
+            .options(joinedload(models.Cart.coupon))
             .where(
                 models.Cart.id == cart_id,
                 models.Cart.status != CartStatusEnum.DEACTIVATED,
@@ -54,11 +57,18 @@ class CartsRepository(ICartsRepository):
         if not obj:
             raise CartNotFoundError
 
-        return Cart(
+        cart = Cart(
             data=CartDTO.model_validate(obj),
             items=[CartItem(data=ItemDTO.model_validate(item)) for item in obj.items],
             config=self._config,
         )
+
+        if obj.coupon is None:
+            return cart
+
+        cart.coupon = CartCoupon(data=CartCouponDTO.model_validate(obj.coupon), cart=cart)
+
+        return cart
 
     async def update(self, cart: Cart) -> Cart:
         stmt = (

@@ -18,6 +18,17 @@ class ItemViewModel(BaseModel):
     is_weight: bool
 
 
+class CartCouponViewModel(BaseModel):
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+
+    coupon_id: str
+    discount_abs: float
+    cart_cost: float
+    applied: bool
+
+
 class CartViewModel(BaseModel):
     class Config:
         from_attributes = True
@@ -30,3 +41,4 @@ class CartViewModel(BaseModel):
     items_qty: float = Field(alias="items_quantity")
     cost: float
     checkout_enabled: bool
+    coupon: CartCouponViewModel | None = None
