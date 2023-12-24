@@ -4,7 +4,6 @@
 ```
 clean-architecture/
 └── src/                        # Source code of the application
-    ├── alembic/                # Database migrations for SQLAlchemy
     ├── app/                    # Main application directory
     │   │
     │   ├── api/                # Entry points (Primary adapters layer)
