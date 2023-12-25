@@ -1,8 +1,9 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
+from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
 from app.domain.carts.value_objects import CartStatusEnum
 
 
@@ -54,3 +55,15 @@ class CartListViewModel(BaseModel):
     items: list[CartViewModel]
     page_size: int
     created_at: datetime
+    next_page: datetime
+
+    @model_validator(mode="before")
+    @classmethod
+    def _set_next_page(
+        cls,
+        data: dict[str, list[CartOutputDTO] | int | datetime],
+    ) -> dict[str, list[CartOutputDTO] | int | datetime]:
+        last_item = data["items"][-1]
+        data["next_page"] = last_item.created_at
+
+        return data

@@ -43,4 +43,4 @@ class LockableCartDeleteUseCase(ICartDeleteUseCase):
 
     async def execute(self, auth_data: str, cart_id: UUID) -> CartOutputDTO:
         async with self._distributed_lock_system(name=f"cart-lock-{cart_id}"):
-            return await self.execute(auth_data=auth_data, cart_id=cart_id)
+            return await self._use_case.execute(auth_data=auth_data, cart_id=cart_id)

@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from decimal import Decimal
 from logging import getLogger
 
@@ -69,6 +70,7 @@ class Cart:
     def create(cls, user_id: int, config: CartConfig) -> "Cart":
         return cls(
             data=CartDTO(
+                created_at=datetime.now(),
                 id=uuid.uuid4(),
                 user_id=user_id,
                 status=CartStatusEnum.OPENED,
