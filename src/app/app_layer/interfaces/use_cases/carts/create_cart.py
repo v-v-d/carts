@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
 
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO, CartCreateByUserIdInputDTO
 
 
 class ICreateCartUseCase(ABC):
     @abstractmethod
-    async def execute(self, auth_data: str) -> CartOutputDTO:
+    async def create_by_auth_data(self, auth_data: str) -> CartOutputDTO:
+        ...
+
+    @abstractmethod
+    async def create_by_user_id(self, data: CartCreateByUserIdInputDTO) -> CartOutputDTO:
         ...

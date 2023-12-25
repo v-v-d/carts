@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from uuid import UUID
 
 from app.domain.carts.entities import Cart
@@ -19,4 +20,8 @@ class ICartsRepository(ABC):
 
     @abstractmethod
     async def clear(self, cart_id: UUID) -> None:
+        ...
+
+    @abstractmethod
+    async def get_list(self, page_size: int, created_at: datetime) -> list[Cart]:
         ...

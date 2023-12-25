@@ -29,5 +29,5 @@ class LockableUnlockCartUseCase(IUnlockCartUseCase):
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, cart_id: UUID) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=str(cart_id)):
+        async with self._distributed_lock_system(name=f"cart-lock-{cart_id}"):
             return await self._use_case.execute(cart_id=cart_id)

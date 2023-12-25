@@ -51,7 +51,7 @@ async def create(
     use_case: ICreateCartUseCase = Depends(Provide[Container.create_cart_use_case]),
 ) -> CartViewModel:
     try:
-        result = await use_case.execute(auth_data=auth_data)
+        result = await use_case.create_by_auth_data(auth_data=auth_data)
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except ActiveCartAlreadyExistsError:

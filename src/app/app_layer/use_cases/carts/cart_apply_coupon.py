@@ -52,8 +52,14 @@ class CartApplyCouponUseCase(ICartApplyCouponUseCase):
         return CartOutputDTO.model_validate(cart)
 
     def _check_can_coupon_be_applied(self, user: UserDataOutputDTO, cart: Cart) -> None:
-        cart.check_user_ownership(user_id=user.id)
+        self._check_user_ownership(cart=cart, user=user)
         cart.check_can_coupon_be_applied()
+
+    def _check_user_ownership(self, cart: Cart, user: UserDataOutputDTO) -> None:
+        if user.is_admin:
+            return
+
+        cart.check_user_ownership(user_id=user.id)
 
     async def _try_to_get_coupon_data(
         self, coupon_name: str, cart: Cart
@@ -97,5 +103,5 @@ class LockableCartApplyCouponUseCase(ICartApplyCouponUseCase):
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: CartApplyCouponInputDTO) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=str(data.cart_id)):
+        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
             return await self._use_case.execute(data=data)

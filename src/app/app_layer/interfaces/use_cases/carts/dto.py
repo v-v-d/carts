@@ -1,7 +1,8 @@
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 
 from app.domain.carts.value_objects import CartStatusEnum
 
@@ -33,6 +34,7 @@ class CartOutputDTO(BaseModel):
     class Config:
         from_attributes = True
 
+    created_at: datetime
     id: UUID
     user_id: int
     status: CartStatusEnum
@@ -52,3 +54,17 @@ class CartApplyCouponInputDTO(BaseModel):
 class CartRemoveCouponInputDTO(BaseModel):
     cart_id: UUID
     auth_data: str
+
+
+class CartCreateByUserIdInputDTO(BaseModel):
+    auth_data: str
+    user_id: int
+
+
+class CartListInputDTO(BaseModel):
+    page_size: int
+    created_at: datetime
+    auth_data: str
+
+
+CartListOutputDTO = TypeAdapter(list[CartOutputDTO])

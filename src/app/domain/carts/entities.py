@@ -39,6 +39,7 @@ class Cart:
         config: CartConfig,
         coupon: CartCoupon | None = None,
     ) -> None:
+        self.created_at = data.created_at
         self.id = data.id
         self.user_id = data.user_id
         self.status = data.status

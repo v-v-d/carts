@@ -1,9 +1,14 @@
+from logging import getLogger
+
+from app.app_layer.interfaces.auth_system.exceptions import OperationForbiddenError
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO, CartCreateByUserIdInputDTO
 from app.config import CartConfig
 from app.domain.carts.entities import Cart
+
+logger = getLogger(__name__)
 
 
 class CreateCartUseCase(ICreateCartUseCase):
@@ -17,11 +22,28 @@ class CreateCartUseCase(ICreateCartUseCase):
         self._auth_system = auth_system
         self._config = config
 
-    async def execute(self, auth_data: str) -> CartOutputDTO:
+    async def create_by_auth_data(self, auth_data: str) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=auth_data)
-        cart = Cart.create(user_id=user.id, config=self._config)
+        return await self._create(user_id=user.id)
+
+    async def create_by_user_id(self, data: CartCreateByUserIdInputDTO) -> CartOutputDTO:
+        user = self._auth_system.get_user_data(auth_data=data.auth_data)
+
+        if not user.is_admin:
+            logger.error(
+                "Failed to create cart for user %s due to forbidden operation.",
+                data.user_id,
+            )
+            raise OperationForbiddenError
+
+        return await self._create(user_id=data.user_id)
+
+    async def _create(self, user_id: int) -> CartOutputDTO:
+        cart = Cart.create(user_id=user_id, config=self._config)
 
         async with self._uow(autocommit=True):
             await self._uow.carts.create(cart=cart)
+
+        logger.debug("Cart %s successfully created for user %s.", cart.id, cart.user_id)
 
         return CartOutputDTO.model_validate(cart)

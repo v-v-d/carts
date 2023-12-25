@@ -28,6 +28,7 @@ from app.app_layer.use_cases.carts.cart_delete import (
     CartDeleteUseCase,
     LockableCartDeleteUseCase,
 )
+from app.app_layer.use_cases.carts.cart_list import CartListUseCase
 from app.app_layer.use_cases.carts.cart_lock import (
     LockableLockCartUseCase,
     LockCartUseCase,
@@ -248,6 +249,11 @@ class Container(containers.DeclarativeContainer):
         LockableCompleteCartUseCase,
         use_case=providers.Factory(CompleteCartUseCase, uow=db.container.uow),
         distributed_lock_system=distributed_lock_system.container.system,
+    )
+    cart_list_use_case = providers.Factory(
+        CartListUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
     )
 
     @classmethod

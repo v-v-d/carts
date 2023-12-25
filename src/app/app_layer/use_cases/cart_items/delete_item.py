@@ -28,8 +28,14 @@ class DeleteCartItemUseCase(IDeleteCartItemUseCase):
         return CartOutputDTO.model_validate(cart)
 
     def _check_item_can_be_deleted(self, cart: Cart, user: UserDataOutputDTO) -> None:
-        cart.check_user_ownership(user_id=user.id)
+        self._check_user_ownership(cart=cart, user=user)
         cart.check_item_can_be_deleted()
+
+    def _check_user_ownership(self, cart: Cart, user: UserDataOutputDTO) -> None:
+        if user.is_admin:
+            return
+
+        cart.check_user_ownership(user_id=user.id)
 
     async def _update_cart(self, cart: Cart, data: DeleteCartItemInputDTO) -> Cart:
         try:
@@ -56,5 +62,5 @@ class LockableDeleteCartItemUseCase(IDeleteCartItemUseCase):
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: DeleteCartItemInputDTO) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=str(data.cart_id)):
+        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
             return await self._use_case.execute(data=data)

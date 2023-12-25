@@ -1,6 +1,7 @@
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, Row
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,18 +58,7 @@ class CartsRepository(ICartsRepository):
         if not obj:
             raise CartNotFoundError
 
-        cart = Cart(
-            data=CartDTO.model_validate(obj),
-            items=[CartItem(data=ItemDTO.model_validate(item)) for item in obj.items],
-            config=self._config,
-        )
-
-        if obj.coupon is None:
-            return cart
-
-        cart.coupon = CartCoupon(data=CartCouponDTO.model_validate(obj.coupon), cart=cart)
-
-        return cart
+        return self._get_cart(obj=obj)
 
     async def update(self, cart: Cart) -> Cart:
         stmt = (
@@ -83,3 +73,31 @@ class CartsRepository(ICartsRepository):
     async def clear(self, cart_id: UUID) -> None:
         stmt = delete(models.CartItem).where(models.CartItem.cart_id == cart_id)
         await self._session.execute(stmt)
+
+    async def get_list(self, page_size: int, created_at: datetime) -> list[Cart]:
+        stmt = (
+            select(models.Cart)
+            .options(joinedload(models.Cart.items))
+            .options(joinedload(models.Cart.coupon))
+            .where(models.Cart.created_at >= created_at)
+            .order_by(models.Cart.created_at.desc())
+            .limit(page_size)
+        )
+        result = await self._session.scalars(stmt)
+        objects = result.unique().all()
+
+        return [self._get_cart(obj=obj) for obj in objects]
+
+    def _get_cart(self, obj: Row) -> Cart:
+        cart = Cart(
+            data=CartDTO.model_validate(obj),
+            items=[CartItem(data=ItemDTO.model_validate(item)) for item in obj.items],
+            config=self._config,
+        )
+
+        if obj.coupon is None:
+            return cart
+
+        cart.coupon = CartCoupon(data=CartCouponDTO.model_validate(obj.coupon), cart=cart)
+
+        return cart

@@ -4,3 +4,7 @@ class BaseAuthSystemError(Exception):
 
 class InvalidAuthDataError(BaseAuthSystemError):
     pass
+
+
+class OperationForbiddenError(BaseAuthSystemError):
+    pass

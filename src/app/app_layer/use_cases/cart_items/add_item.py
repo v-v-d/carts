@@ -1,6 +1,7 @@
 from decimal import Decimal
 from logging import getLogger
 
+from app.app_layer.interfaces.auth_system.dto import UserDataOutputDTO
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
@@ -34,10 +35,16 @@ class AddCartItemUseCase(IAddCartItemUseCase):
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)
 
-        cart.check_user_ownership(user_id=user.id)
+        self._check_user_ownership(cart=cart, user=user)
         cart = await self._update_cart(cart=cart, data=data)
 
         return CartOutputDTO.model_validate(cart)
+
+    def _check_user_ownership(self, cart: Cart, user: UserDataOutputDTO) -> None:
+        if user.is_admin:
+            return
+
+        cart.check_user_ownership(user_id=user.id)
 
     async def _update_cart(self, cart: Cart, data: AddItemToCartInputDTO) -> Cart:
         try:
@@ -106,5 +113,5 @@ class LockableAddCartItemUseCase(IAddCartItemUseCase):
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=str(data.cart_id)):
+        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
             return await self._use_case.execute(data=data)
