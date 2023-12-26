@@ -7,23 +7,23 @@ stop:
 
 # Formatting
 isort:
-	docker-compose up -d app && docker exec -it app isort .
+	docker-compose up -d app && docker exec -it carts isort .
 
 black:
-	docker-compose up -d app && docker exec -it app black .
+	docker-compose up -d app && docker exec -it carts black .
 
 format: isort black
 
 # Linting
 flake8:
-	docker-compose up -d app && docker exec -it app flake8 .
+	docker-compose up -d app && docker exec -it carts flake8 .
 
 lint: flake8
 
 # Testing
 test:
 	docker-compose up -d app && \
-	docker exec -it app \
+	docker exec -it carts \
 	pytest $(or $(target), tests) -p no:warnings -vv \
 		   $(or $(foreach var, $(ignore), --ignore=$(var)), --ignore=tests/legacy) \
 		   --cov=app --cov-report=term-missing
