@@ -20,7 +20,7 @@ class Uow(IUnitOfWork):
         self._session = self._session_factory()
 
         self.items = ItemsRepository(session=self._session)
-        self.carts = CartsRepository(session=self._session, config=self._config.CART)
+        self.carts = CartsRepository(session=self._session)
         self.cart_coupons = CartCouponsRepository(session=self._session)
 
         return await super().__aenter__()

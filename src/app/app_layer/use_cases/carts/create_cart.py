@@ -4,8 +4,10 @@ from app.app_layer.interfaces.auth_system.exceptions import OperationForbiddenEr
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO, CartCreateByUserIdInputDTO
-from app.config import CartConfig
+from app.app_layer.interfaces.use_cases.carts.dto import (
+    CartCreateByUserIdInputDTO,
+    CartOutputDTO,
+)
 from app.domain.carts.entities import Cart
 
 logger = getLogger(__name__)
@@ -16,11 +18,9 @@ class CreateCartUseCase(ICreateCartUseCase):
         self,
         uow: IUnitOfWork,
         auth_system: IAuthSystem,
-        config: CartConfig,
     ) -> None:
         self._uow = uow
         self._auth_system = auth_system
-        self._config = config
 
     async def create_by_auth_data(self, auth_data: str) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=auth_data)
@@ -39,9 +39,9 @@ class CreateCartUseCase(ICreateCartUseCase):
         return await self._create(user_id=data.user_id)
 
     async def _create(self, user_id: int) -> CartOutputDTO:
-        cart = Cart.create(user_id=user_id, config=self._config)
-
         async with self._uow(autocommit=True):
+            cart_config = await self._uow.carts.get_config()
+            cart = Cart.create(user_id=user_id, config=cart_config)
             await self._uow.carts.create(cart=cart)
 
         logger.debug("Cart %s successfully created for user %s.", cart.id, cart.user_id)

@@ -1,13 +1,15 @@
+import json
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select, update, Row
+from sqlalchemy import Row, delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.config import CartConfig
+from app.domain.cart_config.dto import CartConfigDTO
+from app.domain.cart_config.entities import CartConfig
 from app.domain.cart_coupons.dto import CartCouponDTO
 from app.domain.cart_coupons.entities import CartCoupon
 from app.domain.cart_items.dto import ItemDTO
@@ -24,9 +26,8 @@ from app.infra.repositories.sqla import models
 
 
 class CartsRepository(ICartsRepository):
-    def __init__(self, session: AsyncSession, config: CartConfig) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         self._session = session
-        self._config = config
 
     async def create(self, cart: Cart) -> Cart:
         stmt = insert(models.Cart).values(
@@ -58,7 +59,9 @@ class CartsRepository(ICartsRepository):
         if not obj:
             raise CartNotFoundError
 
-        return self._get_cart(obj=obj)
+        config = await self._get_config()
+
+        return self._get_cart(obj=obj, config=config)
 
     async def update(self, cart: Cart) -> Cart:
         stmt = (
@@ -86,13 +89,41 @@ class CartsRepository(ICartsRepository):
         result = await self._session.scalars(stmt)
         objects = result.unique().all()
 
-        return [self._get_cart(obj=obj) for obj in objects]
+        config = await self._get_config()
 
-    def _get_cart(self, obj: Row) -> Cart:
+        return [self._get_cart(obj=obj, config=config) for obj in objects]
+
+    async def get_config(self) -> CartConfig:
+        return await self._get_config()
+
+    async def update_config(self, cart_config: CartConfig) -> CartConfig:
+        stmt = delete(models.CartConfig)
+        await self._session.execute(stmt)
+
+        value_by_name = [
+            {"name": name, "value": json.dumps(value, default=lambda x: str(x))}
+            for name, value in cart_config.data.model_dump().items()
+        ]
+
+        stmt = insert(models.CartConfig).values(value_by_name)
+        await self._session.execute(stmt)
+
+        return cart_config
+
+    async def _get_config(self) -> CartConfig:
+        stmt = select(models.CartConfig)
+        result = await self._session.scalars(stmt)
+
+        rows = result.unique().all()
+        value_by_name = {row.name: json.loads(row.value) for row in rows}
+
+        return CartConfig(data=CartConfigDTO.model_validate(value_by_name))
+
+    def _get_cart(self, obj: Row, config: CartConfig) -> Cart:
         cart = Cart(
             data=CartDTO.model_validate(obj),
             items=[CartItem(data=ItemDTO.model_validate(item)) for item in obj.items],
-            config=self._config,
+            config=config,
         )
 
         if obj.coupon is None:

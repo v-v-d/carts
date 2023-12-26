@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 
-from app.app_layer.interfaces.use_cases.carts.dto import CartListInputDTO, CartListOutputDTO
+from app.app_layer.interfaces.use_cases.carts.dto import (
+    CartListInputDTO,
+    CartListOutputDTO,
+)
 
 
 class ICartListUseCase(ABC):

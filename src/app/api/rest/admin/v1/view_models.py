@@ -55,7 +55,7 @@ class CartListViewModel(BaseModel):
     items: list[CartViewModel]
     page_size: int
     created_at: datetime
-    next_page: datetime
+    next_page: datetime | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -63,7 +63,19 @@ class CartListViewModel(BaseModel):
         cls,
         data: dict[str, list[CartOutputDTO] | int | datetime],
     ) -> dict[str, list[CartOutputDTO] | int | datetime]:
-        last_item = data["items"][-1]
-        data["next_page"] = last_item.created_at
+        if not data["items"]:
+            return data
+
+        first_item = data["items"][0]
+        data["next_page"] = first_item.created_at
 
         return data
+
+
+class CartConfigModelView(BaseModel):
+    class Config:
+        from_attributes = True
+
+    max_items_qty: int
+    min_cost_for_checkout: int
+    limit_items_by_id: dict[int, int]

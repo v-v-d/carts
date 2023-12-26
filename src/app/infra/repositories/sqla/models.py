@@ -63,7 +63,7 @@ class CartItem(TimestampMixin, Base):
 class Cart(TimestampMixin, Base):
     __tablename__ = "carts"
 
-    id: Mapped[int] = mapped_column(
+    id: Mapped[UUID] = mapped_column(
         sa.UUID(as_uuid=True), primary_key=True, default=uuid4
     )
     user_id: Mapped[int] = mapped_column(sa.Integer, nullable=False)
@@ -110,3 +110,11 @@ class CartCoupon(TimestampMixin, Base):
         sa.Numeric(precision=DISCOUNT_PRECISION, scale=DISCOUNT_SCALE),
         nullable=False,
     )
+
+
+class CartConfig(TimestampMixin, Base):
+    __tablename__ = "cart_config"
+
+    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(sa.Text, nullable=False, unique=True)
+    value: Mapped[str] = mapped_column(sa.Text, nullable=False)

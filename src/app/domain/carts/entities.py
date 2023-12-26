@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from logging import getLogger
 
-from app.config import CartConfig
+from app.domain.cart_config.entities import CartConfig
 from app.domain.cart_coupons.entities import CartCoupon
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
@@ -24,6 +24,7 @@ logger = getLogger(__name__)
 
 
 class Cart:
+    WEIGHT_ITEM_QTY: Decimal = Decimal(1)
     STATUS_TRANSITION_RULESET: dict[
         CartStatusEnum, dict[CartStatusEnum, CartStatusEnum]
     ] = {
@@ -52,10 +53,7 @@ class Cart:
     @property
     def items_qty(self) -> Decimal:
         return sum(
-            [
-                self._config.weight_item_qty if item.is_weight else item.qty
-                for item in self.items
-            ]
+            [self.WEIGHT_ITEM_QTY if item.is_weight else item.qty for item in self.items]
         )
 
     @property
@@ -64,7 +62,7 @@ class Cart:
 
     @property
     def checkout_enabled(self) -> bool:
-        return self.cost >= self._config.restrictions.min_cost_for_checkout
+        return self.cost >= self._config.min_cost_for_checkout
 
     @classmethod
     def create(cls, user_id: int, config: CartConfig) -> "Cart":
@@ -183,28 +181,28 @@ class Cart:
         self.status = CartStatusEnum.COMPLETED
 
     def _check_specific_item_qty_limit(self, item: CartItem) -> None:
-        if item.id not in self._config.restrictions.limit_items_by_id:
+        if item.id not in self._config.limit_items_by_id:
             return
 
-        if item.qty > self._config.restrictions.limit_items_by_id[item.id]:
+        if item.qty > self._config.limit_items_by_id[item.id]:
             logger.info(
                 "Cart %s. Specific item %s qty limit exceeded! Limit: %s, got: %s",
                 self.id,
                 item.id,
-                self._config.restrictions.limit_items_by_id[item.id],
+                self._config.limit_items_by_id[item.id],
                 item.qty,
             )
             raise SpecificItemQtyLimitExceeded(
-                limit=self._config.restrictions.limit_items_by_id[item.id],
+                limit=self._config.limit_items_by_id[item.id],
                 actual=item.qty,
             )
 
     def _validate_items_qty_limit(self) -> None:
-        if self.items_qty > self._config.restrictions.max_items_qty:
+        if self.items_qty > self._config.max_items_qty:
             logger.info(
                 "Cart %s. Max items qty limit exceeded! Limit: %s, got: %s",
                 self.id,
-                self._config.restrictions.max_items_qty,
+                self._config.max_items_qty,
                 self.items_qty,
             )
             raise MaxItemsQtyLimitExceeded

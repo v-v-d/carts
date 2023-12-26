@@ -4,6 +4,7 @@ from typing import AsyncContextManager
 
 from dependency_injector import containers, providers
 
+from app.app_layer.use_cases.cart_config_service import CartConfigService
 from app.app_layer.use_cases.cart_items.add_item import (
     AddCartItemUseCase,
     LockableAddCartItemUseCase,
@@ -157,10 +158,7 @@ class Container(containers.DeclarativeContainer):
     )
 
     create_cart_use_case = providers.Factory(
-        CreateCartUseCase,
-        uow=db.container.uow,
-        auth_system=auth_system,
-        config=config.CART,
+        CreateCartUseCase, uow=db.container.uow, auth_system=auth_system
     )
     cart_retrieve_use_case = providers.Factory(
         CartRetrieveUseCase,
@@ -252,6 +250,11 @@ class Container(containers.DeclarativeContainer):
     )
     cart_list_use_case = providers.Factory(
         CartListUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
+    )
+    cart_config_service = providers.Factory(
+        CartConfigService,
         uow=db.container.uow,
         auth_system=auth_system,
     )

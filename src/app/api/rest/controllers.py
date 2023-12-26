@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
+from app.api.rest.admin.controllers import admin_api
 from app.api.rest.internal.controllers import internal_api
 from app.api.rest.public.controllers import public_api
-from app.api.rest.admin.controllers import admin_api
 
 
 def init_rest_api(app: FastAPI) -> FastAPI:

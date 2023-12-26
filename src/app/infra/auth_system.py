@@ -3,7 +3,10 @@ from logging import getLogger
 from pydantic import ValidationError
 
 from app.app_layer.interfaces.auth_system.dto import UserDataOutputDTO
-from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError, OperationForbiddenError
+from app.app_layer.interfaces.auth_system.exceptions import (
+    InvalidAuthDataError,
+    OperationForbiddenError,
+)
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 
 logger = getLogger(__name__)

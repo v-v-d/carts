@@ -1,4 +1,3 @@
-from decimal import Decimal
 from typing import Any
 
 from pydantic import AnyHttpUrl, BaseModel, PostgresDsn
@@ -53,17 +52,6 @@ class RedisLockConfig(BaseModel):
     time_to_wait_sec: float = 5.0
 
 
-class CartRestrictionsConfig(BaseModel):
-    max_items_qty: int = 30
-    min_cost_for_checkout: int = 500
-    limit_items_by_id: dict[int, Decimal] = {1: Decimal(5), 2: Decimal(3)}
-
-
-class CartConfig(BaseModel):
-    restrictions: CartRestrictionsConfig
-    weight_item_qty: Decimal = Decimal(1)
-
-
 class Config(BaseSettings):
     class Config:
         env_file = ".env"
@@ -74,5 +62,4 @@ class Config(BaseSettings):
     ARQ_REDIS: ArqRedisConfig
     DB: DBConfig
     LOGGING: LoggingConfig
-    CART: CartConfig
     REDIS_LOCK: RedisLockConfig
