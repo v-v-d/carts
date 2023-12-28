@@ -72,11 +72,7 @@ class EventsContainer(containers.DeclarativeContainer):
 class DBContainer(containers.DeclarativeContainer):
     config = providers.Dependency(instance_of=Config)
     db = providers.Singleton(Database, config=config.provided.DB)
-    uow = providers.Factory(
-        Uow,
-        session_factory=db.provided.session_factory,
-        config=config.provided,
-    )
+    uow = providers.Factory(Uow, session_factory=db.provided.session_factory)
 
 
 class ProductsClientContainer(containers.DeclarativeContainer):
