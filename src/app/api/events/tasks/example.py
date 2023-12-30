@@ -9,7 +9,7 @@ from app.containers import Container
 
 @inject
 async def example_task(
-    ctx: [str, Any],
+    _ctx: [str, Any],
     auth_data: str,
     cart_id: UUID,
     use_case: ICartRetrieveUseCase = Provide[Container.cart_retrieve_use_case],

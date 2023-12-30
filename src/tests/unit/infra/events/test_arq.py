@@ -5,7 +5,7 @@ from arq import ArqRedis
 from pytest_mock import MockerFixture
 
 from app.api.events.tasks.example import example_task
-from app.infra.events.arq.producer import ArqTaskProducer
+from app.infra.events.arq.producers import ArqTaskProducer
 from app.infra.events.queues import QueueNameEnum
 
 

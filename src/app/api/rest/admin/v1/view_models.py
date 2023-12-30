@@ -54,7 +54,6 @@ class CartListViewModel(BaseModel):
 
     items: list[CartViewModel]
     page_size: int
-    created_at: datetime
     next_page: datetime | None = None
 
     @model_validator(mode="before")
@@ -79,3 +78,6 @@ class CartConfigModelView(BaseModel):
     max_items_qty: int
     min_cost_for_checkout: int
     limit_items_by_id: dict[int, int]
+    hours_since_update_until_abandoned: int
+    max_abandoned_notifications_qty: int
+    abandoned_cart_text: str

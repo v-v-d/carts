@@ -4,6 +4,7 @@ from typing import AsyncContextManager
 
 from dependency_injector import containers, providers
 
+from app.app_layer.use_cases.abandoned_carts_service import AbandonedCartsService
 from app.app_layer.use_cases.cart_config_service import CartConfigService
 from app.app_layer.use_cases.cart_items.add_item import (
     AddCartItemUseCase,
@@ -50,8 +51,9 @@ from app.app_layer.use_cases.carts.clear_cart import (
 from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
 from app.config import Config
 from app.infra.auth_system import FakeJWTAuthSystem
-from app.infra.events.arq.producer import ArqTaskProducer
+from app.infra.events.arq.producers import ArqTaskProducer
 from app.infra.http.clients.coupons import CouponsHttpClient
+from app.infra.http.clients.notifications import NotificationsHttpClient
 from app.infra.http.clients.products import ProductsHttpClient
 from app.infra.http.retry_systems.backoff import BackoffConfig, BackoffRetrySystem
 from app.infra.http.transports.aiohttp import init_aiohttp_transport
@@ -127,6 +129,32 @@ class CouponsClientContainer(containers.DeclarativeContainer):
     )
 
 
+class NotificationsClientContainer(containers.DeclarativeContainer):
+    config = providers.Dependency(instance_of=Config)
+    transport = providers.Factory(
+        RetryableHttpTransport,
+        transport=providers.Resource(
+            init_aiohttp_transport,
+            config=providers.Factory(
+                HttpTransportConfig,
+                integration_name=config.provided.NOTIFICATIONS_CLIENT.name,
+            ),
+        ),
+        retry_system=providers.Factory(
+            BackoffRetrySystem,
+            config=providers.Factory(
+                BackoffConfig,
+                enabled=config.provided.NOTIFICATIONS_CLIENT.retries_enabled,
+            ),
+        ),
+    )
+    client = providers.Factory(
+        NotificationsHttpClient,
+        base_url=config.provided.NOTIFICATIONS_CLIENT.base_url,
+        transport=transport,
+    )
+
+
 class DistributedLockSystemContainer(containers.DeclarativeContainer):
     config = providers.Dependency(instance_of=Config)
     redis = providers.Resource(
@@ -147,6 +175,9 @@ class Container(containers.DeclarativeContainer):
     db = providers.Container(DBContainer, config=config)
     products_client = providers.Container(ProductsClientContainer, config=config)
     coupons_client = providers.Container(CouponsClientContainer, config=config)
+    notifications_client = providers.Container(
+        NotificationsClientContainer, config=config
+    )
     auth_system = providers.Factory(FakeJWTAuthSystem)
     distributed_lock_system = providers.Container(
         DistributedLockSystemContainer,
@@ -253,6 +284,13 @@ class Container(containers.DeclarativeContainer):
         CartConfigService,
         uow=db.container.uow,
         auth_system=auth_system,
+    )
+    abandoned_carts_service = providers.Factory(
+        AbandonedCartsService,
+        uow=db.container.uow,
+        task_producer=events.container.task_producer,
+        notification_client=notifications_client.container.client,
+        config=config.TASK,
     )
 
     @classmethod

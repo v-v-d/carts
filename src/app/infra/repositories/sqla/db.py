@@ -1,8 +1,9 @@
+import json
 from collections.abc import Callable
 from typing import Any
 
 import orjson
-from pydantic.json import pydantic_encoder
+from pydantic.v1.json import pydantic_encoder
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -13,8 +14,8 @@ from sqlalchemy.ext.asyncio import (
 from app.config import DBConfig
 
 
-def orjson_dumps(value: Any, *, default: Callable[[Any], Any] = pydantic_encoder) -> str:
-    return orjson.dumps(value, default=default).decode()
+def json_dumps(value: Any, *, default: Callable[[Any], Any] = pydantic_encoder) -> str:
+    return json.dumps(value, default=default)
 
 
 class Database:
@@ -37,7 +38,7 @@ class Database:
                     "timezone": config.timezone,
                 },
             },
-            json_serializer=orjson_dumps,
+            json_serializer=json_dumps,
             json_deserializer=orjson.loads,
             echo=config.debug,
         )

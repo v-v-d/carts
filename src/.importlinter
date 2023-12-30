@@ -1,0 +1,21 @@
+[importlinter]
+root_package = app
+
+[importlinter:contract:domain]
+name=Domain layer doesn't import api, infra or app_layer
+type=forbidden
+source_modules=
+    app.domain
+forbidden_modules=
+    app.api
+    app.infra
+    app.app_layer
+
+[importlinter:contract:app_layer]
+name=App layer doesn't import api or infra
+type=forbidden
+source_modules=
+    app.app_layer
+forbidden_modules=
+    app.api
+    app.infra

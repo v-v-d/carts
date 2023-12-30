@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 from sqlalchemy import Index, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, declarative_mixin, mapped_column, relationship
 
 from app.domain.cart_coupons.value_objects import (
@@ -16,6 +17,7 @@ from app.domain.cart_coupons.value_objects import (
     Discount,
 )
 from app.domain.cart_items.value_objects import ITEM_PRICE_PRECISION, ITEM_PRICE_SCALE
+from app.domain.cart_notifications.value_objects import CartNotificationTypeEnum
 from app.domain.carts.value_objects import CartStatusEnum
 from app.infra.repositories.sqla.base import Base
 
@@ -116,5 +118,23 @@ class CartConfig(TimestampMixin, Base):
     __tablename__ = "cart_config"
 
     id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(sa.Text, nullable=False, unique=True)
-    value: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+
+
+class CartNotification(TimestampMixin, Base):
+    __tablename__ = "cart_notifications"
+
+    id: Mapped[UUID] = mapped_column(
+        sa.UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+    cart_id: Mapped[UUID] = mapped_column(
+        sa.ForeignKey(
+            column="carts.id",
+            name="cart_notifications_cart_id_fkey",
+            ondelete="CASCADE",
+        ),
+        primary_key=True,
+    )
+    type: Mapped[CartNotificationTypeEnum] = mapped_column(nullable=False)
+    text: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    sent_at: Mapped[datetime] = mapped_column(nullable=False)

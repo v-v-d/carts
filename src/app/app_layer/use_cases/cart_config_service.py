@@ -30,6 +30,9 @@ class CartConfigService(ICartConfigService):
                 max_items_qty=data.max_items_qty,
                 min_cost_for_checkout=data.min_cost_for_checkout,
                 limit_items_by_id=data.limit_items_by_id,
+                hours_since_update_until_abandoned=data.hours_since_update_until_abandoned,
+                max_abandoned_notifications_qty=data.max_abandoned_notifications_qty,
+                abandoned_cart_text=data.abandoned_cart_text,
             )
         )
 

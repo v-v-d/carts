@@ -18,7 +18,10 @@ format: isort black
 flake8:
 	docker-compose up -d app && docker exec -it carts flake8 .
 
-lint: flake8
+imports:
+	docker-compose up -d app && docker exec -it carts lint-imports
+
+lint: flake8 imports
 
 # Testing
 test:

@@ -56,7 +56,7 @@ async def create(
 @inject
 async def get_list(
     page_size: int,
-    created_at: datetime,
+    created_at: datetime | None = None,
     auth_data: str = Header(..., alias="Authorization"),
     use_case: ICartListUseCase = Depends(Provide[Container.cart_list_use_case]),
 ) -> CartListViewModel:
@@ -76,5 +76,4 @@ async def get_list(
     return CartListViewModel(
         items=result,
         page_size=page_size,
-        created_at=created_at,
     )

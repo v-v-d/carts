@@ -29,3 +29,19 @@ class ArqTaskProducer(ITaskProducer):
             cart_id=cart_id,
             _queue_name=QueueNameEnum.EXAMPLE_QUEUE.value,
         )
+
+    async def enqueue_abandoned_cart_notification_task(
+        self,
+        user_id: int,
+        cart_id: UUID,
+    ) -> None:
+        # TODO(me): # circular import :(
+        from app.api.events.tasks.abandoned_carts import send_abandoned_cart_notification
+
+        await self._broker.enqueue_job(
+            send_abandoned_cart_notification.__name__,
+            user_id=user_id,
+            cart_id=cart_id,
+            _job_id=str(cart_id),
+            _queue_name=QueueNameEnum.EXAMPLE_QUEUE.value,
+        )

@@ -63,7 +63,7 @@ class CartCreateByUserIdInputDTO(BaseModel):
 
 class CartListInputDTO(BaseModel):
     page_size: int
-    created_at: datetime
+    created_at: datetime | None = None
     auth_data: str
 
 

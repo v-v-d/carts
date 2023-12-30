@@ -27,7 +27,7 @@ class CouponsHttpClient(ICouponsClient):
                 method=HTTPMethod.GET,
                 url=url,
                 headers={"Accept": "application/json"},
-                body={"name": coupon_name},
+                params={"name": coupon_name},
             ),
         )
 

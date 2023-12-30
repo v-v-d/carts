@@ -26,7 +26,18 @@ services:
     depends_on:
       - db
       - redis
-    command: arq app.infra.events.arq.workers.example.WorkerSettings --watch .
+    command: arq app.infra.events.arq.workers.ConsumerSettings --watch .
+
+  periodic:
+    build:
+      context: .
+    env_file:
+      - .env.defaults
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: arq app.infra.events.arq.workers.PeriodicSettings --watch .
 
   db:
     image: postgres:14-alpine

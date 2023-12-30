@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 
 from app.domain.interfaces.repositories.cart_coupons.repo import ICartCouponsRepository
+from app.domain.interfaces.repositories.cart_notifications import (
+    ICartNotificationsRepository,
+)
 from app.domain.interfaces.repositories.carts.repo import ICartsRepository
 from app.domain.interfaces.repositories.items.repo import IItemsRepository
 
@@ -9,6 +12,7 @@ class IUnitOfWork(ABC):
     items: IItemsRepository
     carts: ICartsRepository
     cart_coupons: ICartCouponsRepository
+    cart_notifications: ICartNotificationsRepository
 
     def __call__(self, autocommit: bool, *args, **kwargs) -> "IUnitOfWork":
         self._autocommit = autocommit

@@ -33,12 +33,28 @@ class CouponsClientConfig(BaseModel):
     retries_enabled: bool
 
 
+class NotificationsClientConfig(BaseModel):
+    name: str
+    base_url: AnyHttpUrl
+    retries_enabled: bool
+
+
 class ArqRedisConfig(BaseModel):
     host: str
     port: int
     password: str | None = None
     database: int = 0
     conn_timeout: int = 60
+
+
+class TaskConfig(BaseModel):
+    max_tries: int
+    retry_delay_sec: int
+    no_keep_result_value: int = 0
+
+
+class PeriodicConfig(BaseModel):
+    schedule: dict[str, Any] = {"hour": [0, 12]}
 
 
 class RedisLockConfig(BaseModel):
@@ -59,7 +75,10 @@ class Config(BaseSettings):
 
     PRODUCTS_CLIENT: ProductsClientConfig
     COUPONS_CLIENT: CouponsClientConfig
+    NOTIFICATIONS_CLIENT: NotificationsClientConfig
     ARQ_REDIS: ArqRedisConfig
+    TASK: TaskConfig
+    PERIODIC: PeriodicConfig
     DB: DBConfig
     LOGGING: LoggingConfig
     REDIS_LOCK: RedisLockConfig

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from datetime import datetime
 from uuid import UUID
 
@@ -33,4 +34,8 @@ class ICartsRepository(ABC):
 
     @abstractmethod
     async def update_config(self, cart_config: CartConfig) -> CartConfig:
+        ...
+
+    @abstractmethod
+    async def find_abandoned_cart_id_by_user_id(self) -> Mapping[UUID, int]:
         ...

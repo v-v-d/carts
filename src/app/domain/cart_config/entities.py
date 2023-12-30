@@ -1,20 +1,11 @@
-from decimal import Decimal
-
 from app.domain.cart_config.dto import CartConfigDTO
 
 
 class CartConfig:
     def __init__(self, data: CartConfigDTO) -> None:
-        self.data = data
-
-    @property
-    def max_items_qty(self) -> int:
-        return self.data.max_items_qty
-
-    @property
-    def min_cost_for_checkout(self) -> Decimal:
-        return self.data.min_cost_for_checkout
-
-    @property
-    def limit_items_by_id(self) -> dict[int, Decimal]:
-        return self.data.limit_items_by_id
+        self.max_items_qty = data.max_items_qty
+        self.min_cost_for_checkout = data.min_cost_for_checkout
+        self.limit_items_by_id = data.limit_items_by_id
+        self.hours_since_update_until_abandoned = data.hours_since_update_until_abandoned
+        self.max_abandoned_notifications_qty = data.max_abandoned_notifications_qty
+        self.abandoned_cart_text = data.abandoned_cart_text

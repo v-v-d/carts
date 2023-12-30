@@ -30,10 +30,13 @@ async def retrieve(
 
 @router.put("")
 @inject
-async def update(
+async def update(  # noqa: CFQ002
     max_items_qty: Annotated[int, Body()],
     min_cost_for_checkout: Annotated[Decimal, Body()],
     limit_items_by_id: Annotated[dict[int, int], Body()],
+    hours_since_update_until_abandoned: Annotated[int, Body()],
+    max_abandoned_notifications_qty: Annotated[int, Body()],
+    abandoned_cart_text: Annotated[str, Body()],
     auth_data: str = Header(..., alias="Authorization"),
     use_case: ICartConfigService = Depends(Provide[Container.cart_config_service]),
 ) -> CartConfigModelView:
@@ -43,6 +46,9 @@ async def update(
                 max_items_qty=max_items_qty,
                 min_cost_for_checkout=min_cost_for_checkout,
                 limit_items_by_id=limit_items_by_id,
+                hours_since_update_until_abandoned=hours_since_update_until_abandoned,
+                max_abandoned_notifications_qty=max_abandoned_notifications_qty,
+                abandoned_cart_text=abandoned_cart_text,
                 auth_data=auth_data,
             )
         )

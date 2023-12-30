@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.carts.cart_list import ICartListUseCase
@@ -14,11 +16,12 @@ class CartListUseCase(ICartListUseCase):
 
     async def execute(self, data: CartListInputDTO) -> CartListOutputDTO:
         self._auth_system.check_for_admin(auth_data=data.auth_data)
+        created_at = data.created_at or datetime.now()
 
         async with self._uow(autocommit=True):
             carts = await self._uow.carts.get_list(
                 page_size=data.page_size,
-                created_at=data.created_at,
+                created_at=created_at,
             )
 
         return CartListOutputDTO.validate_python(carts)

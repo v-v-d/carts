@@ -1,8 +1,7 @@
-import json
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Row, delete, select, update
+from sqlalchemy import Row, delete, func, select, text, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -97,27 +96,53 @@ class CartsRepository(ICartsRepository):
         return await self._get_config()
 
     async def update_config(self, cart_config: CartConfig) -> CartConfig:
-        stmt = delete(models.CartConfig)
-        await self._session.execute(stmt)
-
-        value_by_name = [
-            {"name": name, "value": json.dumps(value, default=lambda x: str(x))}
-            for name, value in cart_config.data.model_dump().items()
-        ]
-
-        stmt = insert(models.CartConfig).values(value_by_name)
+        stmt = update(models.CartConfig).values(data=vars(cart_config))
         await self._session.execute(stmt)
 
         return cart_config
 
+    async def find_abandoned_cart_id_by_user_id(self) -> list[tuple[int, UUID]]:
+        config = await self._get_config()
+        abandonment_threshold_time = func.now() - text(
+            f"INTERVAL '{config.hours_since_update_until_abandoned} hours'"
+        )
+
+        subquery = (
+            select(
+                models.CartNotification.cart_id,
+                func.count().label("notifications_count"),
+            )
+            .join(models.Cart, models.CartNotification.cart_id == models.Cart.id)
+            .where(
+                models.Cart.updated_at <= abandonment_threshold_time,
+                models.Cart.status == CartStatusEnum.OPENED,
+            )
+            .group_by(models.CartNotification.cart_id)
+        ).subquery()
+
+        stmt = (
+            select(models.Cart.user_id, models.Cart.id)
+            .outerjoin(subquery, models.Cart.id == subquery.c.cart_id)
+            .where(
+                models.Cart.updated_at <= abandonment_threshold_time,
+                models.Cart.status == CartStatusEnum.OPENED,
+                (subquery.c.notifications_count.is_(None))
+                | (
+                    subquery.c.notifications_count
+                    < config.max_abandoned_notifications_qty
+                ),
+            )
+        )
+
+        result = await self._session.execute(stmt)
+
+        return [(user_id, cart_id) for user_id, cart_id in result.all()]
+
     async def _get_config(self) -> CartConfig:
         stmt = select(models.CartConfig)
-        result = await self._session.scalars(stmt)
+        row = await self._session.scalar(stmt)
 
-        rows = result.unique().all()
-        value_by_name = {row.name: json.loads(row.value) for row in rows}
-
-        return CartConfig(data=CartConfigDTO.model_validate(value_by_name))
+        return CartConfig(data=CartConfigDTO.model_validate(row.data))
 
     def _get_cart(self, obj: Row, config: CartConfig) -> Cart:
         cart = Cart(

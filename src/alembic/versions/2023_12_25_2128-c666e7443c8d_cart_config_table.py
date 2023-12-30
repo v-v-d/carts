@@ -8,6 +8,7 @@ Create Date: 2023-12-25 21:28:10.687621
 from typing import Sequence, Union
 
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from alembic import op
 
@@ -35,10 +36,8 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("name", sa.Text(), nullable=False),
-        sa.Column("value", sa.Text(), nullable=False),
+        sa.Column("data", postgresql.JSONB(astext_type=sa.Text())),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
         schema="content",
     )
     # ### end Alembic commands ###

@@ -1,8 +1,13 @@
 from typing import Any
 
+from arq import cron, func
 from arq.connections import RedisSettings
 
 from app.api import events
+from app.api.events.tasks.abandoned_carts import (
+    process_abandoned_carts,
+    send_abandoned_cart_notification,
+)
 from app.api.events.tasks.example import example_task
 from app.config import Config
 from app.containers import Container
@@ -24,9 +29,23 @@ async def shutdown(ctx: dict[str, Any]) -> None:
     await ctx["container"].shutdown_resources()
 
 
-class WorkerSettings:
+class ConsumerSettings:
     redis_settings: RedisSettings = RedisSettings(**config.ARQ_REDIS.model_dump())
-    functions = [example_task]
+    functions = [
+        func(coroutine=example_task, max_tries=config.TASK.max_tries),
+        func(coroutine=send_abandoned_cart_notification, max_tries=config.TASK.max_tries),
+    ]
     queue_name = QueueNameEnum.EXAMPLE_QUEUE.value
+    on_startup = startup
+    on_shutdown = shutdown
+    keep_result = config.TASK.no_keep_result_value
+
+
+class PeriodicSettings:
+    redis_settings: RedisSettings = RedisSettings(**config.ARQ_REDIS.model_dump())
+    cron_jobs = [
+        cron(process_abandoned_carts, **config.PERIODIC.schedule),
+    ]
+    queue_name = QueueNameEnum.PERIODIC_QUEUE.value
     on_startup = startup
     on_shutdown = shutdown
