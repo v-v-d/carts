@@ -129,4 +129,5 @@ def downgrade() -> None:
     op.drop_table("carts", schema="content")
     # ### end Alembic commands ###
 
+    sa.Enum(name="cart_status_enum").drop(op.get_bind(), checkfirst=False)
     op.execute("DROP SCHEMA content;")
