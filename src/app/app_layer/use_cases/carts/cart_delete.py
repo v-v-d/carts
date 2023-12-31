@@ -10,11 +10,21 @@ from app.domain.carts.entities import Cart
 
 
 class CartDeleteUseCase(ICartDeleteUseCase):
-    def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
+    def __init__(
+        self,
+        uow: IUnitOfWork,
+        auth_system: IAuthSystem,
+        distributed_lock_system: IDistributedLockSystem,
+    ) -> None:
         self._uow = uow
         self._auth_system = auth_system
+        self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, auth_data: str, cart_id: UUID) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=f"cart-lock-{cart_id}"):
+            return await self._delete_cart(auth_data=auth_data, cart_id=cart_id)
+
+    async def _delete_cart(self, auth_data: str, cart_id: UUID) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=auth_data)
 
         async with self._uow(autocommit=True):
@@ -30,17 +40,3 @@ class CartDeleteUseCase(ICartDeleteUseCase):
             return
 
         cart.check_user_ownership(user_id=user.id)
-
-
-class LockableCartDeleteUseCase(ICartDeleteUseCase):
-    def __init__(
-        self,
-        use_case: ICartDeleteUseCase,
-        distributed_lock_system: IDistributedLockSystem,
-    ) -> None:
-        self._use_case = use_case
-        self._distributed_lock_system = distributed_lock_system
-
-    async def execute(self, auth_data: str, cart_id: UUID) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=f"cart-lock-{cart_id}"):
-            return await self._use_case.execute(auth_data=auth_data, cart_id=cart_id)

@@ -31,7 +31,9 @@ class CartNotification:
         )
 
     @classmethod
-    def create_abandoned_cart_notification(cls, cart_id: UUID, text: str) -> "CartNotification":
+    def create_abandoned_cart_notification(
+        cls, cart_id: UUID, text: str
+    ) -> "CartNotification":
         return cls.create(
             cart_id=cart_id,
             notification_type=CartNotificationTypeEnum.ABANDONED_CART,

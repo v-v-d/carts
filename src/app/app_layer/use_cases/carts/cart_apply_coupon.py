@@ -27,12 +27,18 @@ class CartApplyCouponUseCase(ICartApplyCouponUseCase):
         uow: IUnitOfWork,
         coupons_client: ICouponsClient,
         auth_system: IAuthSystem,
+        distributed_lock_system: IDistributedLockSystem,
     ) -> None:
         self._uow = uow
         self._coupons_client = coupons_client
         self._auth_system = auth_system
+        self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: CartApplyCouponInputDTO) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
+            return await self._apply_coupon(data=data)
+
+    async def _apply_coupon(self, data: CartApplyCouponInputDTO) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=data.auth_data)
 
         async with self._uow(autocommit=True):
@@ -91,17 +97,3 @@ class CartApplyCouponUseCase(ICartApplyCouponUseCase):
                 cart=cart,
             ),
         )
-
-
-class LockableCartApplyCouponUseCase(ICartApplyCouponUseCase):
-    def __init__(
-        self,
-        use_case: ICartApplyCouponUseCase,
-        distributed_lock_system: IDistributedLockSystem,
-    ) -> None:
-        self._use_case = use_case
-        self._distributed_lock_system = distributed_lock_system
-
-    async def execute(self, data: CartApplyCouponInputDTO) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
-            return await self._use_case.execute(data=data)

@@ -65,7 +65,7 @@ class CartListViewModel(BaseModel):
         if not data["items"]:
             return data
 
-        first_item = data["items"][0]
+        first_item = data["items"][-1]
         data["next_page"] = first_item.created_at
 
         return data

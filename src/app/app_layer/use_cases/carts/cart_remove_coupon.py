@@ -14,11 +14,21 @@ from app.domain.carts.exceptions import CouponDoesNotExistError
 
 
 class CartRemoveCouponUseCase(ICartRemoveCouponUseCase):
-    def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
+    def __init__(
+        self,
+        uow: IUnitOfWork,
+        auth_system: IAuthSystem,
+        distributed_lock_system: IDistributedLockSystem,
+    ) -> None:
         self._uow = uow
         self._auth_system = auth_system
+        self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: CartRemoveCouponInputDTO) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
+            return await self._remove_coupon(data=data)
+
+    async def _remove_coupon(self, data: CartRemoveCouponInputDTO) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=data.auth_data)
 
         async with self._uow(autocommit=True):
@@ -43,17 +53,3 @@ class CartRemoveCouponUseCase(ICartRemoveCouponUseCase):
         await self._uow.cart_coupons.delete(cart_id=cart.id)
 
         return cart
-
-
-class LockableCartRemoveCouponUseCase(ICartRemoveCouponUseCase):
-    def __init__(
-        self,
-        use_case: ICartRemoveCouponUseCase,
-        distributed_lock_system: IDistributedLockSystem,
-    ) -> None:
-        self._use_case = use_case
-        self._distributed_lock_system = distributed_lock_system
-
-    async def execute(self, data: CartRemoveCouponInputDTO) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
-            return await self._use_case.execute(data=data)

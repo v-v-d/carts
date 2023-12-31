@@ -81,7 +81,7 @@ class CartsRepository(ICartsRepository):
             select(models.Cart)
             .options(joinedload(models.Cart.items))
             .options(joinedload(models.Cart.coupon))
-            .where(models.Cart.created_at >= created_at)
+            .where(models.Cart.created_at < created_at)
             .order_by(models.Cart.created_at.desc())
             .limit(page_size)
         )

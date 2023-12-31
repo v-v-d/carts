@@ -24,12 +24,18 @@ class AddCartItemUseCase(IAddCartItemUseCase):
         uow: IUnitOfWork,
         products_client: IProductsClient,
         auth_system: IAuthSystem,
+        distributed_lock_system: IDistributedLockSystem,
     ) -> None:
         self._uow = uow
         self._products_client = products_client
         self._auth_system = auth_system
+        self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
+            return await self._add_item_to_cart(data=data)
+
+    async def _add_item_to_cart(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=data.auth_data)
 
         async with self._uow(autocommit=True):
@@ -101,17 +107,3 @@ class AddCartItemUseCase(IAddCartItemUseCase):
             await self._uow.items.update_item(item=item)
 
         return cart
-
-
-class LockableAddCartItemUseCase(IAddCartItemUseCase):
-    def __init__(
-        self,
-        use_case: IAddCartItemUseCase,
-        distributed_lock_system: IDistributedLockSystem,
-    ) -> None:
-        self._use_case = use_case
-        self._distributed_lock_system = distributed_lock_system
-
-    async def execute(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
-            return await self._use_case.execute(data=data)

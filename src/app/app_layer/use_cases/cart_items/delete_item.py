@@ -13,11 +13,21 @@ from app.domain.carts.exceptions import CartItemDoesNotExistError
 
 
 class DeleteCartItemUseCase(IDeleteCartItemUseCase):
-    def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
+    def __init__(
+        self,
+        uow: IUnitOfWork,
+        auth_system: IAuthSystem,
+        distributed_lock_system: IDistributedLockSystem,
+    ) -> None:
         self._uow = uow
         self._auth_system = auth_system
+        self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: DeleteCartItemInputDTO) -> CartOutputDTO:
+        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
+            return await self._delete_cart_item(data=data)
+
+    async def _delete_cart_item(self, data: DeleteCartItemInputDTO) -> CartOutputDTO:
         user = self._auth_system.get_user_data(auth_data=data.auth_data)
 
         async with self._uow(autocommit=True):
@@ -50,17 +60,3 @@ class DeleteCartItemUseCase(IDeleteCartItemUseCase):
         await self._uow.items.delete_item(item=item)
 
         return cart
-
-
-class LockableDeleteCartItemUseCase(IDeleteCartItemUseCase):
-    def __init__(
-        self,
-        use_case: IDeleteCartItemUseCase,
-        distributed_lock_system: IDistributedLockSystem,
-    ) -> None:
-        self._use_case = use_case
-        self._distributed_lock_system = distributed_lock_system
-
-    async def execute(self, data: DeleteCartItemInputDTO) -> CartOutputDTO:
-        async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
-            return await self._use_case.execute(data=data)
