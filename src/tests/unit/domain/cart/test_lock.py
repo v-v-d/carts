@@ -7,7 +7,7 @@ from app.domain.carts.value_objects import CartStatusEnum
 
 
 @pytest.mark.parametrize("cart_config", [{"min_cost_for_checkout": 0}], indirect=True)
-async def test_ok(cart: Cart, cart_config: CartConfig) -> None:
+def test_ok(cart: Cart, cart_config: CartConfig) -> None:
     cart.lock()
     assert cart.status == CartStatusEnum.LOCKED
 
@@ -21,12 +21,12 @@ async def test_ok(cart: Cart, cart_config: CartConfig) -> None:
     ],
     indirect=True,
 )
-async def test_invalid_cart_status(cart: Cart) -> None:
+def test_invalid_cart_status(cart: Cart) -> None:
     with pytest.raises(ChangeStatusError, match=""):
         cart.lock()
 
 
-async def test_checkout_disabled(cart: Cart, cart_config: CartConfig) -> None:
+def test_checkout_disabled(cart: Cart, cart_config: CartConfig) -> None:
     with pytest.raises(CantBeLockedError, match=""):
         cart.lock()
 

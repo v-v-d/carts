@@ -5,7 +5,7 @@ from app.domain.carts.exceptions import ChangeStatusError
 from app.domain.carts.value_objects import CartStatusEnum
 
 
-async def test_ok(cart: Cart) -> None:
+def test_ok(cart: Cart) -> None:
     cart.deactivate()
     assert cart.status == CartStatusEnum.DEACTIVATED
 
@@ -19,6 +19,6 @@ async def test_ok(cart: Cart) -> None:
     ],
     indirect=True,
 )
-async def test_cart_has_invalid_status(cart: Cart) -> None:
+def test_cart_has_invalid_status(cart: Cart) -> None:
     with pytest.raises(ChangeStatusError, match=""):
         cart.deactivate()

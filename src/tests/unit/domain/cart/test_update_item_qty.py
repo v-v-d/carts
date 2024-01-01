@@ -14,7 +14,7 @@ from app.domain.carts.exceptions import (
 from app.domain.carts.value_objects import CartStatusEnum
 
 
-async def test_ok(cart: Cart, cart_item: CartItem) -> None:
+def test_ok(cart: Cart, cart_item: CartItem) -> None:
     cart.add_new_item(cart_item)
     new_qty = Decimal(10)
     cart.update_item_qty(item_id=cart_item.id, qty=new_qty)
@@ -31,12 +31,12 @@ async def test_ok(cart: Cart, cart_item: CartItem) -> None:
     ],
     indirect=True,
 )
-async def test_cart_cant_be_modified(cart: Cart) -> None:
+def test_cart_cant_be_modified(cart: Cart) -> None:
     with pytest.raises(OperationForbiddenError, match=""):
         cart.update_item_qty(item_id=1, qty=Decimal(10))
 
 
-async def test_item_doesnt_exist(cart: Cart, cart_config: CartConfig) -> None:
+def test_item_doesnt_exist(cart: Cart, cart_config: CartConfig) -> None:
     with pytest.raises(CartItemDoesNotExistError, match=""):
         cart.update_item_qty(item_id=1, qty=Decimal(1))
 
@@ -46,7 +46,7 @@ async def test_item_doesnt_exist(cart: Cart, cart_config: CartConfig) -> None:
     [({"limit_items_by_id": {1: Decimal(1)}}, {"id": 1, "qty": Decimal(1)})],
     indirect=True,
 )
-async def test_item_qty_limit_exceeded(
+def test_item_qty_limit_exceeded(
     cart: Cart,
     cart_config: CartConfig,
     cart_item: CartItem,
@@ -62,7 +62,7 @@ async def test_item_qty_limit_exceeded(
     [({"max_items_qty": Decimal(1)}, {"id": 1, "qty": Decimal(1), "is_weight": False})],
     indirect=True,
 )
-async def test_cart_items_qty_limit_exceeded(
+def test_cart_items_qty_limit_exceeded(
     cart: Cart,
     cart_config: CartConfig,
     cart_item: CartItem,

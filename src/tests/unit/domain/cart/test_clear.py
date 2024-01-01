@@ -6,7 +6,7 @@ from app.domain.carts.exceptions import OperationForbiddenError
 from app.domain.carts.value_objects import CartStatusEnum
 
 
-async def test_ok(cart: Cart, cart_item: CartItem) -> None:
+def test_ok(cart: Cart, cart_item: CartItem) -> None:
     cart.add_new_item(item=cart_item)
     cart.clear()
 
@@ -22,6 +22,6 @@ async def test_ok(cart: Cart, cart_item: CartItem) -> None:
     ],
     indirect=True,
 )
-async def test_cart_cant_be_modified(cart: Cart, cart_item: CartItem) -> None:
+def test_cart_cant_be_modified(cart: Cart, cart_item: CartItem) -> None:
     with pytest.raises(OperationForbiddenError, match=""):
         cart.clear()

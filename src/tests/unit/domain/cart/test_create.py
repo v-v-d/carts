@@ -13,7 +13,7 @@ FROZEN_TIME = datetime.now()
 pytestmark = [pytest.mark.freeze_time(FROZEN_TIME)]
 
 
-async def test_ok(cart_config: CartConfig) -> None:
+def test_ok(cart_config: CartConfig) -> None:
     cart = Cart.create(user_id=1, config=cart_config)
 
     assert cart.created_at == FROZEN_TIME

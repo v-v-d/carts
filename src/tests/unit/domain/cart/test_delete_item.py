@@ -6,7 +6,7 @@ from app.domain.carts.exceptions import CartItemDoesNotExistError, OperationForb
 from app.domain.carts.value_objects import CartStatusEnum
 
 
-async def test_ok(cart: Cart, cart_item: CartItem) -> None:
+def test_ok(cart: Cart, cart_item: CartItem) -> None:
     cart.add_new_item(item=cart_item)
     cart.delete_item(item_id=cart_item.id)
 
@@ -22,11 +22,11 @@ async def test_ok(cart: Cart, cart_item: CartItem) -> None:
     ],
     indirect=True,
 )
-async def test_cart_cant_be_modified(cart: Cart, cart_item: CartItem) -> None:
+def test_cart_cant_be_modified(cart: Cart, cart_item: CartItem) -> None:
     with pytest.raises(OperationForbiddenError, match=""):
         cart.delete_item(item_id=cart_item.id)
 
 
-async def test_item_doesnt_exist(cart: Cart, cart_item: CartItem) -> None:
+def test_item_doesnt_exist(cart: Cart, cart_item: CartItem) -> None:
     with pytest.raises(CartItemDoesNotExistError, match=""):
         cart.delete_item(item_id=cart_item.id)

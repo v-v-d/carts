@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 import pytest
-from alembic.config import Config
 from pytest_alembic.tests import (  # noqa
     test_model_definitions_match_ddl,
     test_single_head_revision,
@@ -10,6 +9,8 @@ from pytest_alembic.tests import (  # noqa
     test_upgrade,
 )
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
+
+from alembic.config import Config
 
 
 @pytest.fixture(scope="module")

@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from app.domain.cart_coupons.dto import CartCouponDTO
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from app.domain.carts.entities import Cart
 
 
