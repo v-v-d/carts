@@ -7,7 +7,6 @@ from app.app_layer.interfaces.use_cases.cart_items.delete_item import (
 )
 from app.app_layer.interfaces.use_cases.cart_items.dto import DeleteCartItemInputDTO
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
-from app.domain.cart_items.entities import CartItem
 from app.domain.carts.entities import Cart
 from app.domain.carts.exceptions import CartItemDoesNotExistError
 
@@ -32,14 +31,10 @@ class DeleteCartItemUseCase(IDeleteCartItemUseCase):
 
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)
-            self._check_item_can_be_deleted(cart=cart, user=user)
-            cart = await self._update_cart(cart=cart, data=data)
+            self._check_user_ownership(cart=cart, user=user)
+            cart = await self._delete_item_from_cart(cart=cart, item_id=data.item_id)
 
         return CartOutputDTO.model_validate(cart)
-
-    def _check_item_can_be_deleted(self, cart: Cart, user: UserDataOutputDTO) -> None:
-        self._check_user_ownership(cart=cart, user=user)
-        cart.check_item_can_be_deleted()
 
     def _check_user_ownership(self, cart: Cart, user: UserDataOutputDTO) -> None:
         if user.is_admin:
@@ -47,16 +42,12 @@ class DeleteCartItemUseCase(IDeleteCartItemUseCase):
 
         cart.check_user_ownership(user_id=user.id)
 
-    async def _update_cart(self, cart: Cart, data: DeleteCartItemInputDTO) -> Cart:
+    async def _delete_item_from_cart(self, cart: Cart, item_id: int) -> Cart:
         try:
-            item = cart.get_item(data.item_id)
+            cart.delete_item(item_id=item_id)
         except CartItemDoesNotExistError:
             return cart
 
-        return await self._delete_item_from_cart(cart=cart, item=item)
-
-    async def _delete_item_from_cart(self, cart: Cart, item: CartItem) -> Cart:
-        cart.delete_item(item=item)
-        await self._uow.items.delete_item(item=item)
+        await self._uow.items.delete_item(item_id=item_id, cart=cart)
 
         return cart

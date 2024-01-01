@@ -9,6 +9,7 @@ from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.exceptions import (
     CantBeLockedError,
+    CartItemAlreadyExistsError,
     CartItemDoesNotExistError,
     ChangeStatusError,
     CouponAlreadyAppliedError,
@@ -81,6 +82,15 @@ class Cart:
         self._check_can_be_modified(action="increase item qty")
 
         items_by_id = {item.id: item for item in self.items}
+
+        if item_id not in items_by_id:
+            logger.info(
+                "Cart %s. Failed to increase item %s qty! Item doesn't exist in cart.",
+                self.id,
+                item_id,
+            )
+            raise CartItemDoesNotExistError
+
         items_by_id[item_id].qty += qty
 
         self._check_specific_item_qty_limit(item=items_by_id[item_id])
@@ -88,6 +98,17 @@ class Cart:
 
     def add_new_item(self, item: CartItem) -> None:
         self._check_can_be_modified(action="add new item")
+
+        items_by_id = {item.id: item for item in self.items}
+
+        if item.id in items_by_id:
+            logger.info(
+                "Cart %s. Failed to add new item %s! Item already exists in cart.",
+                self.id,
+                item.id,
+            )
+            raise CartItemAlreadyExistsError
+
         self._check_specific_item_qty_limit(item=item)
         self.items.append(item)
         self._validate_items_qty_limit()
@@ -96,37 +117,45 @@ class Cart:
         self._validate_status_transition(new_status=CartStatusEnum.DEACTIVATED)
         self.status = CartStatusEnum.DEACTIVATED
 
-    def get_item(self, item_id: int) -> CartItem:
-        items_by_id = {item.id: item for item in self.items}
-
-        if item_id not in items_by_id:
-            logger.debug("Cart %s, item %s doesn't exist in cart.", self.id, item_id)
-            raise CartItemDoesNotExistError
-
-        return items_by_id[item_id]
-
-    def update_item_qty(self, item_id: int, qty: Decimal) -> None:
+    def update_item_qty(self, item_id: int, qty: Decimal) -> CartItem:
         self._check_can_be_modified(action="update item qty")
 
         items_by_id = {item.id: item for item in self.items}
+
+        if item_id not in items_by_id:
+            logger.info(
+                "Cart %s. Failed to update item %s! Item doesn't exist in cart.",
+                self.id,
+                item_id,
+            )
+            raise CartItemDoesNotExistError
+
         items_by_id[item_id].qty = qty
 
         self._check_specific_item_qty_limit(item=items_by_id[item_id])
         self._validate_items_qty_limit()
 
-    def delete_item(self, item: CartItem) -> None:
+        return items_by_id[item_id]
+
+    def delete_item(self, item_id: int) -> None:
         self._check_can_be_modified(action="delete item")
 
         items_by_id = {item.id: item for item in self.items}
-        items_by_id.pop(item.id)
+
+        if item_id not in items_by_id:
+            logger.info(
+                "Cart %s. Failed to delete item %s! Item doesn't exist in cart.",
+                self.id,
+                item_id,
+            )
+            raise CartItemDoesNotExistError
+
+        items_by_id.pop(item_id)
         self.items = list(items_by_id.values())
 
     def clear(self) -> None:
         self._check_can_be_modified(action="clear cart")
         self.items = []
-
-    def check_item_can_be_deleted(self) -> None:
-        self._check_can_be_modified(action="delete item")
 
     def check_user_ownership(self, user_id: int) -> None:
         if self.user_id != user_id:

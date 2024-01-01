@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from app.domain.cart_items.entities import CartItem
+from app.domain.carts.entities import Cart
 
 
 class IItemsRepository(ABC):
@@ -13,5 +14,5 @@ class IItemsRepository(ABC):
         ...
 
     @abstractmethod
-    async def delete_item(self, item: CartItem) -> None:
+    async def delete_item(self, cart: Cart, item_id: int) -> None:
         ...

@@ -9,6 +9,10 @@ class CartItemDoesNotExistError(BaseCartDomainError):
     pass
 
 
+class CartItemAlreadyExistsError(BaseCartDomainError):
+    pass
+
+
 class NotOwnedByUserError(BaseCartDomainError):
     pass
 

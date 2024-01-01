@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.cart_items.entities import CartItem
+from app.domain.carts.entities import Cart
 from app.domain.interfaces.repositories.items.exceptions import ItemAlreadyExists
 from app.domain.interfaces.repositories.items.repo import IItemsRepository
 from app.infra.repositories.sqla import models
@@ -47,8 +48,8 @@ class ItemsRepository(IItemsRepository):
 
         return item
 
-    async def delete_item(self, item: CartItem) -> None:
+    async def delete_item(self, cart: Cart, item_id: int) -> None:
         stmt = delete(models.CartItem).where(
-            models.CartItem.id == item.id, models.CartItem.cart_id == item.cart_id
+            models.CartItem.id == item_id, models.CartItem.cart_id == cart.id
         )
         await self._session.execute(stmt)

@@ -9,7 +9,7 @@ from pytest_alembic.tests import (  # noqa
     test_up_down_consistency,
     test_upgrade,
 )
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncConnection
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 
 
 @pytest.fixture(scope="module")

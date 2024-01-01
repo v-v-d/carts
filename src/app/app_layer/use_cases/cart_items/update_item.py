@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from app.app_layer.interfaces.auth_system.dto import UserDataOutputDTO
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
@@ -9,7 +7,6 @@ from app.app_layer.interfaces.use_cases.cart_items.update_item import (
     IUpdateCartItemUseCase,
 )
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
-from app.domain.cart_items.entities import CartItem
 from app.domain.carts.entities import Cart
 
 
@@ -34,8 +31,7 @@ class UpdateCartItemUseCase(IUpdateCartItemUseCase):
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)
             self._check_user_ownership(cart=cart, user=user)
-            item = cart.get_item(data.item_id)
-            cart = await self._update_item_qty(cart=cart, item=item, new_qty=data.qty)
+            cart = await self._update_item_qty(cart=cart, data=data)
 
         return CartOutputDTO.model_validate(cart)
 
@@ -48,10 +44,9 @@ class UpdateCartItemUseCase(IUpdateCartItemUseCase):
     async def _update_item_qty(
         self,
         cart: Cart,
-        item: CartItem,
-        new_qty: Decimal,
+        data: UpdateCartItemInputDTO,
     ) -> Cart:
-        cart.update_item_qty(item_id=item.id, qty=new_qty)
+        item = cart.update_item_qty(item_id=data.item_id, qty=data.qty)
         await self._uow.items.update_item(item=item)
 
         return cart

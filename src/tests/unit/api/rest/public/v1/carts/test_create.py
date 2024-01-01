@@ -14,7 +14,9 @@ from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseC
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
 from app.containers import Container
 from app.domain.carts.value_objects import CartStatusEnum
-from app.domain.interfaces.repositories.carts.exceptions import ActiveCartAlreadyExistsError
+from app.domain.interfaces.repositories.carts.exceptions import (
+    ActiveCartAlreadyExistsError,
+)
 from tests.utils import fake
 
 

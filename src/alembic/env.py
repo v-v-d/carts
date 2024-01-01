@@ -1,9 +1,9 @@
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from alembic import context
 from app.config import Config
 from app.containers import Container
 from app.infra.repositories.sqla.db import Database
@@ -91,7 +91,7 @@ def run_migrations_online():
     """
     connectable = config.attributes.get("connection", None)
 
-    if isinstance(connectable, AsyncConnection):
+    if isinstance(connectable, AsyncConnection) or connectable is None:
         asyncio.run(run_async_migrations())
     else:
         do_run_migrations(connectable)
