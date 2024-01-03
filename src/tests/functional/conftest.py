@@ -8,10 +8,12 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
+from app.app_layer.interfaces.clients.coupons.client import ICouponsClient
 from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.config import RedisLockConfig
 from app.infra.auth_system import FakeJWTAuthSystem
+from app.infra.http.clients.coupons import CouponsHttpClient
 from app.infra.http.clients.products import ProductsHttpClient
 from app.infra.http.transports.aiohttp import AioHttpTransport
 from app.infra.http.transports.base import HttpTransportConfig, IHttpTransport
@@ -66,7 +68,7 @@ async def uow(session_factory: async_sessionmaker[AsyncSession]) -> TestUow:
 
 
 @pytest.fixture()
-def products_base_url() -> str:
+def client_base_url() -> str:
     return fake.internet.url()
 
 
@@ -115,7 +117,7 @@ def http_config() -> HttpTransportConfig:
 
 
 @pytest.fixture()
-def products_transport(
+def client_transport(
     http_session: AsyncMock, http_config: HttpTransportConfig
 ) -> IHttpTransport:
     return AioHttpTransport(session=http_session, config=http_config)
@@ -123,6 +125,13 @@ def products_transport(
 
 @pytest.fixture()
 def products_client(
-    products_base_url: str, products_transport: IHttpTransport
+    client_base_url: str, client_transport: IHttpTransport
 ) -> IProductsClient:
-    return ProductsHttpClient(base_url=products_base_url, transport=products_transport)
+    return ProductsHttpClient(base_url=client_base_url, transport=client_transport)
+
+
+@pytest.fixture()
+def coupons_client(
+    client_base_url: str, client_transport: IHttpTransport
+) -> ICouponsClient:
+    return CouponsHttpClient(base_url=client_base_url, transport=client_transport)

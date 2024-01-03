@@ -106,7 +106,7 @@ async def test_new_item_ok(
     redis_lock_config: RedisLockConfig,
     http_session: MagicMock,
     http_config: HttpTransportConfig,
-    products_base_url: str,
+    client_base_url: str,
     use_case: AddCartItemUseCase,
     dto: AddItemToCartInputDTO,
     cart: Cart,
@@ -150,7 +150,7 @@ async def test_new_item_ok(
     )
     http_session.request.assert_called_once_with(
         method=HTTPMethod.GET,
-        url=f"{products_base_url}products/{dto.id}",
+        url=f"{client_base_url}products/{dto.id}",
         headers=None,
         params=None,
         data=None,
@@ -158,7 +158,7 @@ async def test_new_item_ok(
         trace_request_ctx=SimpleNamespace(
             data=HttpRequestInputDTO(
                 method=HTTPMethod.GET,
-                url=f"{products_base_url}products/{dto.id}",
+                url=f"{client_base_url}products/{dto.id}",
                 headers=None,
                 params=None,
                 body=None,
@@ -368,7 +368,7 @@ async def test_failed_products_client(
     http_response: AsyncMock,
     http_session: MagicMock,
     http_config: HttpTransportConfig,
-    products_base_url: str,
+    client_base_url: str,
     redis: AsyncMock,
     redis_lock_config: RedisLockConfig,
     use_case: AddCartItemUseCase,
@@ -386,7 +386,7 @@ async def test_failed_products_client(
     )
     http_session.request.assert_called_once_with(
         method=HTTPMethod.GET,
-        url=f"{products_base_url}products/{dto.id}",
+        url=f"{client_base_url}products/{dto.id}",
         headers=None,
         params=None,
         data=None,
@@ -394,7 +394,7 @@ async def test_failed_products_client(
         trace_request_ctx=SimpleNamespace(
             data=HttpRequestInputDTO(
                 method=HTTPMethod.GET,
-                url=f"{products_base_url}products/{dto.id}",
+                url=f"{client_base_url}products/{dto.id}",
                 headers=None,
                 params=None,
                 body=None,

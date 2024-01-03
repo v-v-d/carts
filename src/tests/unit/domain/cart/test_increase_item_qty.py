@@ -14,10 +14,15 @@ from app.domain.carts.exceptions import (
 from app.domain.carts.value_objects import CartStatusEnum
 
 
-def test_ok(cart: Cart, cart_item: CartItem) -> None:
+@pytest.mark.parametrize(
+    ("cart_item", "cart_config"),
+    [({"qty": 1}, {"max_items_qty": 10})],
+    indirect=True,
+)
+def test_ok(cart: Cart, cart_item: CartItem, cart_config: CartConfig) -> None:
     cart.add_new_item(cart_item)
     current_qty = cart_item.qty
-    delta_qty = Decimal(10)
+    delta_qty = Decimal(9)
     cart.increase_item_qty(item_id=cart_item.id, qty=delta_qty)
 
     assert cart_item.qty == current_qty + delta_qty
