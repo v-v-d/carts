@@ -103,7 +103,7 @@ async def cart_config(request: SubRequest) -> CartConfig:
     return CartConfig(
         data=CartConfigDTO(
             **{
-                "max_items_qty": fake.numeric.integer_number(start=1),
+                "max_items_qty": fake.numeric.integer_number(start=2),
                 "min_cost_for_checkout": fake.numeric.integer_number(start=1),
                 "limit_items_by_id": {},
                 "hours_since_update_until_abandoned": fake.numeric.integer_number(
