@@ -2,7 +2,10 @@ import pytest
 
 from app.domain.cart_coupons.dto import CartCouponDTO
 from app.domain.cart_coupons.entities import CartCoupon
-from app.domain.cart_coupons.exceptions import CartCostValidationError, DiscountValidationError
+from app.domain.cart_coupons.exceptions import (
+    CartCostValidationError,
+    DiscountValidationError,
+)
 from app.domain.carts.entities import Cart
 from tests.utils import fake
 

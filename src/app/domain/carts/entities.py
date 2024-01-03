@@ -78,7 +78,7 @@ class Cart:
             config=config,
         )
 
-    def increase_item_qty(self, item_id: int, qty: Decimal) -> None:
+    def increase_item_qty(self, item_id: int, qty: Decimal) -> CartItem:
         self._check_can_be_modified(action="increase item qty")
 
         items_by_id = {item.id: item for item in self.items}
@@ -95,6 +95,8 @@ class Cart:
 
         self._check_specific_item_qty_limit(item=items_by_id[item_id])
         self._validate_items_qty_limit()
+
+        return items_by_id[item_id]
 
     def add_new_item(self, item: CartItem) -> None:
         self._check_can_be_modified(action="add new item")

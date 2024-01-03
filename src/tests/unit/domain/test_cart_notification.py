@@ -32,4 +32,3 @@ def test_create_abandoned_cart_notification_ok() -> None:
     assert isinstance(notification.id, UUID)
     assert notification.type == CartNotificationTypeEnum.ABANDONED_CART
     assert notification.sent_at == FROZEN_TIME
-

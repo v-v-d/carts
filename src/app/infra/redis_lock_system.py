@@ -44,6 +44,7 @@ class RedisLockSystem(IDistributedLockSystem):
             logger.info(
                 f"Failed to release {self._name} because there is no lock or its ttl has expired!"
             )
+            return
 
         logger.debug(f"Redis lock: {self._name} was successfully released!")
 

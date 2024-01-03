@@ -54,7 +54,7 @@ class AddCartItemUseCase(IAddCartItemUseCase):
 
     async def _update_cart(self, cart: Cart, data: AddItemToCartInputDTO) -> Cart:
         try:
-            cart.increase_item_qty(item_id=data.id, qty=data.qty)
+            await self._increase_item_qty(cart=cart, item_id=data.id, qty=data.qty)
         except CartItemDoesNotExistError:
             cart = await self._try_to_add_new_item_to_cart(cart=cart, data=data)
 
@@ -100,8 +100,8 @@ class AddCartItemUseCase(IAddCartItemUseCase):
             ),
         )
 
-    async def _increase_item_qty(self, cart: Cart, item: CartItem, qty: Decimal) -> Cart:
-        cart.increase_item_qty(item_id=item.id, qty=qty)
+    async def _increase_item_qty(self, cart: Cart, item_id: int, qty: Decimal) -> Cart:
+        item = cart.increase_item_qty(item_id=item_id, qty=qty)
 
         async with self._uow(autocommit=True):
             await self._uow.items.update_item(item=item)

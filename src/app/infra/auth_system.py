@@ -12,11 +12,9 @@ from app.app_layer.interfaces.auth_system.system import IAuthSystem
 logger = getLogger(__name__)
 
 _USERS_BY_TOKEN = {
-    "fa.ke.1": {"id": 1, "roles": ["customer"]},
-    "fa.ke.2": {"id": 2, "roles": ["customer"]},
-    "fa.ke.3": {"id": 3, "roles": ["customer"]},
-    "fa.ke.4": {"id": 4, "roles": ["customer"]},
-    "fa.ke.5": {"id": 5, "roles": ["admin"]},
+    "customer.1": {"id": 1, "roles": ["customer"]},
+    "customer.2": {"id": 2, "roles": ["customer"]},
+    "admin.1": {"id": 5, "roles": ["admin"]},
 }
 
 
