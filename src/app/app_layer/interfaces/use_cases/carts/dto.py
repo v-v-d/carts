@@ -51,6 +51,11 @@ class CartApplyCouponInputDTO(BaseModel):
     auth_data: str
 
 
+class CartDeleteInputDTO(BaseModel):
+    cart_id: UUID
+    auth_data: str
+
+
 class CartRemoveCouponInputDTO(BaseModel):
     cart_id: UUID
     auth_data: str

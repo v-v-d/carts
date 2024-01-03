@@ -27,6 +27,7 @@ from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieve
 from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
 from app.app_layer.interfaces.use_cases.carts.dto import (
     CartApplyCouponInputDTO,
+    CartDeleteInputDTO,
     CartRemoveCouponInputDTO,
 )
 from app.containers import Container
@@ -85,7 +86,9 @@ async def deactivate(
     use_case: ICartDeleteUseCase = Depends(Provide[Container.cart_delete_use_case]),
 ) -> None:
     try:
-        await use_case.execute(auth_data=auth_data, cart_id=cart_id)
+        await use_case.execute(
+            data=CartDeleteInputDTO(auth_data=auth_data, cart_id=cart_id)
+        )
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):

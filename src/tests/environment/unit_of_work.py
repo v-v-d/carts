@@ -8,6 +8,8 @@ class TestUow(Uow):
     __test__ = False
 
     items: TestItemsRepository
+    carts: TestCartsRepository
+    cart_coupons: TestCartCouponsRepository
 
     async def __aenter__(self) -> "TestUow":
         self._session = self._session_factory()
