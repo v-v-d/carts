@@ -21,11 +21,6 @@ from tests.utils import fake
 
 
 @pytest.fixture()
-def item_id() -> int:
-    return fake.numeric.integer_number(start=1)
-
-
-@pytest.fixture()
 def url_path(cart_id: UUID, item_id: int) -> str:
     return f"api/v1/carts/{cart_id}/items/{item_id}"
 

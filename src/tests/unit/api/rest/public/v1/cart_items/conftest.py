@@ -2,6 +2,12 @@ import pytest
 
 from app import api
 from app.containers import Container
+from tests.utils import fake
+
+
+@pytest.fixture()
+def item_id() -> int:
+    return fake.numeric.integer_number(start=1)
 
 
 @pytest.fixture()
