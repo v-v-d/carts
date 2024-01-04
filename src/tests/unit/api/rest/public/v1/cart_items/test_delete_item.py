@@ -1,4 +1,3 @@
-from decimal import Decimal
 from http import HTTPStatus
 from typing import Any
 from unittest.mock import AsyncMock
@@ -11,18 +10,11 @@ from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
-from app.app_layer.interfaces.use_cases.cart_items.update_item import (
-    IUpdateCartItemUseCase,
+from app.app_layer.interfaces.use_cases.cart_items.delete_item import (
+    IDeleteCartItemUseCase,
 )
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO, ItemOutputDTO
-from app.domain.cart_items.exceptions import MinQtyLimitExceededError
-from app.domain.carts.exceptions import (
-    CartItemDoesNotExistError,
-    MaxItemsQtyLimitExceeded,
-    NotOwnedByUserError,
-    OperationForbiddenError,
-    SpecificItemQtyLimitExceeded,
-)
+from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.domain.carts.exceptions import NotOwnedByUserError, OperationForbiddenError
 from app.domain.carts.value_objects import CartStatusEnum
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
 from tests.utils import fake
@@ -40,7 +32,7 @@ def url_path(cart_id: UUID, item_id: int) -> str:
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=IUpdateCartItemUseCase)
+    mock = mocker.AsyncMock(spec=IDeleteCartItemUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]
@@ -52,7 +44,7 @@ def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
 
 @pytest.fixture()
 def application(application: FastAPI, use_case: AsyncMock) -> FastAPI:
-    with application.container.update_cart_item_use_case.override(use_case):
+    with application.container.delete_cart_item_use_case.override(use_case):
         yield application
 
 
@@ -65,16 +57,7 @@ def application(application: FastAPI, use_case: AsyncMock) -> FastAPI:
                 id=fake.cryptographic.uuid_object(),
                 user_id=fake.numeric.integer_number(start=1),
                 status=CartStatusEnum.OPENED,
-                items=[
-                    ItemOutputDTO(
-                        id=fake.numeric.integer_number(start=1),
-                        name=fake.text.word(),
-                        qty=fake.numeric.integer_number(start=1),
-                        price=fake.numeric.integer_number(start=1),
-                        cost=fake.numeric.integer_number(start=1),
-                        is_weight=fake.random.choice([False, True]),
-                    ),
-                ],
+                items=[],
                 items_qty=0,
                 cost=0,
                 checkout_enabled=False,
@@ -85,26 +68,14 @@ def application(application: FastAPI, use_case: AsyncMock) -> FastAPI:
     indirect=True,
 )
 async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) -> None:
-    response = await http_client.patch(
-        url=url_path,
-        json=fake.numeric.integer_number(start=1),
-    )
+    response = await http_client.delete(url=url_path)
 
     assert response.status_code == HTTPStatus.OK, response.text
     assert response.json() == {
         "id": str(use_case.execute.return_value.id),
         "user_id": use_case.execute.return_value.user_id,
         "status": use_case.execute.return_value.status.value,
-        "items": [
-            {
-                "id": use_case.execute.return_value.items[0].id,
-                "title": use_case.execute.return_value.items[0].name,
-                "quantity": float(use_case.execute.return_value.items[0].qty),
-                "price": float(use_case.execute.return_value.items[0].price),
-                "cost": float(use_case.execute.return_value.items[0].cost),
-                "is_weight": use_case.execute.return_value.items[0].is_weight,
-            },
-        ],
+        "items": [],
         "items_quantity": float(use_case.execute.return_value.items_qty),
         "cost": float(use_case.execute.return_value.cost),
         "checkout_enabled": use_case.execute.return_value.checkout_enabled,
@@ -139,35 +110,6 @@ async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) 
             {"detail": {"code": 2003, "message": "The cart can't be modified."}},
             id="OPERATION_FORBIDDEN",
         ),
-        pytest.param(
-            {"raises": CartItemDoesNotExistError},
-            HTTPStatus.BAD_REQUEST,
-            {"detail": {"code": 3002, "message": "Failed to update cart item."}},
-            id="ITEM_NOT_FOUND",
-        ),
-        pytest.param(
-            {"raises": MinQtyLimitExceededError},
-            HTTPStatus.BAD_REQUEST,
-            {"detail": {"code": 3002, "message": "Failed to update cart item."}},
-            id="MIN_QTY_LIMIT_EXCEEDED",
-        ),
-        pytest.param(
-            {"raises": SpecificItemQtyLimitExceeded(limit=Decimal(5), actual=Decimal(6))},
-            HTTPStatus.BAD_REQUEST,
-            {
-                "detail": {
-                    "code": 2004,
-                    "message": "Item qty limit exceeded. Limit: 5, got: 6.",
-                }
-            },
-            id="ITEM_QTY_LIMIT_EXCEEDED",
-        ),
-        pytest.param(
-            {"raises": MaxItemsQtyLimitExceeded},
-            HTTPStatus.BAD_REQUEST,
-            {"detail": {"code": 3001, "message": "Max cart items qty limit exceeded."}},
-            id="MAX_ITEMS_QTY_LIMIT_EXCEEDED",
-        ),
     ],
     indirect=["use_case"],
 )
@@ -178,10 +120,7 @@ async def test_failed(
     expected_code: int,
     expected_error: dict[str, Any],
 ) -> None:
-    response = await http_client.patch(
-        url=url_path,
-        json=fake.numeric.integer_number(start=1),
-    )
+    response = await http_client.delete(url=url_path)
 
     assert response.status_code == expected_code, response.text
     assert response.json() == expected_error
