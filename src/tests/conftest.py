@@ -15,6 +15,8 @@ from sqlalchemy.ext.asyncio import (
 from app.config import Config, DBConfig
 from app.domain.cart_config.dto import CartConfigDTO
 from app.domain.cart_config.entities import CartConfig
+from app.domain.cart_coupons.dto import CartCouponDTO
+from app.domain.cart_coupons.entities import CartCoupon
 from app.domain.cart_items.dto import ItemDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.dto import CartDTO
@@ -152,6 +154,23 @@ async def cart_item(request: SubRequest, cart: Cart, cart_config: CartConfig) ->
                 "price": fake.numeric.decimal_number(start=1).quantize(Decimal(".00")),
                 "is_weight": fake.choice.choice([True, False]),
                 "cart_id": cart.id,
+                **extra_data,
+            },
+        ),
+    )
+
+
+@pytest.fixture()
+async def coupon(request: SubRequest, cart: Cart) -> CartCoupon:
+    extra_data = getattr(request, "param", {})
+
+    return CartCoupon(
+        cart=cart,
+        data=CartCouponDTO(
+            **{
+                "coupon_id": fake.text.word(),
+                "min_cart_cost": fake.numeric.decimal_number(start=1),
+                "discount_abs": fake.numeric.decimal_number(start=1),
                 **extra_data,
             },
         ),
