@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
 
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.interfaces.use_cases.carts.dto import (
+    CartOutputDTO,
+    CartRetrieveInputDTO,
+)
 
 
 class ICartRetrieveUseCase(ABC):
     @abstractmethod
-    async def execute(self, auth_data: str, cart_id: UUID) -> CartOutputDTO:
+    async def execute(self, data: CartRetrieveInputDTO) -> CartOutputDTO:
         ...

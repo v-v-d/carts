@@ -30,6 +30,7 @@ class CartsRepository(ICartsRepository):
 
     async def create(self, cart: Cart) -> Cart:
         stmt = insert(models.Cart).values(
+            created_at=cart.created_at,
             id=cart.id,
             user_id=cart.user_id,
             status=cart.status,
