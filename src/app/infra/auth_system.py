@@ -14,7 +14,7 @@ logger = getLogger(__name__)
 _USERS_BY_TOKEN = {
     "customer.1": {"id": 1, "roles": ["customer"]},
     "customer.2": {"id": 2, "roles": ["customer"]},
-    "admin.1": {"id": 5, "roles": ["admin"]},
+    "admin.1": {"id": 3, "roles": ["admin"]},
 }
 
 
