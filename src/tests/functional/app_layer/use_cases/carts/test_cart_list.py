@@ -63,7 +63,7 @@ def dto(request: SubRequest, page_size: int) -> CartListInputDTO:
             "created_at": datetime.now(),
             "auth_data": "Bearer admin.1",
             **extra_data,
-        }
+        },
     )
 
 
