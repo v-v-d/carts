@@ -69,7 +69,7 @@ async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) 
         "user_id": use_case.execute.return_value.user_id,
         "status": use_case.execute.return_value.status.value,
         "items": use_case.execute.return_value.items,
-        "items_quantity": float(use_case.execute.return_value.items_qty),
+        "items_qty": float(use_case.execute.return_value.items_qty),
         "cost": float(use_case.execute.return_value.cost),
         "checkout_enabled": use_case.execute.return_value.checkout_enabled,
         "coupon": use_case.execute.return_value.coupon,
@@ -94,7 +94,7 @@ async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) 
                     "message": "The action couldn't be processed. The cart is already being processed.",
                 },
             },
-            id="FORBIDDEN",
+            id="AlreadyLockedError",
         ),
         pytest.param(
             {"raises": CantBeLockedError},

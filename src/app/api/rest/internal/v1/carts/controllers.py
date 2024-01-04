@@ -10,7 +10,7 @@ from app.api.rest.errors import (
     CART_IN_PROCESS_HTTP_ERROR,
     RETRIEVE_CART_HTTP_ERROR,
 )
-from app.api.rest.public.v1.view_models import CartViewModel
+from app.api.rest.internal.v1.view_models import CartViewModel
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
 from app.app_layer.interfaces.use_cases.carts.cart_complete import ICompleteCartUseCase
 from app.app_layer.interfaces.use_cases.carts.cart_lock import ILockCartUseCase
@@ -68,6 +68,8 @@ async def complete(
         result = await use_case.execute(cart_id=cart_id)
     except AlreadyLockedError:
         raise CART_IN_PROCESS_HTTP_ERROR
+    except CartNotFoundError:
+        raise RETRIEVE_CART_HTTP_ERROR
     except ChangeStatusError:
         raise CART_CANT_BE_COMPLETED_HTTP_ERROR
 

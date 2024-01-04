@@ -10,7 +10,7 @@ from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
-from app.app_layer.interfaces.use_cases.carts.cart_unlock import IUnlockCartUseCase
+from app.app_layer.interfaces.use_cases.carts.cart_complete import ICompleteCartUseCase
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
 from app.domain.carts.exceptions import ChangeStatusError
 from app.domain.carts.value_objects import CartStatusEnum
@@ -20,12 +20,12 @@ from tests.utils import fake
 
 @pytest.fixture()
 def url_path(cart_id: UUID) -> str:
-    return f"api/internal/v1/carts/{cart_id}/unlock"
+    return f"api/internal/v1/carts/{cart_id}/complete"
 
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=IUnlockCartUseCase)
+    mock = mocker.AsyncMock(spec=ICompleteCartUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]
@@ -37,7 +37,7 @@ def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
 
 @pytest.fixture()
 def application(application: FastAPI, use_case: AsyncMock) -> FastAPI:
-    with application.container.unlock_cart_use_case.override(use_case):
+    with application.container.complete_cart_use_case.override(use_case):
         yield application
 
 
@@ -99,7 +99,7 @@ async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) 
         pytest.param(
             {"raises": ChangeStatusError},
             HTTPStatus.BAD_REQUEST,
-            {"detail": {"code": 5002, "message": "The cart can't be unlocked."}},
+            {"detail": {"code": 5003, "message": "The cart can't be completed."}},
             id="ChangeStatusError",
         ),
     ],
