@@ -1,10 +1,15 @@
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from app.domain.carts.entities import Cart
-from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
+from app.domain.interfaces.repositories.carts.exceptions import (
+    ActiveCartAlreadyExistsError,
+    CartNotFoundError,
+)
 from app.infra.repositories.sqla import models
 from app.infra.repositories.sqla.carts import CartsRepository
 
@@ -32,3 +37,23 @@ class TestCartsRepository(CartsRepository):
         config = await self._get_config()
 
         return self._get_cart(obj=obj, config=config)
+
+    async def bulk_create(self, carts: list[Cart]) -> list[Cart]:
+        stmt = insert(models.Cart).values(
+            [
+                {
+                    "created_at": cart.created_at,
+                    "id": cart.id,
+                    "user_id": cart.user_id,
+                    "status": cart.status,
+                }
+                for cart in carts
+            ]
+        )
+
+        try:
+            await self._session.execute(stmt)
+        except IntegrityError:
+            raise ActiveCartAlreadyExistsError
+
+        return carts
