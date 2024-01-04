@@ -7,6 +7,6 @@ from app.containers import Container
 @pytest.fixture()
 def container() -> Container:
     container = Container()
-    container.wire(packages=[api.rest.public.v1.carts])
+    container.wire(packages=[api.rest.public.v1.cart_items])
 
     return container
