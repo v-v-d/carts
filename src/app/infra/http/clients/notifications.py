@@ -1,10 +1,11 @@
 from http import HTTPMethod
+from logging import getLogger
 from typing import Any
 
 from furl import furl
 from pydantic import AnyHttpUrl
 
-from app.app_layer.interfaces.clients.notifications.client import INotificationClient
+from app.app_layer.interfaces.clients.notifications.client import INotificationsClient
 from app.app_layer.interfaces.clients.notifications.dto import SendNotificationInputDTO
 from app.app_layer.interfaces.clients.notifications.exceptions import (
     NotificationsClientError,
@@ -15,8 +16,10 @@ from app.infra.http.transports.base import (
     IHttpTransport,
 )
 
+logger = getLogger(__name__)
 
-class NotificationsHttpClient(INotificationClient):
+
+class NotificationsHttpClient(INotificationsClient):
     def __init__(self, base_url: AnyHttpUrl, transport: IHttpTransport) -> None:
         self._base_url = base_url
         self._transport = transport
@@ -40,4 +43,5 @@ class NotificationsHttpClient(INotificationClient):
         try:
             return await self._transport.request(*args, **kwargs)
         except HttpTransportError as err:
+            logger.error("Failed to send abandoned cart notification! Error: %s", err)
             raise NotificationsClientError(str(err))

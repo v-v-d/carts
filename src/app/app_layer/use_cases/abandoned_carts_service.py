@@ -1,11 +1,8 @@
 from logging import getLogger
 from uuid import UUID
 
-from app.app_layer.interfaces.clients.notifications.client import INotificationClient
+from app.app_layer.interfaces.clients.notifications.client import INotificationsClient
 from app.app_layer.interfaces.clients.notifications.dto import SendNotificationInputDTO
-from app.app_layer.interfaces.clients.notifications.exceptions import (
-    NotificationsClientError,
-)
 from app.app_layer.interfaces.tasks.producer import ITaskProducer
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.interfaces.use_cases.abandoned_carts_service import (
@@ -22,7 +19,7 @@ class AbandonedCartsService(IAbandonedCartsService):
         self,
         uow: IUnitOfWork,
         task_producer: ITaskProducer,
-        notification_client: INotificationClient,
+        notification_client: INotificationsClient,
         config: TaskConfig,
     ) -> None:
         self._uow = uow
@@ -62,22 +59,14 @@ class AbandonedCartsService(IAbandonedCartsService):
             text=config.abandoned_cart_text,
         )
 
-        try:
-            await self._notification_client.send_notification(
-                data=SendNotificationInputDTO(
-                    user_id=user_id,
-                    text=notification.text,
-                )
+        await self._notification_client.send_notification(
+            data=SendNotificationInputDTO(
+                user_id=user_id,
+                text=notification.text,
             )
-        except NotificationsClientError as err:
-            logger.error(
-                "Cart %s. Failed to send abandoned cart notification! Error: %s",
-                cart_id,
-                err,
-            )
-            raise
+        )
 
         async with self._uow(autocommit=True):
-            await self._uow.cart_notifications.create(cart_notification=notification)
+            await self._uow.carts_notifications.create(cart_notification=notification)
 
         logger.info("Cart %s. Abandoned cart notification successfully sent!", cart_id)

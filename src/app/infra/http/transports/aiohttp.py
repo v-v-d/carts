@@ -62,7 +62,7 @@ class AioHttpTransport(IHttpTransport):
             try:
                 response.raise_for_status()
             except ClientResponseError as err:
-                raise HttpTransportError(data, err.status)
+                raise HttpTransportError(message=data, code=err.status)
 
             return data
 

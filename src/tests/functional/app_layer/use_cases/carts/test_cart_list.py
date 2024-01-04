@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime, timedelta
 
 import pytest
@@ -32,7 +31,7 @@ async def carts(uow: TestUow, cart_config: CartConfig, page_size: int) -> list[C
         Cart(
             data=CartDTO(
                 created_at=created_at,
-                id=uuid.uuid4(),
+                id=fake.cryptographic.uuid_object(),
                 user_id=fake.numeric.integer_number(start=1),
                 status=CartStatusEnum.DEACTIVATED,
             ),

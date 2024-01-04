@@ -12,7 +12,7 @@ class IUnitOfWork(ABC):
     items: IItemsRepository
     carts: ICartsRepository
     cart_coupons: ICartCouponsRepository
-    cart_notifications: ICartNotificationsRepository
+    carts_notifications: ICartNotificationsRepository
 
     def __call__(self, autocommit: bool, *args, **kwargs) -> "IUnitOfWork":
         self._autocommit = autocommit

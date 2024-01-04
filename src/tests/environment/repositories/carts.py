@@ -38,7 +38,7 @@ class TestCartsRepository(CartsRepository):
 
         return self._get_cart(obj=obj, config=config)
 
-    async def bulk_create(self, carts: list[Cart]) -> list[Cart]:
+    async def bulk_create(self, carts: list[Cart], **kwargs) -> list[Cart]:
         stmt = insert(models.Cart).values(
             [
                 {
@@ -46,6 +46,7 @@ class TestCartsRepository(CartsRepository):
                     "id": cart.id,
                     "user_id": cart.user_id,
                     "status": cart.status,
+                    **kwargs,
                 }
                 for cart in carts
             ]

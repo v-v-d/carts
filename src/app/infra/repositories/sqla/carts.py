@@ -13,6 +13,7 @@ from app.domain.cart_coupons.dto import CartCouponDTO
 from app.domain.cart_coupons.entities import CartCoupon
 from app.domain.cart_items.dto import ItemDTO
 from app.domain.cart_items.entities import CartItem
+from app.domain.cart_notifications.value_objects import CartNotificationTypeEnum
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.entities import Cart
 from app.domain.carts.value_objects import CartStatusEnum
@@ -117,6 +118,7 @@ class CartsRepository(ICartsRepository):
             .where(
                 models.Cart.updated_at <= abandonment_threshold_time,
                 models.Cart.status == CartStatusEnum.OPENED,
+                models.CartNotification.type == CartNotificationTypeEnum.ABANDONED_CART,
             )
             .group_by(models.CartNotification.cart_id)
         ).subquery()

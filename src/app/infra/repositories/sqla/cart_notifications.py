@@ -8,7 +8,7 @@ from app.domain.interfaces.repositories.cart_notifications import (
 from app.infra.repositories.sqla import models
 
 
-class CartNotificationsRepository(ICartNotificationsRepository):
+class CartsNotificationsRepository(ICartNotificationsRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
