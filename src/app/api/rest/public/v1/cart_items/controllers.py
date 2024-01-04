@@ -8,6 +8,7 @@ from fastapi import APIRouter, Body, Depends, Header
 from app.api.rest.errors import (
     ADD_CART_ITEM_HTTP_ERROR,
     AUTHORIZATION_HTTP_ERROR,
+    CART_IN_PROCESS_HTTP_ERROR,
     CART_ITEM_MAX_QTY_HTTP_ERROR,
     CART_ITEM_QTY_LIMIT_EXCEEDED_HTTP_ERROR,
     CART_OPERATION_FORBIDDEN_HTTP_ERROR,
@@ -18,6 +19,7 @@ from app.api.rest.errors import (
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
+from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
 from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
 from app.app_layer.interfaces.use_cases.cart_items.delete_item import (
     IDeleteCartItemUseCase,
@@ -64,6 +66,8 @@ async def add_item(
                 cart_id=cart_id,
             ),
         )
+    except AlreadyLockedError:
+        raise CART_IN_PROCESS_HTTP_ERROR
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except CartNotFoundError:
@@ -102,6 +106,8 @@ async def update_item(
                 auth_data=auth_data,
             ),
         )
+    except AlreadyLockedError:
+        raise CART_IN_PROCESS_HTTP_ERROR
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except CartNotFoundError:
@@ -138,6 +144,8 @@ async def delete_item(
                 auth_data=auth_data,
             ),
         )
+    except AlreadyLockedError:
+        raise CART_IN_PROCESS_HTTP_ERROR
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except CartNotFoundError:
@@ -164,6 +172,8 @@ async def clear(
                 auth_data=auth_data,
             )
         )
+    except AlreadyLockedError:
+        raise CART_IN_PROCESS_HTTP_ERROR
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except CartNotFoundError:

@@ -12,6 +12,7 @@ from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
+from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
 from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO, ItemOutputDTO
 from app.domain.cart_items.exceptions import MinQtyLimitExceededError
@@ -111,6 +112,17 @@ async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) 
 @pytest.mark.parametrize(
     ("use_case", "expected_code", "expected_error"),
     [
+        pytest.param(
+            {"raises": AlreadyLockedError},
+            HTTPStatus.BAD_REQUEST,
+            {
+                "detail": {
+                    "code": 5000,
+                    "message": "The action couldn't be processed. The cart is already being processed.",
+                },
+            },
+            id="AlreadyLockedError",
+        ),
         pytest.param(
             {"raises": InvalidAuthDataError},
             HTTPStatus.UNAUTHORIZED,

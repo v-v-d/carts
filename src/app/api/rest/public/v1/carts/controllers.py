@@ -7,6 +7,7 @@ from fastapi import APIRouter, Body, Depends, Header, status
 from app.api.rest.errors import (
     ACTIVE_CART_ALREADY_EXISTS_HTTP_ERROR,
     AUTHORIZATION_HTTP_ERROR,
+    CART_IN_PROCESS_HTTP_ERROR,
     CART_OPERATION_FORBIDDEN_HTTP_ERROR,
     COUPON_ALREADY_APPLIED_HTTP_ERROR,
     COUPON_APPLYING_HTTP_ERROR,
@@ -16,6 +17,7 @@ from app.api.rest.errors import (
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.clients.coupons.exceptions import CouponsClientError
+from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
 from app.app_layer.interfaces.use_cases.carts.cart_apply_coupon import (
     ICartApplyCouponUseCase,
 )
@@ -95,6 +97,8 @@ async def deactivate(
         await use_case.execute(
             data=CartDeleteInputDTO(auth_data=auth_data, cart_id=cart_id)
         )
+    except AlreadyLockedError:
+        raise CART_IN_PROCESS_HTTP_ERROR
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):
@@ -121,6 +125,8 @@ async def apply_coupon(
                 auth_data=auth_data,
             )
         )
+    except AlreadyLockedError:
+        raise CART_IN_PROCESS_HTTP_ERROR
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):
@@ -151,6 +157,8 @@ async def remove_coupon(
                 auth_data=auth_data,
             )
         )
+    except AlreadyLockedError:
+        raise CART_IN_PROCESS_HTTP_ERROR
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):

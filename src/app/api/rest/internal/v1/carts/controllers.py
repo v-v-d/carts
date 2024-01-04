@@ -8,6 +8,7 @@ from app.api.rest.errors import (
     CART_CANT_BE_LOCKED_HTTP_ERROR,
     CART_CANT_BE_UNLOCKED_HTTP_ERROR,
     CART_IN_PROCESS_HTTP_ERROR,
+    RETRIEVE_CART_HTTP_ERROR,
 )
 from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
@@ -16,6 +17,7 @@ from app.app_layer.interfaces.use_cases.carts.cart_lock import ILockCartUseCase
 from app.app_layer.interfaces.use_cases.carts.cart_unlock import IUnlockCartUseCase
 from app.containers import Container
 from app.domain.carts.exceptions import CantBeLockedError, ChangeStatusError
+from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
 
 router = APIRouter()
 
@@ -28,6 +30,8 @@ async def lock(
 ) -> CartViewModel:
     try:
         result = await use_case.execute(cart_id=cart_id)
+    except CartNotFoundError:
+        raise RETRIEVE_CART_HTTP_ERROR
     except AlreadyLockedError:
         raise CART_IN_PROCESS_HTTP_ERROR
     except (CantBeLockedError, ChangeStatusError):

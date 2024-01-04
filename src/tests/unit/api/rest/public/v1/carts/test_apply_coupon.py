@@ -11,6 +11,7 @@ from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.clients.coupons.exceptions import CouponsClientError
+from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
 from app.app_layer.interfaces.use_cases.carts.cart_apply_coupon import (
     ICartApplyCouponUseCase,
 )
@@ -103,6 +104,17 @@ async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) 
 @pytest.mark.parametrize(
     ("use_case", "expected_code", "expected_error"),
     [
+        pytest.param(
+            {"raises": AlreadyLockedError},
+            HTTPStatus.BAD_REQUEST,
+            {
+                "detail": {
+                    "code": 5000,
+                    "message": "The action couldn't be processed. The cart is already being processed.",
+                },
+            },
+            id="AlreadyLockedError",
+        ),
         pytest.param(
             {"raises": InvalidAuthDataError},
             HTTPStatus.UNAUTHORIZED,

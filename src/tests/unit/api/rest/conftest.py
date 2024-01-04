@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 import pytest
 from fastapi import FastAPI
@@ -33,3 +34,8 @@ async def http_client(application: FastAPI, headers: dict[str, Any]) -> AsyncCli
         headers=headers,
     ) as client:
         yield client
+
+
+@pytest.fixture()
+def cart_id() -> UUID:
+    return fake.cryptographic.uuid_object()
