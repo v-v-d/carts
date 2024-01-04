@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from typing import Any
 from unittest.mock import AsyncMock
+from uuid import UUID
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -9,35 +10,34 @@ from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
-from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
+from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.domain.carts.exceptions import NotOwnedByUserError
 from app.domain.carts.value_objects import CartStatusEnum
-from app.domain.interfaces.repositories.carts.exceptions import (
-    ActiveCartAlreadyExistsError,
-)
+from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
 from tests.utils import fake
 
 
 @pytest.fixture()
-def url_path() -> str:
-    return "api/v1/carts"
+def url_path(cart_id: UUID) -> str:
+    return f"api/v1/carts/{cart_id}"
 
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ICreateCartUseCase)
+    mock = mocker.AsyncMock(spec=ICartRetrieveUseCase)
 
     if "returns" in request.param:
-        mock.create_by_auth_data.return_value = request.param["returns"]
+        mock.execute.return_value = request.param["returns"]
     elif "raises" in request.param:
-        mock.create_by_auth_data.side_effect = request.param["raises"]
+        mock.execute.side_effect = request.param["raises"]
 
     return mock
 
 
 @pytest.fixture()
 def application(application: FastAPI, use_case: AsyncMock) -> FastAPI:
-    with application.container.create_cart_use_case.override(use_case):
+    with application.container.cart_retrieve_use_case.override(use_case):
         yield application
 
 
@@ -61,18 +61,18 @@ def application(application: FastAPI, use_case: AsyncMock) -> FastAPI:
     indirect=True,
 )
 async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) -> None:
-    response = await http_client.post(url=url_path)
+    response = await http_client.get(url=url_path)
 
     assert response.status_code == HTTPStatus.OK, response.text
     assert response.json() == {
-        "id": str(use_case.create_by_auth_data.return_value.id),
-        "user_id": use_case.create_by_auth_data.return_value.user_id,
-        "status": use_case.create_by_auth_data.return_value.status.value,
-        "items": use_case.create_by_auth_data.return_value.items,
-        "items_quantity": float(use_case.create_by_auth_data.return_value.items_qty),
-        "cost": float(use_case.create_by_auth_data.return_value.cost),
-        "checkout_enabled": use_case.create_by_auth_data.return_value.checkout_enabled,
-        "coupon": use_case.create_by_auth_data.return_value.coupon,
+        "id": str(use_case.execute.return_value.id),
+        "user_id": use_case.execute.return_value.user_id,
+        "status": use_case.execute.return_value.status.value,
+        "items": use_case.execute.return_value.items,
+        "items_quantity": float(use_case.execute.return_value.items_qty),
+        "cost": float(use_case.execute.return_value.cost),
+        "checkout_enabled": use_case.execute.return_value.checkout_enabled,
+        "coupon": use_case.execute.return_value.coupon,
     }
 
 
@@ -86,10 +86,16 @@ async def test_ok(http_client: AsyncClient, use_case: AsyncMock, url_path: str) 
             id="UNAUTHORIZED",
         ),
         pytest.param(
-            {"raises": ActiveCartAlreadyExistsError},
+            {"raises": CartNotFoundError},
             HTTPStatus.BAD_REQUEST,
-            {"detail": {"code": 2001, "message": "Active cart already exists."}},
-            id="ACTIVE_CART_ALREADY_EXISTS",
+            {"detail": {"code": 2000, "message": "Cart not found."}},
+            id="CART_NOT_FOUND",
+        ),
+        pytest.param(
+            {"raises": NotOwnedByUserError},
+            HTTPStatus.BAD_REQUEST,
+            {"detail": {"code": 2000, "message": "Cart not found."}},
+            id="FORBIDDEN",
         ),
     ],
     indirect=["use_case"],
@@ -101,7 +107,7 @@ async def test_failed(
     expected_code: int,
     expected_error: dict[str, Any],
 ) -> None:
-    response = await http_client.post(url=url_path)
+    response = await http_client.get(url=url_path)
 
     assert response.status_code == expected_code, response.text
     assert response.json() == expected_error

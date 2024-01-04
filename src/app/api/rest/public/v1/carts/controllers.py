@@ -29,6 +29,7 @@ from app.app_layer.interfaces.use_cases.carts.dto import (
     CartApplyCouponInputDTO,
     CartDeleteInputDTO,
     CartRemoveCouponInputDTO,
+    CartRetrieveInputDTO,
 )
 from app.containers import Container
 from app.domain.carts.exceptions import (
@@ -69,7 +70,12 @@ async def retrieve(
     use_case: ICartRetrieveUseCase = Depends(Provide[Container.cart_retrieve_use_case]),
 ) -> CartViewModel:
     try:
-        result = await use_case.execute(auth_data=auth_data, cart_id=cart_id)
+        result = await use_case.execute(
+            data=CartRetrieveInputDTO(
+                auth_data=auth_data,
+                cart_id=cart_id,
+            ),
+        )
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except (CartNotFoundError, NotOwnedByUserError):
