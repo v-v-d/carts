@@ -30,10 +30,10 @@ async def lock(
 ) -> CartViewModel:
     try:
         result = await use_case.execute(cart_id=cart_id)
-    except CartNotFoundError:
-        raise RETRIEVE_CART_HTTP_ERROR
     except AlreadyLockedError:
         raise CART_IN_PROCESS_HTTP_ERROR
+    except CartNotFoundError:
+        raise RETRIEVE_CART_HTTP_ERROR
     except (CantBeLockedError, ChangeStatusError):
         raise CART_CANT_BE_LOCKED_HTTP_ERROR
 
@@ -50,6 +50,8 @@ async def unlock(
         result = await use_case.execute(cart_id=cart_id)
     except AlreadyLockedError:
         raise CART_IN_PROCESS_HTTP_ERROR
+    except CartNotFoundError:
+        raise RETRIEVE_CART_HTTP_ERROR
     except ChangeStatusError:
         raise CART_CANT_BE_UNLOCKED_HTTP_ERROR
 
