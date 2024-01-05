@@ -1,3 +1,4 @@
+from logging.config import dictConfig
 from typing import Any
 
 from arq import cron, func
@@ -12,6 +13,8 @@ from app.api.events.tasks.example import example_task
 from app.config import Config
 from app.containers import Container
 from app.infra.events.queues import QueueNameEnum
+from app.logging import ctx as transaction_ctx
+from app.logging import get_logging_config
 
 config = Config()
 
@@ -19,6 +22,13 @@ config = Config()
 async def startup(ctx: dict[str, Any]) -> None:
     container = Container()
     container.wire(packages=[events.tasks])
+
+    dictConfig(
+        config=get_logging_config(
+            transaction_ctx=transaction_ctx,
+            config=config.LOGGING,
+        ),
+    )
 
     await container.init_resources()
 

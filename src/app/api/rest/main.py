@@ -12,7 +12,7 @@ from app.logging import ctx, get_logging_config
 
 
 @asynccontextmanager
-async def lifespan(app_: FastAPI) -> AsyncContextManager[None]:
+async def lifespan(app_: FastAPI) -> AsyncContextManager[None]:  # pragma: no cover
     config = Config()
     dictConfig(
         config=get_logging_config(
