@@ -71,7 +71,7 @@ async def get_list(
     except InvalidAuthDataError:
         raise AUTHORIZATION_HTTP_ERROR
     except OperationForbiddenError:
-        raise AUTHORIZATION_HTTP_ERROR
+        raise FORBIDDEN_HTTP_ERROR
 
     return CartListViewModel(
         items=result,

@@ -8,7 +8,10 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
-from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError, OperationForbiddenError
+from app.app_layer.interfaces.auth_system.exceptions import (
+    InvalidAuthDataError,
+    OperationForbiddenError,
+)
 from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
 from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
 from app.domain.carts.value_objects import CartStatusEnum
