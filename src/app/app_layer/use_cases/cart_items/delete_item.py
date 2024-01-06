@@ -2,16 +2,13 @@ from app.app_layer.interfaces.auth_system.dto import UserDataOutputDTO
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.cart_items.delete_item import (
-    IDeleteCartItemUseCase,
-)
-from app.app_layer.interfaces.use_cases.cart_items.dto import DeleteCartItemInputDTO
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.use_cases.cart_items.dto import DeleteCartItemInputDTO
+from app.app_layer.use_cases.carts.dto import CartOutputDTO
 from app.domain.carts.entities import Cart
 from app.domain.carts.exceptions import CartItemDoesNotExistError
 
 
-class DeleteCartItemUseCase(IDeleteCartItemUseCase):
+class DeleteCartItemUseCase:
     def __init__(
         self,
         uow: IUnitOfWork,

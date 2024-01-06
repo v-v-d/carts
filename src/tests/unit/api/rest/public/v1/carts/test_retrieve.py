@@ -10,8 +10,8 @@ from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
-from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
+from app.app_layer.use_cases.carts.dto import CartOutputDTO
 from app.domain.carts.exceptions import NotOwnedByUserError
 from app.domain.carts.value_objects import CartStatusEnum
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
@@ -25,7 +25,7 @@ def url_path(cart_id: UUID) -> str:
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ICartRetrieveUseCase)
+    mock = mocker.AsyncMock(spec=CartRetrieveUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]

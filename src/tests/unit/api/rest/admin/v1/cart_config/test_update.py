@@ -9,8 +9,8 @@ from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import OperationForbiddenError
-from app.app_layer.interfaces.use_cases.cart_config.dto import CartConfigOutputDTO
-from app.app_layer.interfaces.use_cases.cart_config.service import ICartConfigService
+from app.app_layer.use_cases.cart_config.dto import CartConfigOutputDTO
+from app.app_layer.use_cases.cart_config.service import CartConfigService
 from tests.utils import fake
 
 
@@ -21,7 +21,7 @@ def url_path() -> str:
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ICartConfigService)
+    mock = mocker.AsyncMock(spec=CartConfigService)
 
     if "returns" in request.param:
         mock.update.return_value = request.param["returns"]

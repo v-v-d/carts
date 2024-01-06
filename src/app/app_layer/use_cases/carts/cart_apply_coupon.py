@@ -7,13 +7,7 @@ from app.app_layer.interfaces.clients.coupons.dto import CouponOutputDTO
 from app.app_layer.interfaces.clients.coupons.exceptions import CouponsClientError
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.carts.cart_apply_coupon import (
-    ICartApplyCouponUseCase,
-)
-from app.app_layer.interfaces.use_cases.carts.dto import (
-    CartApplyCouponInputDTO,
-    CartOutputDTO,
-)
+from app.app_layer.use_cases.carts.dto import CartApplyCouponInputDTO, CartOutputDTO
 from app.domain.cart_coupons.dto import CartCouponDTO
 from app.domain.cart_coupons.entities import CartCoupon
 from app.domain.carts.entities import Cart
@@ -21,7 +15,7 @@ from app.domain.carts.entities import Cart
 logger = getLogger(__name__)
 
 
-class CartApplyCouponUseCase(ICartApplyCouponUseCase):
+class CartApplyCouponUseCase:
     def __init__(
         self,
         uow: IUnitOfWork,

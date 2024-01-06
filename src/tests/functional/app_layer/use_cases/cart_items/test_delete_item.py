@@ -7,8 +7,8 @@ from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
-from app.app_layer.interfaces.use_cases.cart_items.dto import DeleteCartItemInputDTO
 from app.app_layer.use_cases.cart_items.delete_item import DeleteCartItemUseCase
+from app.app_layer.use_cases.cart_items.dto import DeleteCartItemInputDTO
 from app.config import RedisLockConfig
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.entities import Cart

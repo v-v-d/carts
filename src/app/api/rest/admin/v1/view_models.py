@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, model_validator
 
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.use_cases.carts.dto import CartOutputDTO
 from app.domain.carts.value_objects import CartStatusEnum
 
 

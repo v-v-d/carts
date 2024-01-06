@@ -14,12 +14,9 @@ from app.app_layer.interfaces.auth_system.exceptions import (
     InvalidAuthDataError,
     OperationForbiddenError,
 )
-from app.app_layer.interfaces.use_cases.carts.cart_list import ICartListUseCase
-from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import (
-    CartCreateByUserIdInputDTO,
-    CartListInputDTO,
-)
+from app.app_layer.use_cases.carts.cart_list import CartListUseCase
+from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
+from app.app_layer.use_cases.carts.dto import CartCreateByUserIdInputDTO, CartListInputDTO
 from app.containers import Container
 from app.domain.interfaces.repositories.carts.exceptions import (
     ActiveCartAlreadyExistsError,
@@ -33,7 +30,7 @@ router = APIRouter()
 async def create(
     user_id: Annotated[int, Body()],
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: ICreateCartUseCase = Depends(Provide[Container.create_cart_use_case]),
+    use_case: CreateCartUseCase = Depends(Provide[Container.create_cart_use_case]),
 ) -> CartViewModel:
     try:
         result = await use_case.create_by_user_id(
@@ -58,7 +55,7 @@ async def get_list(
     page_size: int,
     created_at: datetime | None = None,
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: ICartListUseCase = Depends(Provide[Container.cart_list_use_case]),
+    use_case: CartListUseCase = Depends(Provide[Container.cart_list_use_case]),
 ) -> CartListViewModel:
     try:
         result = await use_case.execute(

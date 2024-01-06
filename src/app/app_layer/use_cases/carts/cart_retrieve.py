@@ -1,15 +1,11 @@
 from app.app_layer.interfaces.auth_system.dto import UserDataOutputDTO
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import (
-    CartOutputDTO,
-    CartRetrieveInputDTO,
-)
+from app.app_layer.use_cases.carts.dto import CartOutputDTO, CartRetrieveInputDTO
 from app.domain.carts.entities import Cart
 
 
-class CartRetrieveUseCase(ICartRetrieveUseCase):
+class CartRetrieveUseCase:
     def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
         self._uow = uow
         self._auth_system = auth_system

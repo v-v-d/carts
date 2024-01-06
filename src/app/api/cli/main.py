@@ -9,7 +9,7 @@ import typer
 
 from app.api import cli
 from app.api.cli.items import run_add_item_command
-from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
+from app.app_layer.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.config import Config
 from app.containers import Container
 from app.logging import ctx, get_logging_config

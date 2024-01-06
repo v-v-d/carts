@@ -9,8 +9,8 @@ from httpx import AsyncClient
 from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
-from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
+from app.app_layer.use_cases.carts.dto import CartOutputDTO
 from app.domain.carts.value_objects import CartStatusEnum
 from app.domain.interfaces.repositories.carts.exceptions import (
     ActiveCartAlreadyExistsError,
@@ -25,7 +25,7 @@ def url_path() -> str:
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ICreateCartUseCase)
+    mock = mocker.AsyncMock(spec=CreateCartUseCase)
 
     if "returns" in request.param:
         mock.create_by_auth_data.return_value = request.param["returns"]

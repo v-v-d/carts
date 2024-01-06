@@ -5,8 +5,8 @@ from _pytest.fixtures import SubRequest
 
 from app.app_layer.interfaces.auth_system.exceptions import OperationForbiddenError
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
-from app.app_layer.interfaces.use_cases.carts.dto import CartListInputDTO
 from app.app_layer.use_cases.carts.cart_list import CartListUseCase
+from app.app_layer.use_cases.carts.dto import CartListInputDTO
 from app.domain.cart_config.entities import CartConfig
 from app.domain.carts.dto import CartDTO
 from app.domain.carts.entities import Cart

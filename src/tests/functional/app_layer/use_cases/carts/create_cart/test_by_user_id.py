@@ -6,8 +6,8 @@ from app.app_layer.interfaces.auth_system.exceptions import (
     OperationForbiddenError,
 )
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
-from app.app_layer.interfaces.use_cases.carts.dto import CartCreateByUserIdInputDTO
 from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
+from app.app_layer.use_cases.carts.dto import CartCreateByUserIdInputDTO
 from app.domain.carts.entities import Cart
 from app.domain.carts.value_objects import CartStatusEnum
 from app.domain.interfaces.repositories.carts.exceptions import (

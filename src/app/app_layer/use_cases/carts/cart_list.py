@@ -2,14 +2,10 @@ from datetime import datetime
 
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.carts.cart_list import ICartListUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import (
-    CartListInputDTO,
-    CartListOutputDTO,
-)
+from app.app_layer.use_cases.carts.dto import CartListInputDTO, CartListOutputDTO
 
 
-class CartListUseCase(ICartListUseCase):
+class CartListUseCase:
     def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
         self._uow = uow
         self._auth_system = auth_system

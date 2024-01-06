@@ -12,9 +12,9 @@ from app.api.rest.errors import (
 )
 from app.api.rest.internal.v1.view_models import CartViewModel
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
-from app.app_layer.interfaces.use_cases.carts.cart_complete import ICompleteCartUseCase
-from app.app_layer.interfaces.use_cases.carts.cart_lock import ILockCartUseCase
-from app.app_layer.interfaces.use_cases.carts.cart_unlock import IUnlockCartUseCase
+from app.app_layer.use_cases.carts.cart_complete import CompleteCartUseCase
+from app.app_layer.use_cases.carts.cart_lock import LockCartUseCase
+from app.app_layer.use_cases.carts.cart_unlock import UnlockCartUseCase
 from app.containers import Container
 from app.domain.carts.exceptions import CantBeLockedError, ChangeStatusError
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
@@ -26,7 +26,7 @@ router = APIRouter()
 @inject
 async def lock(
     cart_id: UUID,
-    use_case: ILockCartUseCase = Depends(Provide[Container.lock_cart_use_case]),
+    use_case: LockCartUseCase = Depends(Provide[Container.lock_cart_use_case]),
 ) -> CartViewModel:
     try:
         result = await use_case.execute(cart_id=cart_id)
@@ -44,7 +44,7 @@ async def lock(
 @inject
 async def unlock(
     cart_id: UUID,
-    use_case: IUnlockCartUseCase = Depends(Provide[Container.unlock_cart_use_case]),
+    use_case: UnlockCartUseCase = Depends(Provide[Container.unlock_cart_use_case]),
 ) -> CartViewModel:
     try:
         result = await use_case.execute(cart_id=cart_id)
@@ -62,7 +62,7 @@ async def unlock(
 @inject
 async def complete(
     cart_id: UUID,
-    use_case: ICompleteCartUseCase = Depends(Provide[Container.complete_cart_use_case]),
+    use_case: CompleteCartUseCase = Depends(Provide[Container.complete_cart_use_case]),
 ) -> CartViewModel:
     try:
         result = await use_case.execute(cart_id=cart_id)

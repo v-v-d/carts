@@ -2,18 +2,12 @@ from app.app_layer.interfaces.auth_system.dto import UserDataOutputDTO
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.carts.cart_remove_coupon import (
-    ICartRemoveCouponUseCase,
-)
-from app.app_layer.interfaces.use_cases.carts.dto import (
-    CartOutputDTO,
-    CartRemoveCouponInputDTO,
-)
+from app.app_layer.use_cases.carts.dto import CartOutputDTO, CartRemoveCouponInputDTO
 from app.domain.carts.entities import Cart
 from app.domain.carts.exceptions import CouponDoesNotExistError
 
 
-class CartRemoveCouponUseCase(ICartRemoveCouponUseCase):
+class CartRemoveCouponUseCase:
     def __init__(
         self,
         uow: IUnitOfWork,

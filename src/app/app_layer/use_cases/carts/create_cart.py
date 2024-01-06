@@ -3,17 +3,13 @@ from logging import getLogger
 from app.app_layer.interfaces.auth_system.exceptions import OperationForbiddenError
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import (
-    CartCreateByUserIdInputDTO,
-    CartOutputDTO,
-)
+from app.app_layer.use_cases.carts.dto import CartCreateByUserIdInputDTO, CartOutputDTO
 from app.domain.carts.entities import Cart
 
 logger = getLogger(__name__)
 
 
-class CreateCartUseCase(ICreateCartUseCase):
+class CreateCartUseCase:
     def __init__(
         self,
         uow: IUnitOfWork,

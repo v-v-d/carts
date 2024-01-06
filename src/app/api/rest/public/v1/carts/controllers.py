@@ -18,16 +18,12 @@ from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.clients.coupons.exceptions import CouponsClientError
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
-from app.app_layer.interfaces.use_cases.carts.cart_apply_coupon import (
-    ICartApplyCouponUseCase,
-)
-from app.app_layer.interfaces.use_cases.carts.cart_delete import ICartDeleteUseCase
-from app.app_layer.interfaces.use_cases.carts.cart_remove_coupon import (
-    ICartRemoveCouponUseCase,
-)
-from app.app_layer.interfaces.use_cases.carts.cart_retrieve import ICartRetrieveUseCase
-from app.app_layer.interfaces.use_cases.carts.create_cart import ICreateCartUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import (
+from app.app_layer.use_cases.carts.cart_apply_coupon import CartApplyCouponUseCase
+from app.app_layer.use_cases.carts.cart_delete import CartDeleteUseCase
+from app.app_layer.use_cases.carts.cart_remove_coupon import CartRemoveCouponUseCase
+from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
+from app.app_layer.use_cases.carts.create_cart import CreateCartUseCase
+from app.app_layer.use_cases.carts.dto import (
     CartApplyCouponInputDTO,
     CartDeleteInputDTO,
     CartRemoveCouponInputDTO,
@@ -52,7 +48,7 @@ router = APIRouter()
 @inject
 async def create(
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: ICreateCartUseCase = Depends(Provide[Container.create_cart_use_case]),
+    use_case: CreateCartUseCase = Depends(Provide[Container.create_cart_use_case]),
 ) -> CartViewModel:
     try:
         result = await use_case.create_by_auth_data(auth_data=auth_data)
@@ -69,7 +65,7 @@ async def create(
 async def retrieve(
     cart_id: UUID,
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: ICartRetrieveUseCase = Depends(Provide[Container.cart_retrieve_use_case]),
+    use_case: CartRetrieveUseCase = Depends(Provide[Container.cart_retrieve_use_case]),
 ) -> CartViewModel:
     try:
         result = await use_case.execute(
@@ -91,7 +87,7 @@ async def retrieve(
 async def deactivate(
     cart_id: UUID,
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: ICartDeleteUseCase = Depends(Provide[Container.cart_delete_use_case]),
+    use_case: CartDeleteUseCase = Depends(Provide[Container.cart_delete_use_case]),
 ) -> None:
     try:
         await use_case.execute(
@@ -113,7 +109,7 @@ async def apply_coupon(
     cart_id: UUID,
     coupon_name: Annotated[str, Body()],
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: ICartApplyCouponUseCase = Depends(
+    use_case: CartApplyCouponUseCase = Depends(
         Provide[Container.cart_apply_coupon_use_case]
     ),
 ) -> CartViewModel:
@@ -146,7 +142,7 @@ async def apply_coupon(
 async def remove_coupon(
     cart_id: UUID,
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: ICartRemoveCouponUseCase = Depends(
+    use_case: CartRemoveCouponUseCase = Depends(
         Provide[Container.cart_remove_coupon_use_case]
     ),
 ) -> CartViewModel:

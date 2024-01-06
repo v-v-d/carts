@@ -1,15 +1,14 @@
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.cart_config.dto import (
+from app.app_layer.use_cases.cart_config.dto import (
     CartConfigInputDTO,
     CartConfigOutputDTO,
 )
-from app.app_layer.interfaces.use_cases.cart_config.service import ICartConfigService
 from app.domain.cart_config.dto import CartConfigDTO
 from app.domain.cart_config.entities import CartConfig
 
 
-class CartConfigService(ICartConfigService):
+class CartConfigService:
     def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
         self._uow = uow
         self._auth_system = auth_system

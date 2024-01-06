@@ -3,8 +3,8 @@ from _pytest.fixtures import SubRequest
 
 from app.app_layer.interfaces.auth_system.exceptions import OperationForbiddenError
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
-from app.app_layer.interfaces.use_cases.cart_config.dto import CartConfigInputDTO
-from app.app_layer.use_cases.cart_config_service import CartConfigService
+from app.app_layer.use_cases.cart_config.dto import CartConfigInputDTO
+from app.app_layer.use_cases.cart_config.service import CartConfigService
 from app.domain.cart_config.entities import CartConfig
 from tests.environment.unit_of_work import TestUow
 from tests.utils import fake

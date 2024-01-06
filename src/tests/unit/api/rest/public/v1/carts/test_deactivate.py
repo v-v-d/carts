@@ -11,7 +11,7 @@ from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
-from app.app_layer.interfaces.use_cases.carts.cart_delete import ICartDeleteUseCase
+from app.app_layer.use_cases.carts.cart_delete import CartDeleteUseCase
 from app.domain.carts.exceptions import ChangeStatusError, NotOwnedByUserError
 from app.domain.interfaces.repositories.carts.exceptions import CartNotFoundError
 
@@ -23,7 +23,7 @@ def url_path(cart_id: UUID) -> str:
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ICartDeleteUseCase)
+    mock = mocker.AsyncMock(spec=CartDeleteUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]

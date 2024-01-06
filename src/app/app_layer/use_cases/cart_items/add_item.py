@@ -7,9 +7,8 @@ from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
-from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.use_cases.cart_items.dto import AddItemToCartInputDTO
+from app.app_layer.use_cases.carts.dto import CartOutputDTO
 from app.domain.cart_items.dto import ItemDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.entities import Cart
@@ -18,7 +17,7 @@ from app.domain.carts.exceptions import CartItemDoesNotExistError
 logger = getLogger(__name__)
 
 
-class AddCartItemUseCase(IAddCartItemUseCase):
+class AddCartItemUseCase:
     def __init__(
         self,
         uow: IUnitOfWork,

@@ -20,20 +20,16 @@ from app.api.rest.public.v1.view_models import CartViewModel
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
-from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
-from app.app_layer.interfaces.use_cases.cart_items.delete_item import (
-    IDeleteCartItemUseCase,
-)
-from app.app_layer.interfaces.use_cases.cart_items.dto import (
+from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
+from app.app_layer.use_cases.cart_items.delete_item import DeleteCartItemUseCase
+from app.app_layer.use_cases.cart_items.dto import (
     AddItemToCartInputDTO,
     ClearCartInputDTO,
     DeleteCartItemInputDTO,
     UpdateCartItemInputDTO,
 )
-from app.app_layer.interfaces.use_cases.cart_items.update_item import (
-    IUpdateCartItemUseCase,
-)
-from app.app_layer.interfaces.use_cases.carts.clear_cart import IClearCartUseCase
+from app.app_layer.use_cases.cart_items.update_item import UpdateCartItemUseCase
+from app.app_layer.use_cases.carts.clear_cart import ClearCartUseCase
 from app.containers import Container
 from app.domain.cart_items.exceptions import MinQtyLimitExceededError
 from app.domain.carts.exceptions import (
@@ -55,7 +51,7 @@ async def add_item(
     item_id: Annotated[int, Body()],
     qty: Annotated[Decimal, Body()],
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: IAddCartItemUseCase = Depends(Provide[Container.add_cart_item_use_case]),
+    use_case: AddCartItemUseCase = Depends(Provide[Container.add_cart_item_use_case]),
 ) -> CartViewModel:
     try:
         result = await use_case.execute(
@@ -93,7 +89,7 @@ async def update_item(
     item_id: int,
     qty: Annotated[Decimal, Body()],
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: IUpdateCartItemUseCase = Depends(
+    use_case: UpdateCartItemUseCase = Depends(
         Provide[Container.update_cart_item_use_case]
     ),
 ) -> CartViewModel:
@@ -132,7 +128,7 @@ async def delete_item(
     cart_id: UUID,
     item_id: int,
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: IDeleteCartItemUseCase = Depends(
+    use_case: DeleteCartItemUseCase = Depends(
         Provide[Container.delete_cart_item_use_case]
     ),
 ) -> CartViewModel:
@@ -163,7 +159,7 @@ async def delete_item(
 async def clear(
     cart_id: UUID,
     auth_data: str = Header(..., alias="Authorization"),
-    use_case: IClearCartUseCase = Depends(Provide[Container.clear_cart_use_case]),
+    use_case: ClearCartUseCase = Depends(Provide[Container.clear_cart_use_case]),
 ) -> CartViewModel:
     try:
         result = await use_case.execute(

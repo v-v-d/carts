@@ -5,16 +5,13 @@ from app.app_layer.interfaces.clients.notifications.client import INotifications
 from app.app_layer.interfaces.clients.notifications.dto import SendNotificationInputDTO
 from app.app_layer.interfaces.tasks.producer import ITaskProducer
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.abandoned_carts_service import (
-    IAbandonedCartsService,
-)
 from app.config import TaskConfig
 from app.domain.cart_notifications.entities import CartNotification
 
 logger = getLogger(__name__)
 
 
-class AbandonedCartsService(IAbandonedCartsService):
+class AbandonedCartsService:
     def __init__(
         self,
         uow: IUnitOfWork,

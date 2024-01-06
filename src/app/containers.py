@@ -5,7 +5,7 @@ from typing import AsyncContextManager
 from dependency_injector import containers, providers
 
 from app.app_layer.use_cases.abandoned_carts_service import AbandonedCartsService
-from app.app_layer.use_cases.cart_config_service import CartConfigService
+from app.app_layer.use_cases.cart_config.service import CartConfigService
 from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
 from app.app_layer.use_cases.cart_items.delete_item import DeleteCartItemUseCase
 from app.app_layer.use_cases.cart_items.update_item import UpdateCartItemUseCase

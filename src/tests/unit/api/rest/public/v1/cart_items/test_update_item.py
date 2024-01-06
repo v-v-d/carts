@@ -12,10 +12,8 @@ from pytest_mock import MockerFixture
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
-from app.app_layer.interfaces.use_cases.cart_items.update_item import (
-    IUpdateCartItemUseCase,
-)
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO, ItemOutputDTO
+from app.app_layer.use_cases.cart_items.update_item import UpdateCartItemUseCase
+from app.app_layer.use_cases.carts.dto import CartOutputDTO, ItemOutputDTO
 from app.domain.cart_items.exceptions import MinQtyLimitExceededError
 from app.domain.carts.exceptions import (
     CartItemDoesNotExistError,
@@ -36,7 +34,7 @@ def url_path(cart_id: UUID, item_id: int) -> str:
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=IUpdateCartItemUseCase)
+    mock = mocker.AsyncMock(spec=UpdateCartItemUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]

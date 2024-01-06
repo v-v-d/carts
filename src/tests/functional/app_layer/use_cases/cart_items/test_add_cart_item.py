@@ -12,8 +12,8 @@ from app.app_layer.interfaces.clients.products.client import IProductsClient
 from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
-from app.app_layer.interfaces.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
+from app.app_layer.use_cases.cart_items.dto import AddItemToCartInputDTO
 from app.config import RedisLockConfig
 from app.domain.cart_config.entities import CartConfig
 from app.domain.cart_items.entities import CartItem

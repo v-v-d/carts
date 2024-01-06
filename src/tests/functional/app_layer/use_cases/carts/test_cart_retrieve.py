@@ -2,11 +2,8 @@ import pytest
 
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
-from app.app_layer.interfaces.use_cases.carts.dto import (
-    CartRetrieveInputDTO,
-    ItemOutputDTO,
-)
 from app.app_layer.use_cases.carts.cart_retrieve import CartRetrieveUseCase
+from app.app_layer.use_cases.carts.dto import CartRetrieveInputDTO, ItemOutputDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.entities import Cart
 from app.domain.carts.exceptions import NotOwnedByUserError

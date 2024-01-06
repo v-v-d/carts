@@ -12,13 +12,8 @@ from pytest_mock import MockerFixture
 from app.app_layer.interfaces.auth_system.exceptions import InvalidAuthDataError
 from app.app_layer.interfaces.clients.coupons.exceptions import CouponsClientError
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
-from app.app_layer.interfaces.use_cases.carts.cart_apply_coupon import (
-    ICartApplyCouponUseCase,
-)
-from app.app_layer.interfaces.use_cases.carts.dto import (
-    CartCouponOutputDTO,
-    CartOutputDTO,
-)
+from app.app_layer.use_cases.carts.cart_apply_coupon import CartApplyCouponUseCase
+from app.app_layer.use_cases.carts.dto import CartCouponOutputDTO, CartOutputDTO
 from app.domain.carts.exceptions import (
     CouponAlreadyAppliedError,
     NotOwnedByUserError,
@@ -36,7 +31,7 @@ def url_path(cart_id: UUID) -> str:
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ICartApplyCouponUseCase)
+    mock = mocker.AsyncMock(spec=CartApplyCouponUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]

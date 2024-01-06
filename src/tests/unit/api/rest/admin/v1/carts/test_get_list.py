@@ -12,8 +12,8 @@ from app.app_layer.interfaces.auth_system.exceptions import (
     InvalidAuthDataError,
     OperationForbiddenError,
 )
-from app.app_layer.interfaces.use_cases.carts.cart_list import ICartListUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.use_cases.carts.cart_list import CartListUseCase
+from app.app_layer.use_cases.carts.dto import CartOutputDTO
 from app.domain.carts.value_objects import CartStatusEnum
 from tests.utils import fake
 
@@ -30,7 +30,7 @@ def url_path(page_size: int) -> str:
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=ICartListUseCase)
+    mock = mocker.AsyncMock(spec=CartListUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]

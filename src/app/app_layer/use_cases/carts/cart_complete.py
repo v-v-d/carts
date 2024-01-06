@@ -2,11 +2,10 @@ from uuid import UUID
 
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
-from app.app_layer.interfaces.use_cases.carts.cart_complete import ICompleteCartUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO
+from app.app_layer.use_cases.carts.dto import CartOutputDTO
 
 
-class CompleteCartUseCase(ICompleteCartUseCase):
+class CompleteCartUseCase:
     def __init__(
         self,
         uow: IUnitOfWork,

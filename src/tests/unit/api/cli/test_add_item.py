@@ -7,8 +7,8 @@ from typer import Typer
 from typer.testing import CliRunner
 
 from app import api
-from app.app_layer.interfaces.use_cases.cart_items.add_item import IAddCartItemUseCase
-from app.app_layer.interfaces.use_cases.carts.dto import CartOutputDTO, ItemOutputDTO
+from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
+from app.app_layer.use_cases.carts.dto import CartOutputDTO, ItemOutputDTO
 from app.containers import Container
 from app.domain.carts.value_objects import CartStatusEnum
 from tests.utils import fake
@@ -16,7 +16,7 @@ from tests.utils import fake
 
 @pytest.fixture()
 def use_case(request: SubRequest, mocker: MockerFixture) -> AsyncMock:
-    mock = mocker.AsyncMock(spec=IAddCartItemUseCase)
+    mock = mocker.AsyncMock(spec=AddCartItemUseCase)
 
     if "returns" in request.param:
         mock.execute.return_value = request.param["returns"]

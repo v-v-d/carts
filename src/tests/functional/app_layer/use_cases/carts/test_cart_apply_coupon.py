@@ -10,8 +10,8 @@ from app.app_layer.interfaces.clients.coupons.client import ICouponsClient
 from app.app_layer.interfaces.clients.coupons.exceptions import CouponsClientError
 from app.app_layer.interfaces.distributed_lock_system.exceptions import AlreadyLockedError
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
-from app.app_layer.interfaces.use_cases.carts.dto import CartApplyCouponInputDTO
 from app.app_layer.use_cases.carts.cart_apply_coupon import CartApplyCouponUseCase
+from app.app_layer.use_cases.carts.dto import CartApplyCouponInputDTO
 from app.config import RedisLockConfig
 from app.domain.carts.entities import Cart
 from app.domain.carts.exceptions import NotOwnedByUserError
