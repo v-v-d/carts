@@ -26,7 +26,7 @@ from app.infra.http.clients.coupons import CouponsHttpClient
 from app.infra.http.clients.notifications import NotificationsHttpClient
 from app.infra.http.clients.products import ProductsHttpClient
 from app.infra.http.retry_systems.backoff import BackoffConfig, BackoffRetrySystem
-from app.infra.http.transports.aiohttp import init_aiohttp_transport
+from app.infra.http.transports.aiohttp import AioHttpTransport, init_aiohttp_session_pool
 from app.infra.http.transports.base import HttpTransportConfig, RetryableHttpTransport
 from app.infra.redis_lock_system import RedisLockSystem, init_redis
 from app.infra.repositories.sqla.db import Database
@@ -49,8 +49,9 @@ class ProductsClientContainer(containers.DeclarativeContainer):
     config = providers.Dependency(instance_of=Config)
     transport = providers.Factory(
         RetryableHttpTransport,
-        transport=providers.Resource(
-            init_aiohttp_transport,
+        transport=providers.Factory(
+            AioHttpTransport,
+            session=providers.Resource(init_aiohttp_session_pool),
             config=providers.Factory(
                 HttpTransportConfig,
                 integration_name=config.provided.PRODUCTS_CLIENT.name,
@@ -75,8 +76,9 @@ class CouponsClientContainer(containers.DeclarativeContainer):
     config = providers.Dependency(instance_of=Config)
     transport = providers.Factory(
         RetryableHttpTransport,
-        transport=providers.Resource(
-            init_aiohttp_transport,
+        transport=providers.Factory(
+            AioHttpTransport,
+            session=providers.Resource(init_aiohttp_session_pool),
             config=providers.Factory(
                 HttpTransportConfig,
                 integration_name=config.provided.COUPONS_CLIENT.name,
@@ -101,8 +103,9 @@ class NotificationsClientContainer(containers.DeclarativeContainer):
     config = providers.Dependency(instance_of=Config)
     transport = providers.Factory(
         RetryableHttpTransport,
-        transport=providers.Resource(
-            init_aiohttp_transport,
+        transport=providers.Factory(
+            AioHttpTransport,
+            session=providers.Resource(init_aiohttp_session_pool),
             config=providers.Factory(
                 HttpTransportConfig,
                 integration_name=config.provided.NOTIFICATIONS_CLIENT.name,

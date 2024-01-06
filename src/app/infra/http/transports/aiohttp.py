@@ -112,16 +112,12 @@ async def _on_request_exception(
     )
 
 
-async def init_aiohttp_transport(
-    config: HttpTransportConfig,
-) -> Generator[None, None, AioHttpTransport]:
+async def init_aiohttp_session_pool() -> Generator[None, None, ClientSession]:
     trace_config = TraceConfig()
     trace_config.on_request_start.append(_on_request_start)
     trace_config.on_request_exception.append(_on_request_exception)
     trace_config.on_request_end.append(_on_request_end)
 
     session = ClientSession(trace_configs=[trace_config])
-
-    yield AioHttpTransport(session=session, config=config)
-
+    yield session
     await session.close()
