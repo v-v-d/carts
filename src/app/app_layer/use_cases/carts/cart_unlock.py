@@ -1,8 +1,12 @@
+from logging import getLogger
 from uuid import UUID
 
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.use_cases.carts.dto import CartOutputDTO
+from app.logging import update_context
+
+logger = getLogger(__name__)
 
 
 class UnlockCartUseCase:
@@ -15,6 +19,8 @@ class UnlockCartUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, cart_id: UUID) -> CartOutputDTO:
+        await update_context(cart_id=cart_id)
+
         async with self._distributed_lock_system(name=f"cart-lock-{cart_id}"):
             return await self._unlock_cart(cart_id=cart_id)
 
@@ -23,5 +29,7 @@ class UnlockCartUseCase:
             cart = await self._uow.carts.retrieve(cart_id=cart_id)
             cart.unlock()
             await self._uow.carts.update(cart=cart)
+
+        logger.info("Cart %s successfully unlocked", cart.id)
 
         return CartOutputDTO.model_validate(cart)

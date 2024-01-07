@@ -3,6 +3,7 @@ from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.use_cases.carts.dto import CartOutputDTO, CartRetrieveInputDTO
 from app.domain.carts.entities import Cart
+from app.logging import update_context
 
 
 class CartRetrieveUseCase:
@@ -11,7 +12,9 @@ class CartRetrieveUseCase:
         self._auth_system = auth_system
 
     async def execute(self, data: CartRetrieveInputDTO) -> CartOutputDTO:
-        user = self._auth_system.get_user_data(auth_data=data.auth_data)
+        await update_context(cart_id=data.cart_id)
+
+        user = await self._auth_system.get_user_data(auth_data=data.auth_data)
 
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)

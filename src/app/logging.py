@@ -13,7 +13,8 @@ class LoggingConfig(BaseModel):
 
 
 class ContextDTO(BaseModel):
-    request_id: UUID | None = None
+    cart_id: UUID | None = None
+    user_id: int | None = None
 
 
 ctx: ContextVar[ContextDTO] = ContextVar("current_ctx", default=ContextDTO())

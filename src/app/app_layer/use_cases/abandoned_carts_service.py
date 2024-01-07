@@ -3,10 +3,12 @@ from uuid import UUID
 
 from app.app_layer.interfaces.clients.notifications.client import INotificationsClient
 from app.app_layer.interfaces.clients.notifications.dto import SendNotificationInputDTO
+from app.app_layer.interfaces.tasks.exceptions import TaskProducingError
 from app.app_layer.interfaces.tasks.producer import ITaskProducer
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.config import TaskConfig
 from app.domain.cart_notifications.entities import CartNotification
+from app.logging import update_context
 
 logger = getLogger(__name__)
 
@@ -38,16 +40,20 @@ class AbandonedCartsService:
         )
 
         for user_id, cart_id in carts_data:
-            await self._task_producer.enqueue_abandoned_cart_notification_task(
-                cart_id=cart_id,
-                user_id=user_id,
-            )
-            logger.debug(
-                "Cart %s. Abandoned cart notification task successfully enqueued!",
-                cart_id,
-            )
+            await update_context(cart_id=cart_id)
+
+            try:
+                await self._task_producer.enqueue_abandoned_cart_notification_task(
+                    cart_id=cart_id,
+                    user_id=user_id,
+                )
+            except TaskProducingError:
+                # will be processed next time
+                continue
 
     async def send_notification(self, user_id: int, cart_id: UUID) -> None:
+        await update_context(cart_id=cart_id)
+
         async with self._uow(autocommit=True):
             config = await self._uow.carts.get_config()
 

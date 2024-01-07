@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.use_cases.cart_config.dto import (
@@ -7,6 +9,8 @@ from app.app_layer.use_cases.cart_config.dto import (
 from app.domain.cart_config.dto import CartConfigDTO
 from app.domain.cart_config.entities import CartConfig
 
+logger = getLogger(__name__)
+
 
 class CartConfigService:
     def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
@@ -14,7 +18,7 @@ class CartConfigService:
         self._auth_system = auth_system
 
     async def retrieve(self, auth_data: str) -> CartConfigOutputDTO:
-        self._auth_system.check_for_admin(auth_data=auth_data)
+        await self._auth_system.check_for_admin(auth_data=auth_data)
 
         async with self._uow(autocommit=True):
             result = await self._uow.carts.get_config()
@@ -22,7 +26,7 @@ class CartConfigService:
         return CartConfigOutputDTO.model_validate(result)
 
     async def update(self, data: CartConfigInputDTO) -> CartConfigOutputDTO:
-        self._auth_system.check_for_admin(auth_data=data.auth_data)
+        await self._auth_system.check_for_admin(auth_data=data.auth_data)
 
         cart_config = CartConfig(
             data=CartConfigDTO(
@@ -37,5 +41,7 @@ class CartConfigService:
 
         async with self._uow(autocommit=True):
             result = await self._uow.carts.update_config(cart_config=cart_config)
+
+        logger.info("Cart config successfully updated!")
 
         return CartConfigOutputDTO.model_validate(result)

@@ -32,21 +32,22 @@ class RedisLockSystem(IDistributedLockSystem):
         acquired = await self._lock.acquire()
 
         if not acquired:
-            logger.info(f"Failed to acquire {self._name} because it's already locked!")
+            logger.info("Failed to acquire %s because it's already locked!", self._name)
             raise AlreadyLockedError
 
-        logger.debug(f"Redis lock: {self._name} was successfully acquired!")
+        logger.debug("Redis lock: %s was successfully acquired!", self._name)
 
     async def release(self) -> None:
         try:
             await self._lock.release()
         except LockError:
             logger.info(
-                f"Failed to release {self._name} because there is no lock or its ttl has expired!"
+                "Failed to release %s because there is no lock or its ttl has expired!",
+                self._name,
             )
             return
 
-        logger.debug(f"Redis lock: {self._name} was successfully released!")
+        logger.debug("Redis lock: %s was successfully released!", self._name)
 
 
 async def init_redis(config: RedisLockConfig) -> Generator[Redis, None, None]:

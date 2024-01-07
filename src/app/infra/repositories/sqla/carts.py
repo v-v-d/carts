@@ -1,4 +1,5 @@
 from datetime import datetime
+from logging import getLogger
 from uuid import UUID
 
 from sqlalchemy import Row, delete, func, select, text, update
@@ -23,6 +24,9 @@ from app.domain.interfaces.repositories.carts.exceptions import (
 )
 from app.domain.interfaces.repositories.carts.repo import ICartsRepository
 from app.infra.repositories.sqla import models
+from app.logging import update_context
+
+logger = getLogger(__name__)
 
 
 class CartsRepository(ICartsRepository):
@@ -41,6 +45,8 @@ class CartsRepository(ICartsRepository):
             await self._session.execute(stmt)
         except IntegrityError:
             raise ActiveCartAlreadyExistsError
+
+        await update_context(cart_id=cart.id)
 
         return cart
 
@@ -61,8 +67,11 @@ class CartsRepository(ICartsRepository):
             raise CartNotFoundError
 
         config = await self._get_config()
+        cart = self._get_cart(obj=obj, config=config)
 
-        return self._get_cart(obj=obj, config=config)
+        logger.debug("Got cart: %s", vars(cart))
+
+        return cart
 
     async def update(self, cart: Cart) -> Cart:
         stmt = (

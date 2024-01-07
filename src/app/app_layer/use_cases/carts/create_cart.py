@@ -19,11 +19,11 @@ class CreateCartUseCase:
         self._auth_system = auth_system
 
     async def create_by_auth_data(self, auth_data: str) -> CartOutputDTO:
-        user = self._auth_system.get_user_data(auth_data=auth_data)
+        user = await self._auth_system.get_user_data(auth_data=auth_data)
         return await self._create(user_id=user.id)
 
     async def create_by_user_id(self, data: CartCreateByUserIdInputDTO) -> CartOutputDTO:
-        user = self._auth_system.get_user_data(auth_data=data.auth_data)
+        user = await self._auth_system.get_user_data(auth_data=data.auth_data)
 
         if not user.is_admin:
             logger.error(

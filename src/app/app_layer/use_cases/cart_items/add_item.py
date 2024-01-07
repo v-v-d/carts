@@ -4,7 +4,6 @@ from logging import getLogger
 from app.app_layer.interfaces.auth_system.dto import UserDataOutputDTO
 from app.app_layer.interfaces.auth_system.system import IAuthSystem
 from app.app_layer.interfaces.clients.products.client import IProductsClient
-from app.app_layer.interfaces.clients.products.exceptions import ProductsClientError
 from app.app_layer.interfaces.distributed_lock_system.system import IDistributedLockSystem
 from app.app_layer.interfaces.unit_of_work.sql import IUnitOfWork
 from app.app_layer.use_cases.cart_items.dto import AddItemToCartInputDTO
@@ -13,6 +12,7 @@ from app.domain.cart_items.dto import ItemDTO
 from app.domain.cart_items.entities import CartItem
 from app.domain.carts.entities import Cart
 from app.domain.carts.exceptions import CartItemDoesNotExistError
+from app.logging import update_context
 
 logger = getLogger(__name__)
 
@@ -31,11 +31,13 @@ class AddCartItemUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
+        await update_context(cart_id=data.cart_id)
+
         async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):
             return await self._add_item_to_cart(data=data)
 
     async def _add_item_to_cart(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
-        user = self._auth_system.get_user_data(auth_data=data.auth_data)
+        user = await self._auth_system.get_user_data(auth_data=data.auth_data)
 
         async with self._uow(autocommit=True):
             cart = await self._uow.carts.retrieve(cart_id=data.cart_id)
@@ -70,6 +72,13 @@ class AddCartItemUseCase:
         async with self._uow(autocommit=True):
             await self._uow.items.add_item(item=item)
 
+        logger.info(
+            "Item %s successfully added to cart %s with qty %s",
+            item.id,
+            cart.id,
+            data.qty,
+        )
+
         return cart
 
     async def _try_to_create_item(
@@ -77,16 +86,7 @@ class AddCartItemUseCase:
         cart: Cart,
         data: AddItemToCartInputDTO,
     ) -> CartItem:
-        try:
-            product = await self._products_client.get_product(item_id=data.id)
-        except ProductsClientError as err:
-            logger.error(
-                "Cart %s, item %s. Failed to get product data! Error: %s",
-                cart.id,
-                data.id,
-                err,
-            )
-            raise
+        product = await self._products_client.get_product(item_id=data.id)
 
         return CartItem(
             data=ItemDTO(
@@ -104,5 +104,12 @@ class AddCartItemUseCase:
 
         async with self._uow(autocommit=True):
             await self._uow.items.update_item(item=item)
+
+        logger.info(
+            "Cart %s. Item %s qty successfully increased. Current item qty %s",
+            cart.id,
+            item_id,
+            qty,
+        )
 
         return cart

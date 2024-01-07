@@ -34,6 +34,8 @@ class ArqTaskProducer(ITaskProducer):
             _queue_name=QueueNameEnum.EXAMPLE_QUEUE.value,
         )
 
+        logger.debug("Example task for cart %s successfully enqueued!", cart_id)
+
     async def enqueue_abandoned_cart_notification_task(
         self,
         user_id: int,

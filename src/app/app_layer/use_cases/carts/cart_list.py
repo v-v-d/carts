@@ -11,7 +11,7 @@ class CartListUseCase:
         self._auth_system = auth_system
 
     async def execute(self, data: CartListInputDTO) -> CartListOutputDTO:
-        self._auth_system.check_for_admin(auth_data=data.auth_data)
+        await self._auth_system.check_for_admin(auth_data=data.auth_data)
         created_at = data.created_at or datetime.now()
 
         async with self._uow(autocommit=True):
