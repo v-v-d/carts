@@ -9,9 +9,9 @@ class IAuthSystem(ABC):
         ...
 
     @abstractmethod
-    def get_user_data(self, auth_data: str) -> UserDataOutputDTO:
+    async def get_user_data(self, auth_data: str) -> UserDataOutputDTO:
         ...
 
     @abstractmethod
-    def check_for_admin(self, auth_data: str) -> None:
+    async def check_for_admin(self, auth_data: str) -> None:
         ...
