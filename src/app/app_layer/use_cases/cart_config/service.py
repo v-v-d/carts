@@ -13,11 +13,22 @@ logger = getLogger(__name__)
 
 
 class CartConfigService:
+    """
+    Responsible for retrieving and updating the cart configuration. It interacts with
+    the IUnitOfWork and IAuthSystem interfaces to access the necessary data and perform
+    authentication.
+    """
+
     def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
         self._uow = uow
         self._auth_system = auth_system
 
     async def retrieve(self, auth_data: str) -> CartConfigOutputDTO:
+        """
+        Retrieves the cart configuration by validating the authentication data and
+        calling the get_config method of the carts repository.
+        """
+
         await self._auth_system.check_for_admin(auth_data=auth_data)
 
         async with self._uow(autocommit=True):
@@ -26,6 +37,12 @@ class CartConfigService:
         return CartConfigOutputDTO.model_validate(result)
 
     async def update(self, data: CartConfigInputDTO) -> CartConfigOutputDTO:
+        """
+        Updates the cart configuration by validating the authentication data, creating
+        a CartConfig instance with the input data, and calling the update_config method
+        of the carts repository.
+        """
+
         await self._auth_system.check_for_admin(auth_data=data.auth_data)
 
         cart_config = CartConfig(

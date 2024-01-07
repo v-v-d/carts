@@ -13,6 +13,13 @@ logger = getLogger(__name__)
 
 
 class UpdateCartItemUseCase:
+    """
+    Responsible for updating the quantity of an item in a cart. It uses an instance
+    of IUnitOfWork to manage the database transactions, an instance of IAuthSystem to
+    validate the user's authentication data, and an instance of IDistributedLockSystem
+    to acquire a lock on the cart during the update process.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -24,6 +31,12 @@ class UpdateCartItemUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: UpdateCartItemInputDTO) -> CartOutputDTO:
+        """
+        Executes the update cart item use case. Acquires a lock on the cart, validates
+        the user's authentication data, retrieves the cart, checks user ownership,
+        updates the item quantity, and returns the updated cart.
+        """
+
         await update_context(cart_id=data.cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):

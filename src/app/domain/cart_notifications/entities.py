@@ -6,6 +6,11 @@ from app.domain.cart_notifications.value_objects import CartNotificationTypeEnum
 
 
 class CartNotification:
+    """
+    Represents a notification of a cart. It also provides methods for creating
+    different types of cart notifications.
+    """
+
     def __init__(self, data: CartNotificationDTO) -> None:
         self.id = data.id
         self.cart_id = data.cart_id
@@ -20,6 +25,11 @@ class CartNotification:
         notification_type: CartNotificationTypeEnum,
         text: str,
     ) -> "CartNotification":
+        """
+        Creates a cart notification with the given cart ID, notification type, and
+        text.
+        """
+
         return cls(
             data=CartNotificationDTO(
                 id=uuid4(),
@@ -34,6 +44,10 @@ class CartNotification:
     def create_abandoned_cart_notification(
         cls, cart_id: UUID, text: str
     ) -> "CartNotification":
+        """
+        Creates an abandoned cart notification with the given cart ID and text.
+        """
+
         return cls.create(
             cart_id=cart_id,
             notification_type=CartNotificationTypeEnum.ABANDONED_CART,

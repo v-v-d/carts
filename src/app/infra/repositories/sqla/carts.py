@@ -30,10 +30,22 @@ logger = getLogger(__name__)
 
 
 class CartsRepository(ICartsRepository):
+    """
+    Responsible for interacting with the database to perform CRUD operations on the
+    Cart objects. It provides methods to create a new cart, retrieve an existing
+    cart, update a cart's status, clear a cart's items, get a list of carts, get the
+    cart configuration, update the cart configuration, and find abandoned carts based
+    on certain criteria.
+    """
+
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def create(self, cart: Cart) -> Cart:
+        """
+        Creates a new cart in the database and returns the created cart object.
+        """
+
         stmt = insert(models.Cart).values(
             created_at=cart.created_at,
             id=cart.id,
@@ -51,6 +63,11 @@ class CartsRepository(ICartsRepository):
         return cart
 
     async def retrieve(self, cart_id: UUID) -> Cart:
+        """
+        Retrieves an existing cart from the database based on the provided cart ID
+        and returns the retrieved cart object.
+        """
+
         stmt = (
             select(models.Cart)
             .options(joinedload(models.Cart.items))
@@ -74,6 +91,11 @@ class CartsRepository(ICartsRepository):
         return cart
 
     async def update(self, cart: Cart) -> Cart:
+        """
+        Updates the status of a cart in the database based on the provided cart
+        object and returns the updated cart object.
+        """
+
         stmt = (
             update(models.Cart)
             .where(models.Cart.id == cart.id)
@@ -84,10 +106,19 @@ class CartsRepository(ICartsRepository):
         return cart
 
     async def clear(self, cart_id: UUID) -> None:
+        """
+        Clears the items of a cart in the database based on the provided cart ID.
+        """
+
         stmt = delete(models.CartItem).where(models.CartItem.cart_id == cart_id)
         await self._session.execute(stmt)
 
     async def get_list(self, page_size: int, created_at: datetime) -> list[Cart]:
+        """
+        Retrieves a list of carts from the database based on the specified page
+        size and creation date and returns a list of cart objects.
+        """
+
         stmt = (
             select(models.Cart)
             .options(joinedload(models.Cart.items))
@@ -104,15 +135,30 @@ class CartsRepository(ICartsRepository):
         return [self._get_cart(obj=obj, config=config) for obj in objects]
 
     async def get_config(self) -> CartConfig:
+        """
+        Retrieves the cart configuration from the database and returns the cart
+        configuration object.
+        """
+
         return await self._get_config()
 
     async def update_config(self, cart_config: CartConfig) -> CartConfig:
+        """
+        Updates the cart configuration in the database based on the provided cart
+        configuration object and returns the updated cart configuration object.
+        """
+
         stmt = update(models.CartConfig).values(data=vars(cart_config))
         await self._session.execute(stmt)
 
         return cart_config
 
     async def find_abandoned_cart_id_by_user_id(self) -> list[tuple[int, UUID]]:
+        """
+        Finds abandoned carts in the database based on certain criteria and returns
+        a list of tuples containing the user ID and cart ID of the abandoned carts.
+        """
+
         config = await self._get_config()
         abandonment_threshold_time = func.now() - text(
             f"INTERVAL '{config.hours_since_update_until_abandoned} hours'"

@@ -14,6 +14,12 @@ logger = getLogger(__name__)
 
 
 class AbandonedCartsService:
+    """
+    Responsible for processing abandoned carts and sending notifications to the users.
+    It uses a unit of work pattern to manage the database transactions and interacts
+    with other components such as the task producer and notification client.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -31,6 +37,11 @@ class AbandonedCartsService:
         return self._config
 
     async def process_abandoned_carts(self) -> None:
+        """
+        Processes abandoned carts by retrieving the list of abandoned cart IDs and
+        enqueuing abandoned cart notification tasks.
+        """
+
         async with self._uow(autocommit=True):
             carts_data = await self._uow.carts.find_abandoned_cart_id_by_user_id()
 
@@ -52,6 +63,8 @@ class AbandonedCartsService:
                 continue
 
     async def send_notification(self, user_id: int, cart_id: UUID) -> None:
+        """Sends a notification to the user for the specified abandoned cart."""
+
         await update_context(cart_id=cart_id)
 
         async with self._uow(autocommit=True):

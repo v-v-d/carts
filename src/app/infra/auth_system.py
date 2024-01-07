@@ -20,10 +20,22 @@ _USERS_BY_TOKEN = {
 
 
 class FakeJWTAuthSystem(IAuthSystem):
+    """
+    Provides authentication functionality using a fake JWT token. It validates the
+    token, retrieves user data based on the token, and checks if the user is an
+    admin.
+    """
+
     def __init__(self) -> None:
         self._token: None | str = None
 
     def validate_auth_data(self, auth_data: str) -> None:
+        """
+        Validates the authentication data by checking if it starts with "Bearer " and
+        if the token is valid. If the validation fails, it raises an
+        InvalidAuthDataError exception.
+        """
+
         if not auth_data.startswith("Bearer "):
             logger.error(
                 "Failed to authenticate user with token %s! Error: bad token format.",
@@ -41,6 +53,12 @@ class FakeJWTAuthSystem(IAuthSystem):
             raise InvalidAuthDataError
 
     async def get_user_data(self, auth_data: str) -> UserDataOutputDTO:
+        """
+        Retrieves user data based on the token by looking up the token in the
+        _USERS_BY_TOKEN dictionary. If the user data is invalid, it raises an
+        InvalidAuthDataError exception. It also updates the context with the user ID.
+        """
+
         self.validate_auth_data(auth_data)
 
         user_data = _USERS_BY_TOKEN[self._token]
@@ -64,6 +82,11 @@ class FakeJWTAuthSystem(IAuthSystem):
         return user
 
     async def check_for_admin(self, auth_data: str) -> None:
+        """
+        Checks if the user is an admin by calling the get_user_data method. If the
+        user is not an admin, it raises an OperationForbiddenError exception.
+        """
+
         user = await self.get_user_data(auth_data=auth_data)
 
         if not user.is_admin:

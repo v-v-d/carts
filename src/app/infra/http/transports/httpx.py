@@ -11,12 +11,23 @@ from app.infra.http.transports.base import (
 
 
 class HttpxTransport(IHttpTransport):
+    """
+    Provides a method called request which sends an HTTP request using the httpx
+    library and returns the response data.
+    """
+
     min_response_content_len: int = 0
 
     def __init__(self, client: AsyncClient) -> None:
         self._client = client
 
     async def request(self, data: HttpRequestInputDTO) -> dict[str, Any] | str:
+        """
+        Sends an HTTP request using the provided request data and returns the
+        response data. If the response is successful, it returns a dictionary. If
+        there is an error, it returns a string with the error message.
+        """
+
         try:
             return await self._try_to_make_request(data)
         except (asyncio.TimeoutError, BrokenPipeError) as err:
@@ -53,7 +64,13 @@ class HttpxTransport(IHttpTransport):
         return response.text
 
 
-async def init_httpx_transport() -> Generator[None, None, HttpxTransport]:
+async def init_httpx_client() -> Generator[None, None, AsyncClient]:
+    """
+    Returns an asynchronous generator. The generator creates an instance of the
+    AsyncClient class from the httpx library, yields it, and then closes it when
+    the generator is finished.
+    """
+
     client = AsyncClient()
-    yield HttpxTransport(client=client)
+    yield client
     await client.aclose()

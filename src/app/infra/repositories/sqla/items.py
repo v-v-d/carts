@@ -15,10 +15,17 @@ logger = getLogger(__name__)
 
 
 class ItemsRepository(IItemsRepository):
+    """
+    Responsible for interacting with the database to perform CRUD operations on
+    CartItem objects. It uses SQLAlchemy to execute SQL statements asynchronously.
+    """
+
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def add_item(self, item: CartItem) -> None:
+        """Inserts a new CartItem object into the database."""
+
         stmt = insert(models.CartItem).values(
             id=item.id,
             name=item.name,
@@ -34,6 +41,8 @@ class ItemsRepository(IItemsRepository):
             raise ItemAlreadyExists(str(err)) from err
 
     async def update_item(self, item: CartItem) -> CartItem:
+        """Updates an existing CartItem object in the database."""
+
         stmt = (
             update(models.CartItem)
             .where(models.CartItem.id == item.id, models.CartItem.cart_id == item.cart_id)
@@ -49,6 +58,10 @@ class ItemsRepository(IItemsRepository):
         return item
 
     async def delete_item(self, cart: Cart, item_id: int) -> None:
+        """
+        Deletes an item from the database based on the provided cart and item_id.
+        """
+
         stmt = delete(models.CartItem).where(
             models.CartItem.id == item_id, models.CartItem.cart_id == cart.id
         )

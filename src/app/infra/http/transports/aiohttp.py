@@ -26,11 +26,22 @@ logger = getLogger(__name__)
 
 
 class AioHttpTransport(IHttpTransport):
+    """
+    Uses the aiohttp library to make HTTP requests asynchronously. It handles
+    exceptions that may occur during the request and provides a consistent response
+    format.
+    """
+
     def __init__(self, session: ClientSession, config: HttpTransportConfig) -> None:
         self._session = session
         self._config = config
 
     async def request(self, data: HttpRequestInputDTO) -> dict[str, Any] | str:
+        """
+        Makes an HTTP request using the provided HttpRequestInputDTO data and returns
+        the response data as a dictionary or string.
+        """
+
         try:
             return await self._try_to_make_request(data)
         except (
@@ -113,6 +124,11 @@ async def _on_request_exception(
 
 
 async def init_aiohttp_session_pool() -> Generator[None, None, ClientSession]:
+    """
+    Initializes and returns an asynchronous HTTP client session with tracing
+    capabilities.
+    """
+
     trace_config = TraceConfig()
     trace_config.on_request_start.append(_on_request_start)
     trace_config.on_request_exception.append(_on_request_exception)

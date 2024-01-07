@@ -9,10 +9,17 @@ from app.infra.repositories.sqla import models
 
 
 class CartsNotificationsRepository(ICartNotificationsRepository):
+    """
+    Provides a method to create a cart notification and save it to the database
+    using SQLAlchemy.
+    """
+
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def create(self, cart_notification: CartNotification) -> CartNotification:
+        """Saves the given cart notification to the database."""
+
         stmt = insert(models.CartNotification).values(
             id=cart_notification.id,
             cart_id=cart_notification.cart_id,

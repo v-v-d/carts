@@ -10,6 +10,12 @@ logger = getLogger(__name__)
 
 
 class CompleteCartUseCase:
+    """
+    Responsible for completing a cart by updating its status to "completed" in the
+    database. It uses a distributed lock system to ensure that only one process can
+    change the cart at a time.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -19,6 +25,12 @@ class CompleteCartUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, cart_id: UUID) -> CartOutputDTO:
+        """
+        Executes the complete cart use case by updating the cart's status to
+        "completed" in the database. It also updates the context with the cart ID and
+        acquires a distributed lock to ensure exclusive access to the cart.
+        """
+
         await update_context(cart_id=cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{cart_id}"):

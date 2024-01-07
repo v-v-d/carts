@@ -7,11 +7,20 @@ from app.logging import update_context
 
 
 class CartRetrieveUseCase:
+    """
+    Responsible for retrieving a cart and validating the user's ownership of the cart.
+    """
+
     def __init__(self, uow: IUnitOfWork, auth_system: IAuthSystem) -> None:
         self._uow = uow
         self._auth_system = auth_system
 
     async def execute(self, data: CartRetrieveInputDTO) -> CartOutputDTO:
+        """
+        Executes the use case by retrieving the cart and validating the user's
+        ownership. Returns the retrieved cart as a CartOutputDTO object.
+        """
+
         await update_context(cart_id=data.cart_id)
 
         user = await self._auth_system.get_user_data(auth_data=data.auth_data)

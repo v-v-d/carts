@@ -13,6 +13,12 @@ logger = getLogger(__name__)
 
 
 class CartRemoveCouponUseCase:
+    """
+    Responsible for removing a coupon from a cart. It interacts with the IUnitOfWork,
+    IAuthSystem, and IDistributedLockSystem interfaces to retrieve the cart, validate
+    the user's ownership, remove the coupon, and update the cart.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -24,6 +30,11 @@ class CartRemoveCouponUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: CartRemoveCouponInputDTO) -> CartOutputDTO:
+        """
+        Executes the use case by retrieving the cart, validating the user's ownership,
+        removing the coupon, and returning the updated cart.
+        """
+
         await update_context(cart_id=data.cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):

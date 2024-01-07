@@ -8,6 +8,11 @@ from app.infra.repositories.sqla.items import ItemsRepository
 
 
 class Uow(IUnitOfWork):
+    """
+    Provides a unit of work pattern for managing transactions and repositories in
+    an asynchronous SQLAlchemy session.
+    """
+
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
@@ -22,10 +27,16 @@ class Uow(IUnitOfWork):
         return await super().__aenter__()
 
     async def commit(self) -> None:
+        """Commits the changes made in the session."""
+
         await self._session.commit()
 
     async def rollback(self) -> None:
+        """Rolls back the changes made in the session."""
+
         await self._session.rollback()
 
     async def shutdown(self) -> None:
+        """Closes the session."""
+
         await self._session.close()

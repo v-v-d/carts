@@ -8,6 +8,11 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 
 
 class CartCoupon:
+    """
+    Represents a coupon that can be applied to a shopping cart. It calculates the
+    discounted cart cost and checks if the coupon is applied.
+    """
+
     def __init__(self, data: CartCouponDTO, cart: "Cart") -> None:
         self.coupon_id = data.coupon_id
         self.min_cart_cost = data.min_cart_cost

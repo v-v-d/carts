@@ -13,6 +13,11 @@ logger = getLogger(__name__)
 
 
 class RedisLockSystem(IDistributedLockSystem):
+    """
+    Provides a distributed lock system using Redis as the backend. It allows
+    acquiring and releasing locks using the Redis Lock class.
+    """
+
     def __init__(self, redis: Redis, config: RedisLockConfig) -> None:
         self._redis = redis
         self._config = config
@@ -20,6 +25,12 @@ class RedisLockSystem(IDistributedLockSystem):
         self._lock: Lock | None = None
 
     async def acquire(self) -> None:
+        """
+        Acquires a lock using the Redis Lock class. If the lock is already acquired
+        by another process, it waits for a specified time or returns immediately
+        based on the configuration.
+        """
+
         self._lock = Lock(
             redis=self._redis,
             name=self._name,
@@ -38,6 +49,8 @@ class RedisLockSystem(IDistributedLockSystem):
         logger.debug("Redis lock: %s was successfully acquired!", self._name)
 
     async def release(self) -> None:
+        """Releases the acquired lock using the Redis Lock class."""
+
         try:
             await self._lock.release()
         except LockError:
@@ -51,6 +64,11 @@ class RedisLockSystem(IDistributedLockSystem):
 
 
 async def init_redis(config: RedisLockConfig) -> Generator[Redis, None, None]:
+    """
+    Initializes a Redis connection and returns a generator object that yields the
+    Redis instance.
+    """
+
     redis_pool = ConnectionPool(
         host=config.host,
         port=config.port,

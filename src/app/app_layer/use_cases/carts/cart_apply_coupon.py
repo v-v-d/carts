@@ -16,6 +16,12 @@ logger = getLogger(__name__)
 
 
 class CartApplyCouponUseCase:
+    """
+    Responsible for applying a coupon to a cart in an e-commerce system. It uses
+    various dependencies such as the unit of work, coupons client, authentication
+    system, and distributed lock system to perform the necessary operations.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -29,6 +35,13 @@ class CartApplyCouponUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: CartApplyCouponInputDTO) -> CartOutputDTO:
+        """
+        Executes the use case by applying the coupon to the cart. It performs the
+        necessary validations, retrieves the coupon details, applies the coupon to the
+        cart, and updates the cart's coupon information. Returns the updated cart as a
+        CartOutputDTO.
+        """
+
         await update_context(cart_id=data.cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):

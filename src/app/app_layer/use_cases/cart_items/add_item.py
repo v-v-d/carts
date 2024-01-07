@@ -18,6 +18,12 @@ logger = getLogger(__name__)
 
 
 class AddCartItemUseCase:
+    """
+    Responsible for adding an item to a cart. It interacts with various dependencies
+    such as the unit of work, products client, authentication system, and distributed
+    lock system to perform this task.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -31,6 +37,12 @@ class AddCartItemUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: AddItemToCartInputDTO) -> CartOutputDTO:
+        """
+        Executes the use case by adding an item to the cart. It acquires a distributed
+        lock, retrieves user data, retrieves the cart, checks user ownership, updates
+        the cart, commits the changes, and returns the updated cart.
+        """
+
         await update_context(cart_id=data.cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):

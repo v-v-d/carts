@@ -15,11 +15,21 @@ from app.infra.http.transports.base import (
 
 
 class CouponsHttpClient(ICouponsClient):
+    """
+    Responsible for making HTTP requests to retrieve coupon information from a
+    remote server.
+    """
+
     def __init__(self, base_url: AnyHttpUrl, transport: IHttpTransport) -> None:
         self._base_url = base_url
         self._transport = transport
 
     async def get_coupon(self, coupon_name: str) -> CouponOutputDTO:
+        """
+        Retrieves a coupon by name from the remote server. It constructs the URL,
+        makes the HTTP request, and returns the parsed CouponOutputDTO object.
+        """
+
         url = furl(self._base_url).add(path="coupons").url
 
         response = await self._try_to_make_request(

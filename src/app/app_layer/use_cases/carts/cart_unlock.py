@@ -10,6 +10,12 @@ logger = getLogger(__name__)
 
 
 class UnlockCartUseCase:
+    """
+    Responsible for unlocking a cart by changing its status from "LOCKED" to "OPENED"
+    in the application. It uses a distributed lock system to ensure that only one
+    process can access the cart at a time.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -19,6 +25,14 @@ class UnlockCartUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, cart_id: UUID) -> CartOutputDTO:
+        """
+        Executes the use case by unlocking the cart with the given cart_id. It first
+        updates the context with the cart_id, then acquires a lock on the cart using
+        the distributed lock system. After acquiring the lock, it unlocks the cart and
+        update it in the unit of work. Finally, it returns the unlocked cart as a
+        CartOutputDTO object.
+        """
+
         await update_context(cart_id=cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{cart_id}"):

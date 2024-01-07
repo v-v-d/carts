@@ -12,6 +12,14 @@ logger = getLogger(__name__)
 
 
 class CartDeleteUseCase:
+    """
+    Responsible for deleting a cart based on the provided input data. It uses an
+    instance of IUnitOfWork to interact with the data storage, an instance of
+    IAuthSystem to validate the user's authentication data, and an instance of
+    IDistributedLockSystem to acquire and release locks for concurrent access to the
+    cart.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -23,6 +31,11 @@ class CartDeleteUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: CartDeleteInputDTO) -> CartOutputDTO:
+        """
+        Executes the cart deletion use case. It updates the context, acquires a
+        distributed lock for the cart, and deletes the cart.
+        """
+
         await update_context(cart_id=data.cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):

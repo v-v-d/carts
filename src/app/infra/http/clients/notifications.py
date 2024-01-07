@@ -20,11 +20,24 @@ logger = getLogger(__name__)
 
 
 class NotificationsHttpClient(INotificationsClient):
+    """
+    Responsible for sending notifications to a specified user using an HTTP transport.
+    It implements the INotificationsClient interface and uses an IHttpTransport
+    instance to make the HTTP request.
+    """
+
     def __init__(self, base_url: AnyHttpUrl, transport: IHttpTransport) -> None:
         self._base_url = base_url
         self._transport = transport
 
     async def send_notification(self, data: SendNotificationInputDTO) -> None:
+        """
+        Sends a notification to the user by making an HTTP POST request. It constructs
+        the request URL by appending "/notifications" to the base URL. The request
+        body includes the user ID and text from the SendNotificationInputDTO. It makes
+        the request and handles any HttpTransportError that occurs.
+        """
+
         url = furl(self._base_url).add(path="notifications").url
 
         await self._try_to_make_request(

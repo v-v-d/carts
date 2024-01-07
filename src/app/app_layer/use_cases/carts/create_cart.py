@@ -10,6 +10,15 @@ logger = getLogger(__name__)
 
 
 class CreateCartUseCase:
+    """
+    Responsible for creating a new cart for a user. It has two methods:
+    create_by_auth_data and create_by_user_id. The first method creates a cart based
+    on the authentication data of the user, while the second method creates a cart
+    based on the user ID. The class uses an instance of the IUnitOfWork interface to
+    interact with the data storage and an instance of the IAuthSystem interface to
+    authenticate the user.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -19,10 +28,22 @@ class CreateCartUseCase:
         self._auth_system = auth_system
 
     async def create_by_auth_data(self, auth_data: str) -> CartOutputDTO:
+        """
+        Creates a cart for the user based on their authentication data. It retrieves
+        the user data using the get_user_data method of the IAuthSystem interface and
+        then creates the cart.
+        """
+
         user = await self._auth_system.get_user_data(auth_data=auth_data)
         return await self._create(user_id=user.id)
 
     async def create_by_user_id(self, data: CartCreateByUserIdInputDTO) -> CartOutputDTO:
+        """
+        Creates a cart for the user based on their user ID. It retrieves the user data
+        using the get_user_data method of the IAuthSystem interface and then creates
+        the cart.
+        """
+
         user = await self._auth_system.get_user_data(auth_data=data.auth_data)
 
         if not user.is_admin:

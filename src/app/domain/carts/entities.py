@@ -25,10 +25,13 @@ logger = getLogger(__name__)
 
 
 class Cart:
+    """
+    Represents a shopping cart and provides methods to modify and manage the cart
+    items, apply coupons, and change the cart status.
+    """
+
     WEIGHT_ITEM_QTY: Decimal = Decimal(1)
-    STATUS_TRANSITION_RULESET: dict[
-        CartStatusEnum, dict[CartStatusEnum, CartStatusEnum]
-    ] = {
+    STATUS_TRANSITION_RULESET: dict[CartStatusEnum, set[CartStatusEnum]] = {
         CartStatusEnum.OPENED: {CartStatusEnum.DEACTIVATED, CartStatusEnum.LOCKED},
         CartStatusEnum.DEACTIVATED: {},
         CartStatusEnum.LOCKED: {CartStatusEnum.OPENED, CartStatusEnum.COMPLETED},
@@ -67,6 +70,8 @@ class Cart:
 
     @classmethod
     def create(cls, user_id: int, config: CartConfig) -> "Cart":
+        """Creates a new cart with the specified user ID and configuration."""
+
         return cls(
             data=CartDTO(
                 created_at=datetime.now(),
@@ -79,6 +84,13 @@ class Cart:
         )
 
     def increase_item_qty(self, item_id: int, qty: Decimal) -> CartItem:
+        """
+        Increases the quantity of a specific item in the shopping cart. It checks if
+        the cart can be modified, retrieves the item from the cart based on its ID,
+        and then increases its quantity by the specified amount. It also validates the
+        specific item quantity limit and the overall items quantity limit of the cart.
+        """
+
         self._check_can_be_modified(action="increase item qty")
 
         items_by_id = {item.id: item for item in self.items}
@@ -99,6 +111,13 @@ class Cart:
         return items_by_id[item_id]
 
     def add_new_item(self, item: CartItem) -> None:
+        """
+        Used to add a new item to the shopping cart. It checks if the cart can be
+        modified, verifies if the item already exists in the cart, checks the
+        specific item quantity limit and the overall items quantity limit of the cart,
+        and then adds the item to the cart.
+        """
+
         self._check_can_be_modified(action="add new item")
 
         items_by_id = {item.id: item for item in self.items}
@@ -116,10 +135,19 @@ class Cart:
         self._validate_items_qty_limit()
 
     def deactivate(self) -> None:
+        """Used to change the status of a shopping cart to "DEACTIVATED"."""
+
         self._validate_status_transition(new_status=CartStatusEnum.DEACTIVATED)
         self.status = CartStatusEnum.DEACTIVATED
 
     def update_item_qty(self, item_id: int, qty: Decimal) -> CartItem:
+        """
+        Used to update the quantity of a specific item in the shopping cart. It checks
+        if the cart can be modified, retrieves the item from the cart based on its ID,
+        updates its quantity with the new value, and then validates the specific item
+        quantity limit and the overall items quantity limit of the cart.
+        """
+
         self._check_can_be_modified(action="update item qty")
 
         items_by_id = {item.id: item for item in self.items}
@@ -140,6 +168,12 @@ class Cart:
         return items_by_id[item_id]
 
     def delete_item(self, item_id: int) -> None:
+        """
+        Used to remove an item from the shopping cart. It checks if the cart can be
+        modified, retrieves the item from the cart based on its ID, and then removes
+        the item from the cart.
+        """
+
         self._check_can_be_modified(action="delete item")
 
         items_by_id = {item.id: item for item in self.items}
@@ -156,10 +190,17 @@ class Cart:
         self.items = list(items_by_id.values())
 
     def clear(self) -> None:
+        """Used to remove all items from the shopping cart."""
+
         self._check_can_be_modified(action="clear cart")
         self.items = []
 
     def check_user_ownership(self, user_id: int) -> None:
+        """
+        Checks if the provided user_id matches the user_id of the cart. If they don't
+        match, it raises a NotOwnedByUserError exception.
+        """
+
         if self.user_id != user_id:
             logger.info(
                 "Cart %s. Invalid user_id detected! Expected: %s, got: %s",
@@ -170,6 +211,11 @@ class Cart:
             raise NotOwnedByUserError
 
     def check_can_coupon_be_applied(self) -> None:
+        """
+        Checks if a coupon can be applied to the shopping cart. It verifies if the
+        cart can be modified, and if a coupon is already applied to the cart.
+        """
+
         self._check_can_be_modified(action="apply coupon")
 
         if self.coupon is not None:
@@ -181,9 +227,17 @@ class Cart:
             raise CouponAlreadyAppliedError
 
     def set_coupon(self, coupon: CartCoupon) -> None:
+        """Sets a coupon for a shopping cart."""
+
         self.coupon = coupon
 
     def remove_coupon(self) -> None:
+        """
+        Removes a coupon from the shopping cart. It checks if the cart can be modified,
+        and if a coupon is currently applied to the cart. If a coupon exists, it is
+        removed from the cart.
+        """
+
         self._check_can_be_modified(action="remove coupon")
 
         if self.coupon is None:
@@ -195,6 +249,13 @@ class Cart:
         self.coupon = None
 
     def lock(self) -> None:
+        """
+        Changes the status of a shopping cart to "LOCKED" if certain conditions are
+        met. If the cart is not in the "OPENED" status, an error is raised.
+        Additionally, if the checkout is disabled for the cart, another error is
+        raised.
+        """
+
         self._validate_status_transition(new_status=CartStatusEnum.LOCKED)
 
         if not self.checkout_enabled:
@@ -204,10 +265,20 @@ class Cart:
         self.status = CartStatusEnum.LOCKED
 
     def unlock(self) -> None:
+        """
+        Changes the status of a shopping cart to "OPENED" if certain conditions are
+        met.
+        """
+
         self._validate_status_transition(new_status=CartStatusEnum.OPENED)
         self.status = CartStatusEnum.OPENED
 
     def complete(self) -> None:
+        """
+        Changes the status of a shopping cart to "COMPLETED" if certain conditions
+        are met.
+        """
+
         self._validate_status_transition(new_status=CartStatusEnum.COMPLETED)
         self.status = CartStatusEnum.COMPLETED
 

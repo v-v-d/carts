@@ -13,6 +13,13 @@ logger = getLogger(__name__)
 
 
 class ClearCartUseCase:
+    """
+    Responsible for clearing a cart. It uses an instance of IUnitOfWork to interact
+    with the database, an instance of IAuthSystem to validate the user's authentication
+    data, and an instance of IDistributedLockSystem to acquire and release locks on
+    the cart.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -24,6 +31,13 @@ class ClearCartUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, data: ClearCartInputDTO) -> CartOutputDTO:
+        """
+        Executes the use case by clearing the cart. It updates the context, acquires a
+        lock, gets the user data, retrieves the cart, checks user ownership, clears
+        the cart, clears the cart in the database, and  returns the cleared cart as a
+        CartOutputDTO.
+        """
+
         await update_context(cart_id=data.cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{data.cart_id}"):

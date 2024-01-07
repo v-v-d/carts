@@ -26,6 +26,11 @@ class BackoffConfig(BaseModel):
 
 
 class BackoffRetrySystem(IRetrySystem):
+    """
+    Provides a decorator method that can be used to retry a function call with
+    backoff and giveup strategies based on the provided configuration.
+    """
+
     def __init__(self, config: BackoffConfig) -> None:
         self._config = config
 
@@ -34,6 +39,10 @@ class BackoffRetrySystem(IRetrySystem):
         return self._config.enabled
 
     def decorator(self) -> Callable[..., Any]:
+        """
+        Returns a decorator function that can be used to retry a function call.
+        """
+
         common_kwargs = {
             "max_tries": self._config.max_retries,
             "giveup": self._on_giveup,

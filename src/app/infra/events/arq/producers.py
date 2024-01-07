@@ -20,10 +20,17 @@ logger = getLogger(__name__)
 
 
 class ArqTaskProducer(ITaskProducer):
+    """
+    Responsible for enqueueing different types of tasks using the Arq library. It
+    provides methods to enqueue example tasks and abandoned cart notification tasks.
+    """
+
     def __init__(self, broker: ArqRedis) -> None:
         self._broker = broker
 
     async def enqueue_example_task(self, auth_data: str, cart_id: UUID) -> None:
+        """Responsible for enqueueing an example task using the Arq library."""
+
         # TODO(me): # circular import :(
         from app.api.events.tasks.example import example_task
 
@@ -41,6 +48,12 @@ class ArqTaskProducer(ITaskProducer):
         user_id: int,
         cart_id: UUID,
     ) -> None:
+        """
+        Responsible for enqueueing an abandoned cart notification task using the
+        Arq library. It takes in the user ID and cart ID as inputs and enqueues
+        the task with the appropriate parameters.
+        """
+
         # TODO(me): # circular import :(
         from app.api.events.tasks.abandoned_carts import send_abandoned_cart_notification
 
@@ -87,6 +100,11 @@ class ArqTaskProducer(ITaskProducer):
 
 
 async def init_arq_task_broker(config: ArqRedisConfig) -> Generator[ArqRedis, None, None]:
+    """
+    Initializes and returns a connection pool to a Redis server using the arq
+    library.
+    """
+
     pool = await create_pool(RedisSettings(**config.model_dump()))
     yield pool
     await pool.close()

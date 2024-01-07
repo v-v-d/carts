@@ -10,6 +10,12 @@ logger = getLogger(__name__)
 
 
 class LockCartUseCase:
+    """
+    Responsible for locking a cart by acquiring a distributed lock using the provided
+    distributed lock system. It uses a unit of work to retrieve and update the cart's
+    status.
+    """
+
     def __init__(
         self,
         uow: IUnitOfWork,
@@ -19,6 +25,10 @@ class LockCartUseCase:
         self._distributed_lock_system = distributed_lock_system
 
     async def execute(self, cart_id: UUID) -> CartOutputDTO:
+        """
+        Executes the use case by acquiring a distributed lock and locking the cart.
+        """
+
         await update_context(cart_id=cart_id)
 
         async with self._distributed_lock_system(name=f"cart-lock-{cart_id}"):
