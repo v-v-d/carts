@@ -62,7 +62,7 @@ jobs:
 
     - name: Linting
       run: |
-        ls -la
+        cd src
         lint-imports
         flake8 .
 
