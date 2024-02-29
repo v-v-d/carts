@@ -62,6 +62,7 @@ jobs:
 
     - name: Linting
       run: |
+        ls -la
         lint-imports
         flake8 .
 
