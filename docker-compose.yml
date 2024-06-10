@@ -26,7 +26,7 @@ services:
     depends_on:
       - db
       - redis
-    command: arq app.infra.events.arq.workers.ConsumerSettings --watch .
+    command: python -c "from app.infra.events.arq.workers import run_worker; run_worker('app.infra.events.arq.workers.ConsumerSettings')"
 
   periodic:
     build:
@@ -37,7 +37,7 @@ services:
     depends_on:
       - db
       - redis
-    command: arq app.infra.events.arq.workers.PeriodicSettings --watch .
+    command: python -c "from app.infra.events.arq.workers import run_worker; run_worker('app.infra.events.arq.workers.PeriodicSettings')"
 
   db:
     image: postgres:14-alpine

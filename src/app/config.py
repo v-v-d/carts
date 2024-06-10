@@ -68,6 +68,10 @@ class RedisLockConfig(BaseModel):
     time_to_wait_sec: float = 5.0
 
 
+class SentryConfig(BaseModel):
+    dsn: AnyHttpUrl
+
+
 class Config(BaseSettings):
     class Config:
         env_file = ".env"
@@ -82,3 +86,4 @@ class Config(BaseSettings):
     DB: DBConfig
     LOGGING: LoggingConfig
     REDIS_LOCK: RedisLockConfig
+    SENTRY: SentryConfig

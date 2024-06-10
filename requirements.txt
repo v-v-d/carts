@@ -35,4 +35,7 @@ typer==0.9.0
 # Logging
 python-json-logger==2.0.7
 
+# Monitoring
+sentry-sdk==2.5.1
+
 -r requirements-dev.txt
