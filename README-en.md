@@ -137,3 +137,59 @@ The diagram shows the approximate control flow for this scenario:
 	5. Calls `Cart` business logic:
 		1. Checks if the user has rights to edit the cart. If not, throws an exception; otherwise
 		2. If the item is already in the cart, adds its quantity to the current
+
+ amount and returns `CartOutputDTO`; otherwise
+	6. Sends HTTP request to external products integration and retrieves data
+	7. Creates `CartItem` business object from the retrieved data
+	8. Calls `Cart` business logic to add the item to the cart
+	9. Saves the item to the database through transactional context `SqlAlchemyUnitOfWork` and repository `SqlAlchemyItemsRepository`
+	10. Returns `CartOutputDTO`
+4. `CartViewModel` applies display logic according to the backend-frontend contract.
+
+## Technologies
+
+- **FastAPI**: Web framework for building REST API
+- **ARQ**: Queue manager
+- **Typer**: Tool for CLI interaction with the system
+- **Dependency-injector**: Dependency injection framework
+- **SQLAlchemy**: ORM for relational database interaction
+- **PostgreSQL**: Database for storing cart and item states
+- **Redis**: Mechanism for distributed locking and message broker
+- **Aiohttp**: Framework for HTTP interaction with external integrations
+- **Pydantic**: Tool for DTO formation, display logic encapsulation, and service settings storage
+- **Backoff**: Mechanism for retrying failed HTTP requests
+- **Pytest**: Testing framework
+
+## Deployment
+
+The microservice supports containerization and can be deployed in any modern cloud environment or on dedicated servers.
+
+#### Start
+
+1. Create a `.env` file at the project root. For local startup, copy all variables from `.env.defaults`
+2. Set the source root to the `src` directory path
+3. Build and start the project:
+	```shell
+	make start
+	```
+5. Access the API documentation: [http://0.0.0.0:8000/docs/](http://0.0.0.0:8000/docs/)
+
+#### Testing
+
+Set up the test environment and run tests:
+```shell
+make test
+```
+To run a specific test module or individual test, add the target argument:
+```shell
+make test target=tests/unit
+```
+
+#### Code Standards
+
+The project adheres to strict coding standards ensured by linters and formatters.
+
+Run linters, formatters, and tests with a single command:
+```shell
+make check
+```
