@@ -58,6 +58,22 @@ class CartsRepository(ICartsRepository):
         except IntegrityError:
             raise ActiveCartAlreadyExistsError
 
+        stmt = text(
+            """
+            PREPARE cypher_stored_procedure(agtype) AS
+            SELECT *
+            FROM cypher(
+                'template', 
+                $$
+                    MERGE (n:Cart {id: $cart_id})
+                $$, 
+                $1
+            ) as (n agtype);
+            """
+        )
+        await self._session.execute(stmt, params={"cart_id": cart.id})
+        await self._session.execute(text("DEALLOCATE cypher_stored_procedure;"))
+
         await update_context(cart_id=cart.id)
 
         return cart

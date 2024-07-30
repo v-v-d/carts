@@ -40,7 +40,8 @@ services:
     command: arq app.infra.events.arq.workers.PeriodicSettings --watch .
 
   db:
-    image: postgres:14-alpine
+#    image: postgres:14-alpine
+    image: apache/age:release_PG14_1.5.0
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:

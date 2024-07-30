@@ -19,6 +19,7 @@ class DBConfig(BaseModel):
     server_settings: dict[str, Any] = {}
     connect_args: dict[str, Any] = {}
     debug: bool = False
+    graph_name: str = "template"
 
 
 class ProductsClientConfig(BaseModel):

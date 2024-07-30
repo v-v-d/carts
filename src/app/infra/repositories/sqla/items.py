@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from sqlalchemy import delete, update
+from sqlalchemy import delete, update, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,6 +40,25 @@ class ItemsRepository(IItemsRepository):
         except IntegrityError as err:
             raise ItemAlreadyExists(str(err)) from err
 
+        stmt = text(
+            """
+            PREPARE cypher_stored_procedure(agtype) AS
+            SELECT *
+            FROM cypher(
+                'template',
+                $$
+                    MATCH (c:Cart) WHERE c.id = $cart_id
+                    MERGE (i:CartItem {id: $item_id})
+                    MERGE (c)-[r:CONTAINS]->(i)
+                    RETURN i
+                $$,
+                $1
+            ) as (i agtype);
+            """
+        )
+        await self._session.execute(stmt, params={"cart_id": item.cart_id, "item_id": item.id})
+        await self._session.execute(text("DEALLOCATE cypher_stored_procedure;"))
+
     async def update_item(self, item: CartItem) -> CartItem:
         """Updates an existing CartItem object in the database."""
 
@@ -66,3 +85,20 @@ class ItemsRepository(IItemsRepository):
             models.CartItem.id == item_id, models.CartItem.cart_id == cart.id
         )
         await self._session.execute(stmt)
+
+        stmt = text(
+            """
+            PREPARE cypher_stored_procedure(agtype) AS
+            SELECT *
+            FROM cypher(
+                'template', 
+                $$
+                    MATCH (c:Cart)-[r:CONTAINS]->(i:CartItem) 
+                    WHERE c.id = $cart_id AND i.id = $item_id
+                    DELETE r
+                $$, 
+                $1, $2
+            ) as (n agtype);
+            """
+        )
+        await self._session.execute(stmt, params={"cart_id": cart.id, "item_id": item_id})

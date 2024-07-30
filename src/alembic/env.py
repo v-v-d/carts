@@ -36,6 +36,15 @@ target_metadata = metadata
 config.set_main_option("sqlalchemy.url", str(app_config.DB.dsn))
 
 
+def include_name(_name: str, _type: str, parent_names: dict[str, str]) -> bool:
+    # useful with 3rd party extensions and their internal schemas and tables
+
+    if "schema_name" not in parent_names:
+        return True
+
+    return parent_names["schema_name"] not in (app_config.DB.graph_name, "ag_catalog")
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -55,6 +64,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         include_schemas=True,
+        include_name=include_name,
     )
 
     with context.begin_transaction():
@@ -67,6 +77,7 @@ def do_run_migrations(connection):
         target_metadata=target_metadata,
         dialect_opts={"paramstyle": "named"},
         include_schemas=True,
+        include_name=include_name,
     )
 
     with context.begin_transaction():
