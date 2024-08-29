@@ -90,6 +90,32 @@ class CartsRepository(ICartsRepository):
 
         return cart
 
+    async def retrieve_active(self) -> Cart:
+        """
+        Retrieves an existing active cart from the database
+        and returns the retrieved cart object.
+        """
+
+        stmt = (
+            select(models.Cart)
+            .options(joinedload(models.Cart.items))
+            .options(joinedload(models.Cart.coupon))
+            .where(models.Cart.status == CartStatusEnum.OPENED)
+        )
+        obj = await self._session.scalar(stmt)
+
+        if not obj:
+            raise CartNotFoundError
+
+        await update_context(cart_id=obj.id)
+
+        config = await self._get_config()
+        cart = self._get_cart(obj=obj, config=config)
+
+        logger.debug("Got cart: %s", vars(cart))
+
+        return cart
+
     async def update(self, cart: Cart) -> Cart:
         """
         Updates the status of a cart in the database based on the provided cart

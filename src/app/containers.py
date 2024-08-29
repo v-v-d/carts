@@ -9,6 +9,7 @@ from app.app_layer.use_cases.cart_config.service import CartConfigService
 from app.app_layer.use_cases.cart_items.add_item import AddCartItemUseCase
 from app.app_layer.use_cases.cart_items.delete_item import DeleteCartItemUseCase
 from app.app_layer.use_cases.cart_items.update_item import UpdateCartItemUseCase
+from app.app_layer.use_cases.carts.cart_active_retrieve import CartActiveRetrieveUseCase
 from app.app_layer.use_cases.carts.cart_apply_coupon import CartApplyCouponUseCase
 from app.app_layer.use_cases.carts.cart_complete import CompleteCartUseCase
 from app.app_layer.use_cases.carts.cart_delete import CartDeleteUseCase
@@ -160,6 +161,11 @@ class Container(containers.DeclarativeContainer):
     )
     cart_retrieve_use_case = providers.Factory(
         CartRetrieveUseCase,
+        uow=db.container.uow,
+        auth_system=auth_system,
+    )
+    cart_active_retrieve_use_case = providers.Factory(
+        CartActiveRetrieveUseCase,
         uow=db.container.uow,
         auth_system=auth_system,
     )

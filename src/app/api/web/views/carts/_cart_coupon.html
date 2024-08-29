@@ -1,0 +1,14 @@
+<div class="mt-4 bg-gray-100 p-4 rounded shadow-md">
+    <h2 class="text-lg font-semibold text-gray-700 mb-3">Apply Coupon</h2>
+    {% if cart.coupon %}
+    <div class="flex justify-between items-center">
+      <p class="text-sm font-medium text-gray-700">Coupon: {{ cart.coupon.coupon_id }} - Discount: ₽{{ '%.2f'|format(cart.coupon.discount_abs) }}, Min cart cost: ₽{{ '%.2f'|format(cart.coupon.min_cart_cost) }}, </p>
+      <button hx-post="/carts/{{ cart.id }}/remove-coupon" hx-target="#cart-details" hx-swap="innerHTML" class="px-4 py-2 bg-red-500 text-white font-medium rounded hover:bg-red-700">Remove Coupon</button>
+    </div>
+    {% else %}
+    <form hx-post="/carts/{{ cart.id }}/apply-coupon" hx-target="#cart-details" hx-swap="innerHTML" class="flex items-center space-x-2">
+      <input type="text" name="coupon_name" placeholder="Coupon name" class="form-input">
+      <button type="submit" class="px-4 py-2 bg-green-500 text-white font-medium rounded hover:bg-green-700">Apply Coupon</button>
+    </form>
+    {% endif %}
+</div>

@@ -1,11 +1,13 @@
 # Web frameworks
 aiohttp==3.8.5
 httpx==0.25.0
-fastapi==0.103.1
+fastapi==0.112.0
 pydantic==2.4.0
 uvicorn==0.23.2
 uvloop==0.17.0
 backoff==2.2.1
+jinja2==3.1.4
+python-multipart==0.0.9
 
 # Task management
 arq==0.25.0

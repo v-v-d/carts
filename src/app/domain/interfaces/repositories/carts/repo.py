@@ -17,6 +17,10 @@ class ICartsRepository(ABC):
         ...
 
     @abstractmethod
+    async def retrieve_active(self) -> Cart:
+        ...
+
+    @abstractmethod
     async def update(self, cart: Cart) -> Cart:
         ...
 

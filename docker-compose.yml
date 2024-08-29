@@ -15,7 +15,23 @@ services:
     depends_on:
       - db
       - redis
-    command: sh -c "alembic upgrade head && uvicorn app.api.rest.main:app --host 0.0.0.0 --port 8000 --log-level info --reload"
+    command: sh -c "alembic upgrade head && uvicorn app.api.rest.main:app --host 0.0.0.0 --port 8000 --log-level info --workers 5"
+
+  web-app:
+    container_name: web-carts
+    build:
+      context: .
+    volumes:
+      - ./src:/app/code
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env.defaults
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: sh -c "uvicorn app.api.web.main:app --host 0.0.0.0 --port 8001 --log-level info --reload"
 
   worker:
     build:

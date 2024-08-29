@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastAPI + HTMX</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.1/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+  <script>
+    function setJwtCookie(token) {
+      document.cookie = "Authorization=" + token + "; path=/; SameSite=None";
+    }
+    setJwtCookie('Bearer admin.1');
+  </script>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+  <header class="bg-blue-900 text-white p-4">
+    <h1 class="text-3xl font-bold">FastAPI + HTMX</h1>
+    <p>Manage your shopping cart</p>
+  </header>
+  <main class="container mx-auto mt-8">
+    <section id="cart-details" hx-get="/carts/active" hx-swap="innerHTML" hx-trigger="load">
+      <!-- Cart details will be loaded here -->
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,23 @@
+li,
+section > form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  > * + * {
+    margin-left: 1rem;
+  }
+
+  > :first-child {
+    width: 100%;
+  }
+
+  /* Override simple.css on smaller screens */
+  > :last-child {
+    width: unset;
+  }
+}
+
+ul {
+  padding: 0;
+}

@@ -1,0 +1,18 @@
+<tr class="border-b">
+  <td class="py-2">{{ item.name }}</td>
+  <td class="py-2 flex items-center">
+      <input type="number" id="qty-{{ item.id }}" name="qty" value="{{ item.qty }}"
+         class="mx-2 text-center w-12 form-input" min="1"
+         hx-patch="/carts/{{ cart.id }}/items/{{ item.id }}"
+         hx-trigger="change delay:500ms"
+         hx-target="#cart-details"
+         hx-swap="innerHTML">
+  </td>
+  <td class="py-2">₽{{ '%.2f'|format(item.price) }}</td>
+  <td class="py-2">₽{{ '%.2f'|format(item.qty * item.price) }}</td>
+  <td class="py-2">
+      <button hx-delete="/carts/{{ cart.id }}/items/{{ item.id }}" hx-target="#cart-details" hx-swap="innerHTML" class="p-1 text-white bg-red-500 rounded-full hover:bg-red-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+  </td>
+</tr>
